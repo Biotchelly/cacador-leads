@@ -1,150 +1,214 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🕵️ Command Center V5.1 | Biotchelly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+
     <style>
         /* --- JOBS DARK THEME DNA --- */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
+            background-color: #0f172a;
+            /* Slate 900 */
             background-image: radial-gradient(circle at 50% 50%, #1e293b 1px, transparent 1px);
             background-size: 24px 24px;
             color: #cbd5e1;
             transition: all 0.3s ease;
         }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         /* Inputs Padronizados */
         .input-pro {
             @apply w-full bg-slate-900 border border-slate-700 rounded-md p-3 text-white placeholder-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition text-sm shadow-inner;
         }
-        
+
         /* Checkbox Custom */
         .checkbox-pro {
             @apply w-4 h-4 text-blue-600 bg-slate-800 border-slate-600 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer;
         }
 
         /* Toggle Switch Customization */
-        .toggle-checkbox:checked { right: 0; border-color: #3b82f6; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #3b82f6; }
-        
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #3b82f6;
+        }
+
         /* Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
 
         /* Tabs Logic */
-        .tab-btn { @apply px-6 py-3 font-bold text-sm uppercase tracking-wide border-b-2 border-transparent transition-all duration-200 text-slate-500 hover:text-white cursor-pointer; }
-        .tab-btn.active { @apply border-blue-500 text-blue-400 bg-slate-800/50 rounded-t-lg; }
-        
-        .tab-content { @apply hidden; }
-        .tab-content.active { @apply block fade-in; }
+        .tab-btn {
+            @apply px-6 py-3 font-bold text-sm uppercase tracking-wide border-b-2 border-transparent transition-all duration-200 text-slate-500 hover:text-white cursor-pointer;
+        }
+
+        .tab-btn.active {
+            @apply border-blue-500 text-blue-400 bg-slate-800/50 rounded-t-lg;
+        }
+
+        .tab-content {
+            @apply hidden;
+        }
+
+        .tab-content.active {
+            @apply block fade-in;
+        }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
         /* Light Mode Overrides */
         html.light-mode body {
             background-color: #f8fafc;
             background-image: radial-gradient(circle at 50% 50%, #cbd5e1 1px, transparent 1px);
             color: #334155;
         }
-        html.light-mode .bg-slate-900 { background-color: #ffffff; border-color: #e2e8f0; }
-        html.light-mode .bg-slate-800\/40 { background-color: #ffffff; border-color: #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
-        html.light-mode .input-pro { background-color: #f1f5f9; border-color: #cbd5e1; color: #0f172a; }
-        html.light-mode .text-white { color: #0f172a; }
-        html.light-mode .text-slate-400 { color: #64748b; }
-        
+
+        html.light-mode .bg-slate-900 {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        html.light-mode .bg-slate-800\/40 {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+        }
+
+        html.light-mode .input-pro {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        html.light-mode .text-white {
+            color: #0f172a;
+        }
+
+        html.light-mode .text-slate-400 {
+            color: #64748b;
+        }
+
         /* Botões Estilo Jobs */
         .btn-jobs {
             @apply bg-blue-600 hover:bg-blue-500 text-slate-200 shadow-md transition transform hover:-translate-y-0.5 font-bold;
         }
     </style>
 </head>
+
 <body class="antialiased min-h-screen p-4 md:p-8">
 
-    <!-- ⚙️ CONFIG MODAL -->
-    <div id="configModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center backdrop-blur-sm transition-all">
-        <div class="bg-slate-800 p-8 rounded-xl border border-slate-600 w-full max-w-lg shadow-2xl relative bg-slate-900">
+    <!-- ⚙️ CONFIG MODAL (ATUALIZADO PARA WEBHOOK) -->
+    <div id="configModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center backdrop-blur-sm transition-all">
+        <div
+            class="bg-slate-800 p-8 rounded-xl border border-slate-600 w-full max-w-lg shadow-2xl relative bg-slate-900">
             <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                 <i class="fa-solid fa-cogs text-blue-500"></i> Configuração do Motor
             </h2>
-            
-            <div class="space-y-5">
-                <!-- URL Kestra -->
-                <div>
-                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">URL do Kestra (Backend)</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="kestraUrl" placeholder="https://kestra.seu-dominio.com" class="input-pro flex-1">
-                        <button onclick="testConnection()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-md text-xs font-bold transition">
-                            <i class="fa-solid fa-plug"></i> TESTAR
-                        </button>
-                    </div>
-                    <p id="connectionStatus" class="text-xs mt-2 h-4 font-mono"></p>
-                </div>
 
-                <!-- Namespace & Flow -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Namespace</label>
-                        <input type="text" id="kestraNamespace" value="biotchellymcp" class="input-pro">
+            <div class="space-y-5">
+                <!-- URL Webhook (SUBSTITUIU URL KESTRA/NAMESPACE/FLOW) -->
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">URL do Webhook (Predador V5.1)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="kestraWebhookUrl" placeholder="https://kestra.../api/v1/executions/webhook/..."
+                            class="input-pro flex-1 font-mono text-xs">
                     </div>
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Flow ID</label>
-                        <input type="text" id="kestraFlowId" value="06cacador_de_leads_pro_v4" class="input-pro">
-                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">Copie a URL do Trigger 'webhook_predador' na interface do Kestra.</p>
                 </div>
 
                 <!-- API Tokens -->
                 <div class="space-y-3 pt-2 border-t border-slate-700">
                     <div>
-                        <label class="block text-xs uppercase font-bold text-emerald-500 mb-1">Token Casa dos Dados</label>
-                        <input type="text" id="apiTokenCasaDados" placeholder="Cole seu token aqui" class="input-pro border-emerald-900 focus:border-emerald-500">
+                        <label class="block text-xs uppercase font-bold text-emerald-500 mb-1">Token Casa dos
+                            Dados</label>
+                        <input type="password" id="apiTokenCasaDados" placeholder="Cole seu token aqui"
+                            class="input-pro border-emerald-900 focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-red-500 mb-1">Token SerpApi (Google Maps)</label>
-                        <input type="text" id="apiTokenSerpApi" placeholder="Cole sua chave SerpApi" class="input-pro border-red-900 focus:border-red-500">
+                        <label class="block text-xs uppercase font-bold text-red-500 mb-1">Token SerpApi (Google
+                            Maps)</label>
+                        <input type="password" id="apiTokenSerpApi" placeholder="Cole sua chave SerpApi"
+                            class="input-pro border-red-900 focus:border-red-500">
                     </div>
                 </div>
             </div>
 
             <div class="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-700">
-                <button onclick="toggleConfig()" class="px-4 py-2 text-slate-400 hover:text-white font-bold transition">Cancelar</button>
-                <button onclick="saveConfig()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold shadow-lg transition">Salvar Configuração</button>
+                <button onclick="toggleConfig()"
+                    class="px-4 py-2 text-slate-400 hover:text-white font-bold transition">Cancelar</button>
+                <button onclick="saveConfig()"
+                    class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold shadow-lg transition">Salvar
+                    Configuração</button>
             </div>
         </div>
     </div>
 
     <!-- MAIN INTERFACE -->
     <main class="w-full max-w-7xl mx-auto space-y-6">
-        
+
         <!-- HEADER -->
         <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-800">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 shadow-lg">
+                <div
+                    class="w-14 h-14 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 shadow-lg">
                     <i class="fa-solid fa-crosshairs text-blue-500 text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black text-white tracking-tight">COMMAND CENTER <span class="text-blue-500">V5.1</span></h1>
-                    <p class="text-slate-500 text-xs font-mono font-bold uppercase tracking-widest">Biotchelly Intelligence Systems</p>
+                    <h1 class="text-3xl font-black text-white tracking-tight">COMMAND CENTER <span
+                            class="text-blue-500">V5.1</span></h1>
+                    <p class="text-slate-500 text-xs font-mono font-bold uppercase tracking-widest">Biotchelly
+                        Intelligence Systems</p>
                 </div>
             </div>
-            
+
             <div class="flex gap-2">
-                 <button onclick="toggleTheme()" id="themeBtn" class="px-4 py-2 btn-jobs rounded-md text-sm">
+                <button onclick="toggleTheme()" id="themeBtn" class="px-4 py-2 btn-jobs rounded-md text-sm">
                     <i class="fa-solid fa-sun"></i>
                 </button>
-                 <button onclick="clearForm()" class="px-4 py-2 btn-jobs rounded-md text-xs uppercase flex items-center gap-2">
+                <button onclick="clearForm()"
+                    class="px-4 py-2 btn-jobs rounded-md text-xs uppercase flex items-center gap-2">
                     <i class="fa-solid fa-eraser"></i> Limpar
                 </button>
-                <button onclick="toggleConfig()" class="px-4 py-2 btn-jobs rounded-md flex items-center gap-2 text-xs uppercase">
+                <button onclick="toggleConfig()"
+                    class="px-4 py-2 btn-jobs rounded-md flex items-center gap-2 text-xs uppercase">
                     <i class="fa-solid fa-gear"></i> Configurar
                 </button>
             </div>
@@ -164,7 +228,7 @@
         </div>
 
         <form id="hunterForm" onsubmit="event.preventDefault(); startHunt();">
-            
+
             <!-- 🕵️ ABA 1: CAÇADOR -->
             <div id="tab-cacador" class="tab-content active space-y-8 fade-in">
                 <!-- 1. IDENTIFICAÇÃO & RESULTADOS -->
@@ -181,17 +245,25 @@
                                 <label class="block text-xs font-bold text-slate-400 mb-1">CNPJ</label>
                                 <div class="flex gap-2">
                                     <input type="text" id="cnpj" placeholder="Ex: 33.000.167/0001-01" class="input-pro">
-                                    <button type="button" class="btn-jobs px-4 rounded-md text-xs whitespace-nowrap">Inserir em Lote</button>
+                                    <button type="button"
+                                        class="btn-jobs px-4 rounded-md text-xs whitespace-nowrap">Inserir em
+                                        Lote</button>
                                 </div>
                             </div>
-                            
+
                             <!-- 📊 PAINEL DE RESULTADOS (CAÇADOR) -->
-                            <div class="md:col-span-4 bg-slate-900 border border-slate-700 rounded-md p-3 flex flex-col justify-center">
-                                <span class="text-[10px] uppercase font-bold text-slate-500 mb-1">Status da Última Missão</span>
+                            <div
+                                class="md:col-span-4 bg-slate-900 border border-slate-700 rounded-md p-3 flex flex-col justify-center">
+                                <span class="text-[10px] uppercase font-bold text-slate-500 mb-1">Status da Última
+                                    Missão</span>
                                 <div class="flex justify-between items-end">
-                                    <div>
-                                        <span class="text-2xl font-black text-emerald-400" id="dashFound">0</span>
-                                        <span class="text-xs text-slate-400">Encontradas</span>
+                                    <div class="flex flex-col">
+                                         <!-- STATUS TEXTO -->
+                                        <span class="text-xs text-yellow-400 font-mono animate-pulse hidden" id="missionStatusCacador">Em Andamento</span>
+                                        <div>
+                                            <span class="text-2xl font-black text-emerald-400" id="dashFound">0</span>
+                                            <span class="text-xs text-slate-400">Encontradas</span>
+                                        </div>
                                     </div>
                                     <div class="text-right">
                                         <span class="text-2xl font-black text-blue-400" id="dashSaved">0</span>
@@ -204,20 +276,25 @@
                         <!-- BUSCA TEXTUAL -->
                         <div>
                             <label class="block text-xs font-bold text-slate-400 mb-1">BUSCA TEXTUAL</label>
-                            <input type="text" id="termo" placeholder="Digite o termo e aperte enter (Ex: Barbearia, Padaria...)" class="input-pro text-lg">
-                            
+                            <input type="text" id="termo"
+                                placeholder="Digite o termo e aperte enter (Ex: Barbearia, Padaria...)"
+                                class="input-pro text-lg">
+
                             <div class="flex gap-6 mt-3 pl-1">
                                 <label class="flex items-center gap-2 cursor-pointer group">
                                     <input type="checkbox" id="checkRazao" checked class="checkbox-pro">
-                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Razão Social</span>
+                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Razão
+                                        Social</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer group">
                                     <input type="checkbox" id="checkFantasia" checked class="checkbox-pro">
-                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Nome Fantasia</span>
+                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Nome
+                                        Fantasia</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer group">
                                     <input type="checkbox" id="checkSocio" checked class="checkbox-pro">
-                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Nome do Sócio</span>
+                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Nome do
+                                        Sócio</span>
                                 </label>
                             </div>
                         </div>
@@ -232,7 +309,8 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">CNPJ Raiz</label>
-                                <input type="text" id="cnpjRaiz" maxlength="8" placeholder="Somente os 8 dígitos" class="input-pro">
+                                <input type="text" id="cnpjRaiz" maxlength="8" placeholder="Somente os 8 dígitos"
+                                    class="input-pro">
                             </div>
                         </div>
                     </div>
@@ -282,7 +360,8 @@
                         <div class="relative">
                             <label class="block text-xs font-bold text-slate-400 mb-1">Município</label>
                             <div class="relative">
-                                <select id="municipioInput" class="input-pro disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <select id="municipioInput"
+                                    class="input-pro disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                                     <option value="">Selecione UF primeiro...</option>
                                 </select>
                                 <div id="cityLoader" class="hidden absolute right-8 top-3 text-blue-500">
@@ -305,25 +384,35 @@
                 <!-- FILTROS -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 lg:col-span-2">
-                        <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-filter text-blue-500 mr-2"></i> Filtros de Negócio</h3>
+                        <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i
+                                class="fa-solid fa-filter text-blue-500 mr-2"></i> Filtros de Negócio</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <!-- SITUAÇÃO -->
                             <div class="space-y-2">
                                 <label class="block text-xs font-bold text-slate-400">Situação</label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitAtiva" checked class="checkbox-pro"> <span class="text-xs">Ativa</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitBaixada" class="checkbox-pro"> <span class="text-xs">Baixada</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox"
+                                        id="sitAtiva" checked class="checkbox-pro"> <span
+                                        class="text-xs">Ativa</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox"
+                                        id="sitBaixada" class="checkbox-pro"> <span
+                                        class="text-xs">Baixada</span></label>
                             </div>
                             <!-- MEI/SIMPLES -->
                             <div class="space-y-2">
                                 <label class="block text-xs font-bold text-slate-400">Regime</label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="swExcludeMei" class="checkbox-pro"> <span class="text-xs">Excluir MEI</span></label>
-                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="swOnlySimples" class="checkbox-pro"> <span class="text-xs">Somente Simples</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox"
+                                        id="swExcludeMei" class="checkbox-pro"> <span class="text-xs">Excluir
+                                        MEI</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox"
+                                        id="swOnlySimples" class="checkbox-pro"> <span class="text-xs">Somente
+                                        Simples</span></label>
                             </div>
                         </div>
                     </section>
 
                     <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 lg:col-span-2">
-                        <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-calendar text-blue-500 mr-2"></i> Período e Capital</h3>
+                        <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i
+                                class="fa-solid fa-calendar text-blue-500 mr-2"></i> Período e Capital</h3>
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Abertura</label>
@@ -335,26 +424,32 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Capital Social</label>
                                 <div class="flex gap-2">
-                                    <input type="number" id="capitalMin" placeholder="Min" class="input-pro text-xs p-2">
-                                    <input type="number" id="capitalMax" placeholder="Max" class="input-pro text-xs p-2">
+                                    <input type="number" id="capitalMin" placeholder="Min"
+                                        class="input-pro text-xs p-2">
+                                    <input type="number" id="capitalMax" placeholder="Max"
+                                        class="input-pro text-xs p-2">
                                 </div>
                             </div>
                         </div>
                     </section>
                 </div>
 
-                <!-- WEBHOOK & AÇÃO -->
+                <!-- WEBHOOK DE NOTIFICAÇÃO (MANTIDO DO ORIGINAL COMO 'RESULTADO') -->
                 <section class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-lg">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                         <div class="flex-1 w-full space-y-3">
-                            <h3 class="text-sm font-bold text-white mb-2"><i class="fa-solid fa-satellite-dish text-emerald-500 mr-2"></i> Webhook (Opcional)</h3>
-                            <input type="url" id="webhookUrl" placeholder="https://seu-webhook.com/endpoint" class="input-pro text-xs">
+                            <h3 class="text-sm font-bold text-white mb-2"><i
+                                    class="fa-solid fa-satellite-dish text-emerald-500 mr-2"></i> Webhook de Resultado (Opcional)
+                            </h3>
+                            <input type="url" id="webhookResultUrl" placeholder="https://seu-crm-externo.com/endpoint"
+                                class="input-pro text-xs">
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" id="webhookActive" class="checkbox-pro text-emerald-500">
                                 <span class="text-xs text-emerald-400 font-bold">Ativar envio em tempo real</span>
                             </label>
                         </div>
-                        <button id="btnHunt" type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-12 rounded-lg shadow-xl shadow-blue-900/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-lg group">
+                        <button id="btnHunt" type="submit"
+                            class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-12 rounded-lg shadow-xl shadow-blue-900/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-lg group">
                             <span>EXECUTAR CAÇADA</span>
                             <i class="fa-solid fa-rocket group-hover:animate-bounce"></i>
                         </button>
@@ -369,20 +464,24 @@
                         <i class="fa-solid fa-map text-red-500"></i>
                         <h3 class="text-sm font-bold text-white uppercase">Busca Geográfica (SerpApi)</h3>
                     </div>
-                    
+
                     <!-- 📊 RESULTADOS MAPS -->
-                    <div class="bg-slate-900 border border-slate-700 rounded-md p-4 mb-6 flex justify-between items-center">
+                    <div
+                        class="bg-slate-900 border border-slate-700 rounded-md p-4 mb-6 flex justify-between items-center">
                         <div>
                             <span class="text-[10px] uppercase font-bold text-slate-500 block">Status Maps</span>
-                            <span class="text-xs text-slate-400">Pronto para extração</span>
+                             <span class="text-xs text-yellow-400 font-mono animate-pulse hidden" id="missionStatusMaps">Em Andamento</span>
+                            <span class="text-xs text-slate-400" id="statusLabelMaps">Pronto para extração</span>
                         </div>
                         <div class="text-right flex gap-6">
                             <div>
-                                <span class="text-2xl font-black text-red-500 block leading-none" id="mapsFound">0</span>
+                                <span class="text-2xl font-black text-red-500 block leading-none"
+                                    id="mapsFound">0</span>
                                 <span class="text-[10px] text-slate-500 uppercase">Locais</span>
                             </div>
                             <div>
-                                <span class="text-2xl font-black text-blue-500 block leading-none" id="mapsSaved">0</span>
+                                <span class="text-2xl font-black text-blue-500 block leading-none"
+                                    id="mapsSaved">0</span>
                                 <span class="text-[10px] text-slate-500 uppercase">Salvos</span>
                             </div>
                         </div>
@@ -391,17 +490,20 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs font-bold text-slate-400 mb-1">Termo de Busca</label>
-                            <input type="text" placeholder="Ex: Restaurantes, Escolas, Mecânicas" class="input-pro">
+                            <!-- ID ADICIONADO AQUI -->
+                            <input type="text" id="mapsTermo" placeholder="Ex: Restaurantes, Escolas, Mecânicas" class="input-pro">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 mb-1">Localização Central</label>
-                            <input type="text" placeholder="Ex: Av. Paulista, 1000 - SP" class="input-pro">
+                            <!-- ID ADICIONADO AQUI -->
+                            <input type="text" id="mapsLocation" placeholder="Ex: Av. Paulista, 1000 - SP" class="input-pro">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-400 mb-1">Raio de Busca (Metros)</label>
-                            <input type="number" value="1000" class="input-pro">
+                            <!-- ID ADICIONADO AQUI -->
+                            <input type="number" id="mapsRadius" value="1000" class="input-pro">
                         </div>
-                        
+
                         <!-- NOVOS FILTROS -->
                         <div>
                             <label class="block text-xs font-bold text-slate-400 mb-1">Filtro WhatsApp</label>
@@ -421,7 +523,8 @@
                         </div>
 
                         <div class="flex items-end">
-                            <button type="button" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-md transition shadow-md">
+                            <button type="button" onclick="startHunt()"
+                                class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-md transition shadow-md">
                                 <i class="fa-solid fa-magnifying-glass-location mr-2"></i> Buscar no Mapa
                             </button>
                         </div>
@@ -470,10 +573,14 @@
 
                         <!-- Template -->
                         <div class="md:col-span-8">
-                            <label class="block text-xs font-bold text-slate-400 mb-1">Template da Mensagem (Prompt IA)</label>
-                            <textarea class="w-full h-48 bg-slate-900 border border-slate-700 rounded-md p-3 text-white placeholder-slate-600 focus:border-purple-500 focus:outline-none transition text-sm font-mono" placeholder="Olá {primeiro_nome}, vi que a {empresa} atua no ramo de..."></textarea>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Template da Mensagem (Prompt
+                                IA)</label>
+                            <textarea
+                                class="w-full h-48 bg-slate-900 border border-slate-700 rounded-md p-3 text-white placeholder-slate-600 focus:border-purple-500 focus:outline-none transition text-sm font-mono"
+                                placeholder="Olá {primeiro_nome}, vi que a {empresa} atua no ramo de..."></textarea>
                             <div class="mt-4 flex justify-end">
-                                <button type="button" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-md transition shadow-md flex items-center gap-2">
+                                <button type="button" onclick="startHunt()"
+                                    class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-md transition shadow-md flex items-center gap-2">
                                     <i class="fa-solid fa-play"></i> INICIAR DISPAROS
                                 </button>
                             </div>
@@ -483,7 +590,8 @@
             </div>
 
             <!-- 📊 CONSOLE -->
-            <div class="bg-black border border-slate-800 rounded-lg p-4 font-mono text-xs h-48 overflow-y-auto shadow-inner mt-8" id="consoleOutput">
+            <div class="bg-black border border-slate-800 rounded-lg p-4 font-mono text-xs h-48 overflow-y-auto shadow-inner mt-8"
+                id="consoleOutput">
                 <div class="text-blue-500 mb-1">> System Ready. V5.1 Loaded.</div>
             </div>
 
@@ -491,14 +599,14 @@
     </main>
 
     <script>
-        // --- LOGIC V5.1 ---
+        // --- LOGIC V5.1 (WEBHOOK EDITION) ---
 
         // Tab Switching
         function openTab(tabId, btn) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
+
             // Show selected
             document.getElementById(tabId).classList.add('active');
             btn.classList.add('active');
@@ -520,7 +628,7 @@
             const cityInput = document.getElementById('municipioInput');
             const loader = document.getElementById('cityLoader');
             const countLabel = document.getElementById('cityCount');
-            
+
             if (!state) {
                 cityInput.disabled = true;
                 cityInput.innerHTML = '<option value="">Selecione UF primeiro...</option>';
@@ -539,12 +647,12 @@
                 const cities = await response.json();
 
                 cities.sort((a, b) => a.nome.localeCompare(b.nome));
-                
+
                 let optionsHtml = '<option value="">Selecione ou digite...</option>';
                 cities.forEach(city => {
                     optionsHtml += `<option value="${city.nome}">${city.nome}</option>`;
                 });
-                
+
                 cityInput.innerHTML = optionsHtml;
                 cityInput.disabled = false;
                 countLabel.innerText = `${cities.length} cidades carregadas.`;
@@ -559,147 +667,151 @@
             }
         }
 
-        // 2. DIAGNÓSTICO
-        async function testConnection() {
-            const url = document.getElementById('kestraUrl').value.replace(/\/$/, "");
-            const statusEl = document.getElementById('connectionStatus');
-            
-            statusEl.className = "text-xs mt-2 h-4 font-mono text-yellow-500";
-            statusEl.innerText = "Conectando...";
-            log(`Tentando conectar em: ${url}`, 'info');
-
-            try {
-                const response = await fetch(`${url}/api/v1/flows`, { 
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (response.status === 200 || response.status === 401) {
-                    statusEl.className = "text-xs mt-2 h-4 font-mono text-emerald-400 font-bold";
-                    statusEl.innerText = "ONLINE ✅";
-                    log("Conexão estabelecida com sucesso! Servidor Kestra Respondendo.", "success");
-                } else {
-                    throw new Error(`Status ${response.status}`);
-                }
-            } catch (error) {
-                statusEl.className = "text-xs mt-2 h-4 font-mono text-red-500 font-bold";
-                statusEl.innerText = "OFFLINE ❌";
-                log(`Falha de Conexão: ${error.message}`, "error");
-                
-                if (error.message.includes("Failed to fetch")) {
-                    log("⚠️ DIAGNÓSTICO: Bloqueio de CORS ou Endereço Inexistente.", "error");
-                    log("👉 Dica: Verifique se o Kestra está rodando e se as variáveis CORS estão configuradas.", "info");
-                }
-            }
-        }
-
-        // 3. EXECUÇÃO DO FLUXO
+        // 2. DIAGNÓSTICO E EXECUÇÃO (MODIFICADO PARA WEBHOOK)
         async function startHunt() {
             const config = getConfig();
             const btn = document.getElementById('btnHunt');
             
-            if (!config.url || !config.flowId) {
+            // Verifica qual aba está ativa para saber qual ação tomar
+            const activeTab = document.querySelector('.tab-content.active').id;
+            let payload = {};
+
+            if (!config.webhookUrl) {
                 toggleConfig();
-                return log("Erro: Configure a URL do Kestra na engrenagem.", "error");
+                return log("Erro: Configure a URL do Webhook do Predador na engrenagem.", "error");
             }
 
-            const payload = {
-                termo: document.getElementById('termo').value,
-                filtros: {
-                    checks: {
-                        razao: document.getElementById('checkRazao').checked,
-                        fantasia: document.getElementById('checkFantasia').checked,
-                        socio: document.getElementById('checkSocio').checked
-                    },
-                    tipo: document.getElementById('tipoPesquisa').value,
-                    cnpj: document.getElementById('cnpj').value,
-                    uf: document.getElementById('uf').value,
-                    municipio: document.getElementById('municipioInput').value,
-                    situacao: {
-                        ativa: document.getElementById('sitAtiva').checked,
-                        baixada: document.getElementById('sitBaixada').checked,
-                        inapta: document.getElementById('sitInapta').checked,
-                        suspensa: document.getElementById('sitSuspensa').checked
-                    },
-                    mei: {
-                        only: document.getElementById('swOnlyMei').checked,
-                        exclude: document.getElementById('swExcludeMei').checked
-                    },
-                    simples: {
-                        only: document.getElementById('swOnlySimples').checked,
-                        exclude: document.getElementById('swExcludeSimples').checked
-                    },
-                    estrutura: {
-                        matriz: document.getElementById('swOnlyMatriz').checked,
-                        filial: document.getElementById('swOnlyFilial').checked
-                    },
-                    contato: {
-                        email: document.getElementById('comEmail').checked,
-                        celular: document.getElementById('soCelular').checked,
-                        fixo: document.getElementById('soFixo').checked
-                    },
-                    datas: {
-                        abertura_de: document.getElementById('dataAberturaDe').value,
-                        abertura_ate: document.getElementById('dataAberturaAte').value
-                    },
-                    capital: {
-                        min: document.getElementById('capitalMin').value,
-                        max: document.getElementById('capitalMax').value
-                    },
-                    webhook: {
-                        url: document.getElementById('webhookUrl').value,
-                        active: document.getElementById('webhookActive').checked
+            // 🛠️ MODO: CAÇADA VIA CASA DOS DADOS
+            if (activeTab === 'tab-cacador') {
+                const termo = document.getElementById('termo').value;
+                if (!termo) return log("Erro: Preencha o Termo de Busca.", "error");
+
+                payload = {
+                    mode: "FULL_AUTO", // Padrão: Caça e Dispara se achar
+                    token_casa_dados: config.apiTokenCasaDados,
+                    token_serpapi: config.apiTokenSerpApi, // Envia junto por garantia
+                    filters: {
+                        tipo_busca: "casadados",
+                        termo: termo,
+                        checks: {
+                            razao: document.getElementById('checkRazao').checked,
+                            fantasia: document.getElementById('checkFantasia').checked,
+                            socio: document.getElementById('checkSocio').checked
+                        },
+                        tipo: document.getElementById('tipoPesquisa').value,
+                        cnpj: document.getElementById('cnpj').value,
+                        uf: document.getElementById('uf').value,
+                        municipio: document.getElementById('municipioInput').value,
+                        situacao: {
+                            ativa: document.getElementById('sitAtiva').checked,
+                            baixada: document.getElementById('sitBaixada').checked,
+                        },
+                        mei: {
+                            exclude: document.getElementById('swExcludeMei').checked
+                        },
+                        simples: {
+                            only: document.getElementById('swOnlySimples').checked
+                        },
+                        datas: {
+                            abertura_de: document.getElementById('dataAberturaDe').value,
+                            abertura_ate: document.getElementById('dataAberturaAte').value
+                        },
+                        capital: {
+                            min: document.getElementById('capitalMin').value,
+                            max: document.getElementById('capitalMax').value
+                        },
+                        // Webhook de notificação externa (opcional)
+                        webhook: {
+                            url: document.getElementById('webhookResultUrl').value,
+                            active: document.getElementById('webhookActive').checked
+                        }
                     }
-                },
-                token_casa_dados: document.getElementById('apiTokenCasaDados').value
-            };
+                };
+            }
+            // 🗺️ MODO: CAÇADA VIA GOOGLE MAPS
+            else if (activeTab === 'tab-maps') {
+                const termo = document.getElementById('mapsTermo').value;
+                const loc = document.getElementById('mapsLocation').value;
+                if (!termo) return log("Erro: Preencha o Termo de Busca no Maps.", "error");
 
-            log("Preparando ogiva de dados...", "info");
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ENVIANDO...`;
+                payload = {
+                    mode: "FULL_AUTO",
+                    token_casa_dados: config.apiTokenCasaDados,
+                    token_serpapi: config.apiTokenSerpApi,
+                    filters: {
+                        tipo_busca: "maps",
+                        termo: termo,
+                        localizacao: loc,
+                        radius: document.getElementById('mapsRadius').value,
+                        whatsapp_filter: document.getElementById('filterWhatsapp').value,
+                        website_filter: document.getElementById('filterWebsite').value
+                    }
+                };
+            }
+            // 🔫 MODO: DISPARO (SNIPER MANUAL)
+            else if (activeTab === 'tab-sniper') {
+                 payload = {
+                    mode: "DISPARO", // Apenas dispara para quem já está no banco
+                    token_casa_dados: config.apiTokenCasaDados,
+                    token_serpapi: config.apiTokenSerpApi,
+                    filters: {} // Sem filtros de busca, pois é disparo
+                };
+                log("Iniciando Modo Sniper (Disparo em Massa)...", "info");
+            }
 
-            const formData = new FormData();
-            formData.append('filters_json', JSON.stringify(payload));
-            formData.append('termo', payload.termo); 
-            formData.append('estado', payload.filtros.uf);
-            formData.append('casa_dados_token', config.apiTokenCasaDados || '');
+            log(`Enviando ordem para o Predador V5.1 (Webhook)...`, "info");
 
-            const endpoint = `${config.url}/api/v1/executions/${config.namespace}/${config.flowId}?wait=true`;
+            // UI Feedback
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ENVIANDO SINAL...`;
+            }
+
+            // Exibir Status na Aba Ativa
+            const statusEl = activeTab === 'tab-maps' ? document.getElementById('missionStatusMaps') : document.getElementById('missionStatusCacador');
+            if(statusEl) {
+                statusEl.classList.remove('hidden');
+                statusEl.innerText = "Enviando...";
+            }
 
             try {
-                const response = await fetch(endpoint, { method: 'POST', body: formData });
-                
+                // 🔥 DISPARO WEBHOOK (POST)
+                const response = await fetch(config.webhookUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
                 if (response.ok) {
                     const data = await response.json();
-                    log(`🚀 Missão Iniciada! ID: ${data.id}`, "success");
-                    log(`Link: ${config.url}/ui/executions/${config.namespace}/${config.flowId}/${data.id}`, "info");
+                    log(`🚀 COMANDO RECEBIDO! ID Execução: ${data.id || 'N/A'}`, "success");
+                    log(`O Kestra iniciou o processamento em background.`, "info");
                     
-                    // Update Dashboard
-                    if (data.outputs && data.outputs.count) {
-                        document.getElementById('dashSaved').innerText = data.outputs.count;
-                        document.getElementById('dashFound').innerText = data.outputs.total_found || data.outputs.count;
-                        log(`Relatório: ${data.outputs.count} empresas salvas.`, "success");
-                    }
-
+                    if(statusEl) statusEl.innerText = "Em Execução (Kestra)";
+                    
                 } else {
                     const txt = await response.text();
-                    log(`Erro Kestra: ${response.status} - ${txt}`, "error");
+                    log(`Erro Webhook: ${response.status} - ${txt}`, "error");
+                    if(statusEl) {
+                        statusEl.innerText = "Falha no Envio";
+                        statusEl.classList.add('text-red-500');
+                        statusEl.classList.remove('text-yellow-400');
+                    }
                 }
             } catch (error) {
-                log(`Erro Fatal: ${error.message}`, "error");
+                log(`Erro Fatal de Conexão: ${error.message}`, "error");
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<span>EXECUTAR CAÇADA</span><i class="fa-solid fa-rocket"></i>`;
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>EXECUTAR CAÇADA</span><i class="fa-solid fa-rocket"></i>`;
+                }
             }
         }
 
-        // --- CONFIG ---
+        // --- CONFIG & UTILS ---
         function getConfig() {
             return {
-                url: document.getElementById('kestraUrl').value.replace(/\/$/, ""),
-                namespace: document.getElementById('kestraNamespace').value,
-                flowId: document.getElementById('kestraFlowId').value,
+                webhookUrl: document.getElementById('kestraWebhookUrl').value.replace(/\/$/, ""),
                 apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
                 apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value
             };
@@ -707,26 +819,21 @@
 
         function saveConfig() {
             const data = {
-                url: document.getElementById('kestraUrl').value,
-                namespace: document.getElementById('kestraNamespace').value,
-                flowId: document.getElementById('kestraFlowId').value,
+                webhookUrl: document.getElementById('kestraWebhookUrl').value,
                 apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
                 apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value
             };
-            localStorage.setItem('biotchelly_config_v5', JSON.stringify(data));
+            localStorage.setItem('biotchelly_config_v5_webhook', JSON.stringify(data));
             toggleConfig();
             log("Configurações salvas.", "success");
         }
 
         function loadConfig() {
-            const saved = JSON.parse(localStorage.getItem('biotchelly_config_v5') || '{}');
-            if (saved.url) document.getElementById('kestraUrl').value = saved.url;
-            if (saved.namespace) document.getElementById('kestraNamespace').value = saved.namespace;
-            if (saved.flowId) document.getElementById('kestraFlowId').value = saved.flowId;
+            const saved = JSON.parse(localStorage.getItem('biotchelly_config_v5_webhook') || '{}');
+            // Mapeamento de legado se existir
+            if (saved.webhookUrl) document.getElementById('kestraWebhookUrl').value = saved.webhookUrl;
             if (saved.apiTokenCasaDados) document.getElementById('apiTokenCasaDados').value = saved.apiTokenCasaDados;
             if (saved.apiTokenSerpApi) document.getElementById('apiTokenSerpApi').value = saved.apiTokenSerpApi;
-            
-            if (!document.getElementById('kestraUrl').value) document.getElementById('kestraUrl').value = "https://kestra.biotchellyprospecta.online";
         }
 
         function toggleTheme() {
@@ -755,12 +862,18 @@
             log("Formulário limpo.", "info");
         }
 
+        // Test Connection Placeholder (Webhook não tem GET test fácil, então só logamos)
+        function testConnection() {
+            log("Teste de conexão em modo Webhook é feito via disparo real.", "info");
+        }
+
         window.onload = () => {
             loadConfig();
             loadTheme();
-            log("Painel V5.1 Inicializado.");
+            log("Painel V5.1 Webhook Inicializado.");
         };
 
     </script>
 </body>
+
 </html>
