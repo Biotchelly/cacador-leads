@@ -1,113 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕵️ Caçador PRO v4.4 | Biotchelly</title>
+    <title>🕵️ Caçador PRO v4.5 | Biotchelly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
-        rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         /* --- CORE STYLES (DARK DEFAULT) --- */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            /* Slate 900 */
+            background-color: #0f172a; /* Slate 900 */
             background-image: radial-gradient(circle at 50% 50%, #1e293b 1px, transparent 1px);
             background-size: 24px 24px;
             transition: background-color 0.3s, color 0.3s;
         }
-
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         /* Toggle Switch Customization */
         .toggle-checkbox:checked {
             right: 0;
             border-color: #10b981;
         }
-
-        .toggle-checkbox:checked+.toggle-label {
+        .toggle-checkbox:checked + .toggle-label {
             background-color: #10b981;
         }
-
+        
         /* Section Header Style */
         .section-title {
             @apply text-sm uppercase font-bold text-emerald-400 mb-4 flex items-center gap-2 border-b border-slate-700 pb-2;
         }
-
+        
         /* Input Style Base */
         .input-dark {
             @apply w-full bg-slate-900 border border-slate-700 rounded p-3 text-white placeholder-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition text-sm;
         }
-
+        
         /* Checkbox Style Base */
         .checkbox-dark {
             @apply w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded focus:ring-purple-600 focus:ring-2;
         }
-
+        
         /* Result Card Animation */
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .result-card {
-            animation: slideIn 0.5s ease-out forwards;
-        }
+        .result-card { animation: slideIn 0.5s ease-out forwards; }
 
         /* --- ☀️ LIGHT MODE OVERRIDES --- */
         html.light-mode body {
-            background-color: #f8fafc;
-            /* Slate 50 */
+            background-color: #f8fafc; /* Slate 50 */
             background-image: radial-gradient(circle at 50% 50%, #cbd5e1 1px, transparent 1px);
-            color: #334155;
-            /* Slate 700 */
+            color: #334155; /* Slate 700 */
         }
-
+        
         /* Backgrounds & Cards */
         html.light-mode .bg-slate-800,
         html.light-mode .bg-slate-800\/50,
         html.light-mode .bg-black {
             background-color: #ffffff !important;
-            border-color: #e2e8f0 !important;
-            /* Slate 200 */
+            border-color: #e2e8f0 !important; /* Slate 200 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
         }
-
+        
         html.light-mode .bg-slate-900\/30 {
-            background-color: #f1f5f9 !important;
-            /* Slate 100 */
+            background-color: #f1f5f9 !important; /* Slate 100 */
             border-color: #e2e8f0 !important;
         }
 
@@ -119,70 +85,40 @@
             color: #0f172a !important;
             placeholder-color: #94a3b8;
         }
-
+        
         /* Text Colors */
-        html.light-mode .text-white {
-            color: #0f172a !important;
-        }
-
-        /* Slate 900 */
-        html.light-mode .text-slate-300 {
-            color: #334155 !important;
-        }
-
-        /* Slate 700 */
-        html.light-mode .text-slate-400 {
-            color: #475569 !important;
-        }
-
-        /* Slate 600 */
-        html.light-mode .text-slate-500 {
-            color: #64748b !important;
-        }
-
-        /* Slate 500 */
-
+        html.light-mode .text-white { color: #0f172a !important; } /* Slate 900 */
+        html.light-mode .text-slate-300 { color: #334155 !important; } /* Slate 700 */
+        html.light-mode .text-slate-400 { color: #475569 !important; } /* Slate 600 */
+        html.light-mode .text-slate-500 { color: #64748b !important; } /* Slate 500 */
+        
         /* Borders */
-        html.light-mode .border-slate-700 {
-            border-color: #e2e8f0 !important;
-        }
-
+        html.light-mode .border-slate-700 { border-color: #e2e8f0 !important; }
+        
         /* Checkboxes in Light Mode */
         html.light-mode .checkbox-dark {
             background-color: #ffffff;
             border-color: #cbd5e1;
         }
-
+        
         /* Scrollbar Light */
-        html.light-mode ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
+        html.light-mode ::-webkit-scrollbar-track { background: #f1f5f9; }
+        html.light-mode ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        html.light-mode ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        html.light-mode ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-        }
-
-        html.light-mode ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
     </style>
 </head>
-
 <body class="text-slate-300 antialiased min-h-screen p-4 md:p-8 transition-colors duration-300">
 
     <!-- ⚙️ CONFIG MODAL -->
-    <div id="configModal"
-        class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center backdrop-blur-sm transition-all">
+    <div id="configModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center backdrop-blur-sm transition-all">
         <div class="bg-slate-800 p-8 rounded-xl border border-slate-600 w-full max-w-md shadow-2xl relative">
-            <h2 class="text-2xl font-bold text-white mb-4"><i class="fa-solid fa-cogs text-purple-400"></i>
-                Configurações do Sistema</h2>
+            <h2 class="text-2xl font-bold text-white mb-4"><i class="fa-solid fa-cogs text-purple-400"></i> Configurações do Sistema</h2>
             <div class="space-y-4">
-
+                
                 <div class="pb-4 border-b border-slate-700">
-                    <label class="block text-xs uppercase font-bold text-emerald-400 mb-1">API Token (Casa dos
-                        Dados)</label>
-                    <input type="text" id="apiTokenCasaDados" placeholder="Cole seu token aqui para trocar de conta"
-                        class="input-dark border-emerald-500/50 focus:border-emerald-400">
+                    <label class="block text-xs uppercase font-bold text-emerald-400 mb-1">API Token (Casa dos Dados)</label>
+                    <input type="text" id="apiTokenCasaDados" placeholder="Cole seu token aqui para trocar de conta" class="input-dark border-emerald-500/50 focus:border-emerald-400">
                     <p class="text-[10px] text-slate-500 mt-1">Este token será enviado ao Kestra em cada requisição.</p>
                 </div>
 
@@ -200,71 +136,58 @@
                 </div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
-                <button onclick="toggleConfig()"
-                    class="px-4 py-2 text-slate-400 hover:text-white font-bold transition">Cancelar</button>
-                <button onclick="saveConfig()"
-                    class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-bold shadow-lg shadow-purple-500/20 transition">Salvar</button>
+                <button onclick="toggleConfig()" class="px-4 py-2 text-slate-400 hover:text-white font-bold transition">Cancelar</button>
+                <button onclick="saveConfig()" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-bold shadow-lg shadow-purple-500/20 transition">Salvar</button>
             </div>
         </div>
     </div>
 
     <!-- MAIN CONTAINER -->
     <main class="w-full max-w-7xl mx-auto space-y-6">
-
+        
         <!-- HEADER -->
         <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
             <div class="flex items-center gap-4">
-                <div
-                    class="w-16 h-16 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700 shadow-lg">
+                <div class="w-16 h-16 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700 shadow-lg">
                     <i class="fa-solid fa-filter-circle-dollar text-emerald-400 text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white tracking-tight">CAÇADOR PRO <span
-                            class="text-emerald-400">V4.4</span></h1>
-                    <p class="text-slate-500 text-sm font-medium mono">INTEGRAÇÃO: CASA DOS DADOS EXTENDED + WEBHOOKS
-                    </p>
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">CAÇADOR PRO <span class="text-emerald-400">V4.5</span></h1>
+                    <p class="text-slate-500 text-sm font-medium mono">INTEGRAÇÃO: CASA DOS DADOS EXTENDED + WEBHOOKS</p>
                 </div>
             </div>
-
+            
             <!-- TOOLBAR -->
             <div class="flex gap-3">
                 <!-- Theme Toggle Button -->
-                <button onclick="toggleTheme()" id="themeBtn"
-                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-yellow-400 rounded-lg transition shadow-md">
+                <button onclick="toggleTheme()" id="themeBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-yellow-400 rounded-lg transition shadow-md">
                     <i class="fa-solid fa-sun"></i>
                 </button>
 
-                <button onclick="clearForm()"
-                    class="px-4 py-2 bg-slate-800 hover:bg-red-900/30 text-red-400 border border-slate-700 rounded-lg transition text-sm font-bold shadow-md">
+                 <button onclick="clearForm()" class="px-4 py-2 bg-slate-800 hover:bg-red-900/30 text-red-400 border border-slate-700 rounded-lg transition text-sm font-bold shadow-md">
                     <i class="fa-solid fa-trash mr-2"></i>LIMPAR
                 </button>
-                <button onclick="toggleConfig()"
-                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition shadow-md">
+                <button onclick="toggleConfig()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition shadow-md">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
         </div>
 
         <form id="hunterForm" onsubmit="event.preventDefault(); startHunt();" class="space-y-6">
-
+            
             <!-- 1. BUSCA INTELIGENTE -->
             <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 backdrop-blur-sm shadow-sm">
                 <h3 class="section-title"><i class="fa-solid fa-magnifying-glass"></i> Parâmetros de Busca</h3>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                     <!-- Termo Principal -->
                     <div class="md:col-span-8">
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Termo / Razão / Fantasia /
-                            Sócio</label>
-                        <input type="text" id="termo" placeholder="Digite o nome, termo ou CPF/CNPJ do sócio..."
-                            class="input-dark text-lg">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Termo / Razão / Fantasia / Sócio</label>
+                        <input type="text" id="termo" placeholder="Digite o nome, termo ou CPF/CNPJ do sócio..." class="input-dark text-lg">
                         <div class="flex gap-4 mt-3 text-sm">
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="checkRazao"
-                                    checked class="checkbox-dark"> Razão Social</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox"
-                                    id="checkFantasia" checked class="checkbox-dark"> Fantasia</label>
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="checkSocio"
-                                    checked class="checkbox-dark"> Nome Sócio</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="checkRazao" checked class="checkbox-dark"> Razão Social</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="checkFantasia" checked class="checkbox-dark"> Fantasia</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="checkSocio" checked class="checkbox-dark"> Nome Sócio</label>
                         </div>
                     </div>
 
@@ -279,22 +202,18 @@
 
                     <!-- CNPJ Especifico -->
                     <div class="md:col-span-8">
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">CNPJ (Específico ou
-                            Lote)</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="cnpj" placeholder="XX.XXX.XXX/XXXX-XX" class="input-dark">
-                            <button type="button"
-                                class="whitespace-nowrap px-4 bg-slate-700 hover:bg-slate-600 rounded text-xs font-bold text-white transition">INSERIR
-                                LOTE</button>
-                        </div>
+                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">CNPJ (Específico ou Lote)</label>
+                         <div class="flex gap-2">
+                             <input type="text" id="cnpj" placeholder="XX.XXX.XXX/XXXX-XX" class="input-dark">
+                             <button type="button" class="whitespace-nowrap px-4 bg-slate-700 hover:bg-slate-600 rounded text-xs font-bold text-white transition">INSERIR LOTE</button>
+                         </div>
                     </div>
 
-                    <!-- CNPJ Raiz -->
-                    <div class="md:col-span-4">
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">CNPJ Raiz (8
-                            Dígitos)</label>
+                     <!-- CNPJ Raiz -->
+                     <div class="md:col-span-4">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">CNPJ Raiz (8 Dígitos)</label>
                         <input type="text" id="cnpjRaiz" maxlength="8" placeholder="12345678" class="input-dark">
-                    </div>
+                   </div>
                 </div>
             </div>
 
@@ -303,21 +222,16 @@
                 <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm">
                     <h3 class="section-title"><i class="fa-solid fa-traffic-light"></i> Situação Cadastral</h3>
                     <div class="grid grid-cols-2 gap-3">
-                        <label
-                            class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700 hover:border-emerald-500 transition">
-                            <input type="checkbox" id="sitAtiva" checked class="checkbox-dark text-emerald-500"> <span
-                                class="text-white font-bold">ATIVA</span>
+                        <label class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700 hover:border-emerald-500 transition">
+                            <input type="checkbox" id="sitAtiva" checked class="checkbox-dark text-emerald-500"> <span class="text-white font-bold">ATIVA</span>
                         </label>
-                        <label
-                            class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700">
+                        <label class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700">
                             <input type="checkbox" id="sitBaixada" class="checkbox-dark text-red-500"> Baixada
                         </label>
-                        <label
-                            class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700">
+                        <label class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700">
                             <input type="checkbox" id="sitInapta" class="checkbox-dark"> Inapta
                         </label>
-                        <label
-                            class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700">
+                        <label class="flex items-center gap-2 cursor-pointer p-2 bg-slate-900 rounded border border-slate-700">
                             <input type="checkbox" id="sitSuspensa" class="checkbox-dark"> Suspensa
                         </label>
                     </div>
@@ -328,20 +242,16 @@
                     <div class="space-y-3">
                         <input type="text" id="cnae" placeholder="Código ou nome da atividade..." class="input-dark">
                         <label class="flex items-center gap-2 cursor-pointer text-sm">
-                            <div
-                                class="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" id="cnaeSecundaria"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="cnaeSecundaria"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                            <div class="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" id="cnaeSecundaria" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="cnaeSecundaria" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                             Incluir Atividade Secundária
                         </label>
                     </div>
                     <div class="mt-4">
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Natureza Jurídica</label>
-                        <input type="text" id="naturezaJuridica" placeholder="Ex: EIRELI, MEI, LTDA..."
-                            class="input-dark">
+                        <input type="text" id="naturezaJuridica" placeholder="Ex: EIRELI, MEI, LTDA..." class="input-dark">
                     </div>
                 </div>
             </div>
@@ -388,8 +298,8 @@
                         <input type="text" id="ddd" placeholder="11" maxlength="2" class="input-dark text-center">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Telefone</label>
-                        <input type="text" id="telefone" placeholder="XXXXXXXXX" class="input-dark">
+                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Telefone</label>
+                         <input type="text" id="telefone" placeholder="XXXXXXXXX" class="input-dark">
                     </div>
                     <div class="md:col-span-3">
                         <div class="flex flex-col gap-2 mt-6">
@@ -400,139 +310,119 @@
                                 <input type="checkbox" id="soCelular" class="checkbox-dark"> Somente Celular
                             </label>
                         </div>
-                    </div>
+                   </div>
                 </div>
             </div>
 
             <!-- 5. FILTROS AVANÇADOS (O PESO PESADO) -->
             <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm">
                 <h3 class="section-title"><i class="fa-solid fa-sliders"></i> Filtros Avançados (Switches)</h3>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
+                    
                     <!-- BLOCO MEI -->
                     <div class="space-y-3 p-3 border border-slate-700 rounded bg-slate-900/30">
                         <span class="text-xs font-bold text-purple-400 uppercase">Regime MEI</span>
-
+                        
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Somente MEI</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swOnlyMei"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swOnlyMei"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swOnlyMei" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swOnlyMei" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Excluir MEI</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swExcludeMei"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swExcludeMei"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swExcludeMei" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swExcludeMei" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
 
-                        <div class="border-t border-slate-700 pt-2 mt-2">
-                            <div class="flex items-center justify-between mb-2">
+                         <div class="border-t border-slate-700 pt-2 mt-2">
+                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm text-slate-400">Excluídas do MEI</span>
                                 <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                    <input type="checkbox" id="swExcludedFromMei"
-                                        class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                    <label for="swExcludedFromMei"
-                                        class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                    <input type="checkbox" id="swExcludedFromMei" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                    <label for="swExcludedFromMei" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="date" id="meiExcDe" class="input-dark text-xs p-1" placeholder="De">
                                 <input type="date" id="meiExcAte" class="input-dark text-xs p-1" placeholder="Até">
                             </div>
-                        </div>
+                         </div>
                     </div>
 
                     <!-- BLOCO SIMPLES -->
                     <div class="space-y-3 p-3 border border-slate-700 rounded bg-slate-900/30">
                         <span class="text-xs font-bold text-blue-400 uppercase">Simples Nacional</span>
-
+                        
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Empresas do Simples</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swOnlySimples"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swOnlySimples"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swOnlySimples" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swOnlySimples" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Excluir Simples</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swExcludeSimples"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swExcludeSimples"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swExcludeSimples" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swExcludeSimples" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
 
-                        <div class="border-t border-slate-700 pt-2 mt-2">
-                            <div class="flex items-center justify-between mb-2">
+                         <div class="border-t border-slate-700 pt-2 mt-2">
+                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm text-slate-400">Excluídas do Simples</span>
                                 <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                    <input type="checkbox" id="swExcludedFromSimples"
-                                        class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                    <label for="swExcludedFromSimples"
-                                        class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                    <input type="checkbox" id="swExcludedFromSimples" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                    <label for="swExcludedFromSimples" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="date" id="simplesExcDe" class="input-dark text-xs p-1">
                                 <input type="date" id="simplesExcAte" class="input-dark text-xs p-1">
                             </div>
-                        </div>
+                         </div>
                     </div>
 
                     <!-- BLOCO ESTRUTURA & OUTROS -->
                     <div class="space-y-3 p-3 border border-slate-700 rounded bg-slate-900/30">
                         <span class="text-xs font-bold text-yellow-400 uppercase">Estrutura & Filtros</span>
-
+                        
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Somente Matriz</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swOnlyMatriz"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swOnlyMatriz"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swOnlyMatriz" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swOnlyMatriz" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Somente Filial</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swOnlyFilial"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swOnlyFilial"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swOnlyFilial" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swOnlyFilial" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-red-400">Excluir e-mail "Contab"</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swExcludeContab"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swExcludeContab"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swExcludeContab" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swExcludeContab" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
-
-                        <div class="flex items-center justify-between">
+                        
+                         <div class="flex items-center justify-between">
                             <span class="text-sm text-red-400">Excluir Já Visualizadas</span>
                             <div class="relative inline-block w-10 h-5 align-middle select-none">
-                                <input type="checkbox" id="swExcludeViewed"
-                                    class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" />
-                                <label for="swExcludeViewed"
-                                    class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
+                                <input type="checkbox" id="swExcludeViewed" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
+                                <label for="swExcludeViewed" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-700 cursor-pointer"></label>
                             </div>
                         </div>
                     </div>
@@ -540,107 +430,106 @@
 
                 <!-- DATAS E VALORES -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-slate-700">
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-2">Data de Abertura
-                            (Range)</label>
+                     <div>
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-2">Data de Abertura (Range)</label>
                         <div class="flex items-center gap-2">
                             <input type="date" id="dataAberturaDe" class="input-dark">
                             <span class="text-slate-500">até</span>
                             <input type="date" id="dataAberturaAte" class="input-dark">
                         </div>
-                    </div>
-                    <div>
+                     </div>
+                     <div>
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-2">Capital Social (R$)</label>
                         <div class="flex items-center gap-2">
                             <input type="number" id="capitalMin" placeholder="Mínimo" class="input-dark">
                             <span class="text-slate-500">até</span>
                             <input type="number" id="capitalMax" placeholder="Máximo" class="input-dark">
                         </div>
-                    </div>
+                     </div>
                 </div>
             </div>
 
-            <!-- 6. INTEGRAÇÃO E WEBHOOKS (NOVO MÓDULO) -->
-            <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm">
-                <h3 class="section-title"><i class="fa-solid fa-satellite-dish"></i> Integração & Notificações
-                    (Webhooks)</h3>
-
+            <!-- 6. INTEGRAÇÃO E WEBHOOKS (REMODELADO) -->
+            <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm text-center md:text-left">
+                <h3 class="text-lg font-bold text-white mb-6 text-center">Cadastrar um novo webhook</h3>
+                
                 <div class="space-y-4">
-                    <!-- Nome do Webhook -->
+                    <!-- Nome -->
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Nome para
-                            Identificação</label>
-                        <input type="text" id="webhookName" placeholder="Ex: Enviar para CRM, Notificar Zapier..."
-                            class="input-dark">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1 text-left">Nome</label>
+                        <input type="text" id="webhookName" placeholder="Nome para identificação" class="input-dark">
                     </div>
 
-                    <!-- URL do Webhook -->
+                    <!-- URL -->
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">URL de Destino
-                            (Endpoint)</label>
-                        <input type="url" id="webhookUrl" placeholder="https://api.seusistema.com/webhook/..."
-                            class="input-dark">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1 text-left">URL</label>
+                        <input type="url" id="webhookUrl" placeholder="URL do webhook" class="input-dark">
                     </div>
 
                     <!-- Token -->
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Token de Autenticação
-                            (Opcional)</label>
-                        <input type="text" id="webhookToken" placeholder="Bearer Token ou API Key" class="input-dark">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1 text-left">Token de Autenticação (Opcional) <i class="fa-solid fa-circle-info ml-1"></i></label>
+                        <input type="text" id="webhookToken" placeholder="Token de autenticacao" class="input-dark">
                     </div>
 
-                    <div
-                        class="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-700">
-                        <!-- Event Type -->
+                    <!-- Tipo de Evento -->
+                    <div class="text-left mt-4">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-2">Tipo de Evento</label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="webhookEventNewCompany" checked class="checkbox-dark">
+                            <span class="text-sm font-medium text-slate-300">Novas Empresas</span>
+                        </label>
+                    </div>
+
+                    <!-- Actions Row -->
+                    <div class="flex flex-col md:flex-row items-center gap-4 mt-6">
+                        <button type="button" class="bg-slate-600 hover:bg-slate-500 text-white text-xs font-bold py-2 px-4 rounded transition">
+                            Adicionar Pesquisa Avançada
+                        </button>
+                        <button type="button" onclick="clearWebhookForm()" class="bg-red-900/50 hover:bg-red-800 text-red-200 text-xs font-bold py-2 px-4 rounded transition border border-red-900">
+                            Apagar Pesquisa
+                        </button>
+                    </div>
+
+                    <!-- Toggle & Save -->
+                    <div class="flex flex-col md:flex-row items-center gap-6 mt-6 pt-4 border-t border-slate-700">
                         <div class="flex items-center gap-3">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="webhookEventNewCompany" checked class="checkbox-dark">
-                                <span class="text-sm font-bold text-slate-300">Notificar Novas Empresas</span>
-                            </label>
+                            <div class="relative inline-block w-12 h-6 align-middle select-none">
+                                <input type="checkbox" id="webhookActive" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600" onchange="toggleWebhookStatus()"/>
+                                <label for="webhookActive" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer"></label>
+                            </div>
+                            <span class="text-sm font-medium text-slate-400" id="webhookStatusLabel">Ativar Webhook</span>
                         </div>
 
-                        <!-- Ativação -->
-                        <div class="flex items-center gap-3 bg-slate-900 p-3 rounded-lg border border-slate-700">
-                            <span class="text-sm font-bold uppercase" id="webhookStatusLabel">Webhook Desativado</span>
-                            <div class="relative inline-block w-12 h-6 align-middle select-none">
-                                <input type="checkbox" id="webhookActive"
-                                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"
-                                    onchange="toggleWebhookStatus()" />
-                                <label for="webhookActive"
-                                    class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer"></label>
-                            </div>
-                        </div>
+                        <button type="button" onclick="saveWebhookConfig()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-6 rounded shadow-lg shadow-emerald-500/20 transition">
+                            Salvar Webhook
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- ACTION BUTTON -->
-            <button id="btnHunt" type="submit"
-                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-xl shadow-lg shadow-emerald-500/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-2xl group">
+            <button id="btnHunt" type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-xl shadow-lg shadow-emerald-500/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-2xl group">
                 <span>EXECUTAR MINERAÇÃO V4.3</span>
                 <i class="fa-solid fa-rocket group-hover:animate-bounce"></i>
             </button>
-
+            
             <!-- 📊 PAINEL DE TELEMETRIA -->
             <div id="resultsPanel" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 <!-- Card 1: Encontradas -->
-                <div
-                    class="result-card bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center">
+                <div class="result-card bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center">
                     <span class="text-xs uppercase text-slate-400 font-bold mb-1">Empresas Capturadas</span>
                     <span id="resTotal" class="text-4xl font-black text-emerald-400">---</span>
                 </div>
                 <!-- Card 2: Status -->
-                <div class="result-card bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center"
-                    style="animation-delay: 0.1s">
+                <div class="result-card bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center" style="animation-delay: 0.1s">
                     <span class="text-xs uppercase text-slate-400 font-bold mb-1">Status da Missão</span>
                     <span id="resStatus" class="text-lg font-bold text-blue-400 text-center">Aguardando...</span>
                 </div>
                 <!-- Card 3: Link -->
-                <div class="result-card bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center"
-                    style="animation-delay: 0.2s">
+                <div class="result-card bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center" style="animation-delay: 0.2s">
                     <span class="text-xs uppercase text-slate-400 font-bold mb-1">Destino</span>
-                    <a id="resLink" href="#" target="_blank"
-                        class="text-sm text-purple-400 hover:text-purple-300 underline font-mono flex items-center gap-2">
+                    <a id="resLink" href="#" target="_blank" class="text-sm text-purple-400 hover:text-purple-300 underline font-mono flex items-center gap-2">
                         Ver no Kestra <i class="fa-solid fa-external-link-alt"></i>
                     </a>
                 </div>
@@ -649,9 +538,8 @@
         </form>
 
         <!-- CONSOLE -->
-        <div class="bg-black border border-slate-800 rounded-xl p-4 font-mono text-sm h-48 overflow-y-auto shadow-inner"
-            id="consoleOutput">
-            <div class="text-emerald-500 mb-2">> System Ready. V4.4 Loaded.</div>
+        <div class="bg-black border border-slate-800 rounded-xl p-4 font-mono text-sm h-48 overflow-y-auto shadow-inner" id="consoleOutput">
+            <div class="text-emerald-500 mb-2">> System Ready. V4.5 Loaded.</div>
         </div>
 
     </main>
@@ -680,11 +568,11 @@
             const html = document.documentElement;
             const btn = document.getElementById('themeBtn');
             const icon = btn.querySelector('i');
-
+            
             html.classList.toggle('light-mode');
-
+            
             const isLight = html.classList.contains('light-mode');
-
+            
             // Visual Update
             if (isLight) {
                 icon.className = 'fa-solid fa-moon';
@@ -693,7 +581,7 @@
                 icon.className = 'fa-solid fa-sun';
                 btn.classList.replace('text-slate-600', 'text-yellow-400');
             }
-
+            
             // Persistence
             localStorage.setItem('biotchelly_theme', isLight ? 'light' : 'dark');
             log(`Tema alterado para: ${isLight ? 'Claro ☀️' : 'Escuro 🌑'}`, "system");
@@ -711,14 +599,46 @@
             const isActive = document.getElementById('webhookActive').checked;
             const label = document.getElementById('webhookStatusLabel');
             if (isActive) {
-                label.innerText = "Webhook Ativado";
+                label.innerText = "Ativar Webhook";
                 label.classList.add("text-emerald-400");
                 label.classList.remove("text-slate-400");
             } else {
-                label.innerText = "Webhook Desativado";
+                label.innerText = "Ativar Webhook";
                 label.classList.add("text-slate-400");
                 label.classList.remove("text-emerald-400");
             }
+        }
+
+        function clearWebhookForm() {
+            document.getElementById('webhookName').value = '';
+            document.getElementById('webhookUrl').value = '';
+            document.getElementById('webhookToken').value = '';
+            document.getElementById('webhookActive').checked = false;
+            toggleWebhookStatus();
+            log("Configurações de Webhook limpas.", "system");
+        }
+
+        function saveWebhookConfig() {
+            // Save to localStorage so it persists reload
+            const webhookConfig = {
+                name: document.getElementById('webhookName').value,
+                url: document.getElementById('webhookUrl').value,
+                token: document.getElementById('webhookToken').value,
+                active: document.getElementById('webhookActive').checked,
+                eventNewCompany: document.getElementById('webhookEventNewCompany').checked
+            };
+            localStorage.setItem('biotchelly_webhook_config', JSON.stringify(webhookConfig));
+            log("Webhook salvo com sucesso! 💾", "success");
+        }
+
+        function loadWebhookConfig() {
+            const saved = JSON.parse(localStorage.getItem('biotchelly_webhook_config') || '{}');
+            if(saved.name) document.getElementById('webhookName').value = saved.name;
+            if(saved.url) document.getElementById('webhookUrl').value = saved.url;
+            if(saved.token) document.getElementById('webhookToken').value = saved.token;
+            document.getElementById('webhookActive').checked = saved.active || false;
+            document.getElementById('webhookEventNewCompany').checked = saved.eventNewCompany !== false;
+            toggleWebhookStatus();
         }
 
         // CONFIG MANAGER
@@ -750,19 +670,20 @@
         function clearForm() {
             document.getElementById("hunterForm").reset();
             document.getElementById("resultsPanel").classList.add("hidden");
-            toggleWebhookStatus(); // Reset label color
+            // Also reset webhook manually if needed, or keep it separate as per UI logic
+            toggleWebhookStatus(); 
             log("Formulário limpo.");
         }
-
+        
         // Atualiza a UI dos resultados
         function updateResults(total, status, link, colorClass = "text-emerald-400") {
             const panel = document.getElementById("resultsPanel");
             panel.classList.remove("hidden");
-
+            
             const totalEl = document.getElementById("resTotal");
             totalEl.innerText = total;
             totalEl.className = `text-4xl font-black ${colorClass}`;
-
+            
             document.getElementById("resStatus").innerText = status;
             document.getElementById("resLink").href = link;
         }
@@ -771,7 +692,7 @@
         async function startHunt() {
             const config = loadConfig();
             const btn = document.getElementById('btnHunt');
-
+            
             // COLETANDO TODOS OS DADOS (MAPPING COMPLETO DOS PRINTS)
             const filters = {
                 // Identificação
@@ -784,7 +705,7 @@
                 tipoPesquisa: document.getElementById('tipoPesquisa').value,
                 cnpj: document.getElementById('cnpj').value,
                 cnpjRaiz: document.getElementById('cnpjRaiz').value,
-
+                
                 // Situação
                 situacao: {
                     ativa: document.getElementById('sitAtiva').checked,
@@ -844,7 +765,7 @@
                     max: document.getElementById('capitalMax').value
                 },
 
-                // 📡 WEBHOOKS (NOVO)
+                // 📡 WEBHOOKS (DADOS REAIS DO DOM + LOCALSTORAGE)
                 webhook: {
                     active: document.getElementById('webhookActive').checked,
                     name: document.getElementById('webhookName').value,
@@ -856,19 +777,19 @@
                 }
             };
 
-            log("Empacotando payload V4.4...", "info");
-            console.log(filters);
+            log("Empacotando payload V4.5...", "info");
+            console.log(filters); 
 
             // UI Loading
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> CAÇANDO... (AGUARDE)`;
-
+            
             // Reseta o painel visual
             document.getElementById("resultsPanel").classList.add("hidden");
 
             const formData = new FormData();
             formData.append('filters_json', JSON.stringify(filters));
-            formData.append('termo', filters.termo);
+            formData.append('termo', filters.termo); 
             formData.append('estado', filters.uf);
             // Novo campo de token
             formData.append('casa_dados_token', config.apiTokenCasaDados || '');
@@ -878,17 +799,17 @@
 
             try {
                 const response = await fetch(endpoint, { method: 'POST', body: formData });
-
+                
                 if (response.ok) {
                     const data = await response.json();
                     const link = `${config.url}/ui/executions/${config.namespace}/${config.flowId}/${data.id}`;
-
+                    
                     log(`SUCESSO! Execução finalizada (ID: ${data.id})`, "success");
-
+                    
                     // Tenta extrair outputs se existirem
                     let countDisplay = "N/D";
                     let statusDisplay = "Finalizado";
-
+                    
                     if (data.outputs && data.outputs.count) {
                         countDisplay = data.outputs.count;
                         statusDisplay = "Sucesso Total";
@@ -899,7 +820,7 @@
                         statusDisplay = "Ver NocoDB";
                         log("Aviso: O fluxo executou, mas não retornou a contagem (verifique se 'outputs' está configurado no YAML).", "warn");
                     }
-
+                    
                     updateResults(countDisplay, statusDisplay, link);
 
                 } else {
@@ -919,10 +840,9 @@
         window.onload = () => {
             loadConfig();
             loadTheme();
-            toggleWebhookStatus(); // Init label state
-            log("Painel V4.4 Iniciado. Aguardando comando.");
+            loadWebhookConfig(); // Load saved webhook settings
+            log("Painel V4.5 Iniciado. Aguardando comando.");
         };
     </script>
 </body>
-
 </html>
