@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕵️ Caçador PRO v4.5 | Biotchelly</title>
+    <title>🕵️ Caçador PRO v4.6 | Biotchelly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -152,7 +152,7 @@
                     <i class="fa-solid fa-filter-circle-dollar text-emerald-400 text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white tracking-tight">CAÇADOR PRO <span class="text-emerald-400">V4.5</span></h1>
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">CAÇADOR PRO <span class="text-emerald-400">V4.6</span></h1>
                     <p class="text-slate-500 text-sm font-medium mono">INTEGRAÇÃO: CASA DOS DADOS EXTENDED + WEBHOOKS</p>
                 </div>
             </div>
@@ -264,14 +264,33 @@
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Estado (UF)</label>
                         <select id="uf" class="input-dark">
                             <option value="">Todos</option>
-                            <option value="SP">SP - São Paulo</option>
-                            <option value="RJ">RJ - Rio de Janeiro</option>
-                            <option value="MG">MG - Minas Gerais</option>
-                            <option value="RS">RS - Rio Grande do Sul</option>
-                            <option value="PR">PR - Paraná</option>
-                            <option value="SC">SC - Santa Catarina</option>
+                            <option value="AC">AC - Acre</option>
+                            <option value="AL">AL - Alagoas</option>
+                            <option value="AP">AP - Amapá</option>
+                            <option value="AM">AM - Amazonas</option>
                             <option value="BA">BA - Bahia</option>
-                            <!-- Adicionar outros se necessário -->
+                            <option value="CE">CE - Ceará</option>
+                            <option value="DF">DF - Distrito Federal</option>
+                            <option value="ES">ES - Espírito Santo</option>
+                            <option value="GO">GO - Goiás</option>
+                            <option value="MA">MA - Maranhão</option>
+                            <option value="MT">MT - Mato Grosso</option>
+                            <option value="MS">MS - Mato Grosso do Sul</option>
+                            <option value="MG">MG - Minas Gerais</option>
+                            <option value="PA">PA - Pará</option>
+                            <option value="PB">PB - Paraíba</option>
+                            <option value="PR">PR - Paraná</option>
+                            <option value="PE">PE - Pernambuco</option>
+                            <option value="PI">PI - Piauí</option>
+                            <option value="RJ">RJ - Rio de Janeiro</option>
+                            <option value="RN">RN - Rio Grande do Norte</option>
+                            <option value="RS">RS - Rio Grande do Sul</option>
+                            <option value="RO">RO - Rondônia</option>
+                            <option value="RR">RR - Roraima</option>
+                            <option value="SC">SC - Santa Catarina</option>
+                            <option value="SP">SP - São Paulo</option>
+                            <option value="SE">SE - Sergipe</option>
+                            <option value="TO">TO - Tocantins</option>
                         </select>
                     </div>
                     <div class="md:col-span-1">
@@ -510,7 +529,7 @@
 
             <!-- ACTION BUTTON -->
             <button id="btnHunt" type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-xl shadow-lg shadow-emerald-500/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-2xl group">
-                <span>EXECUTAR MINERAÇÃO V4.3</span>
+                <span>EXECUTAR MINERAÇÃO V4.6</span>
                 <i class="fa-solid fa-rocket group-hover:animate-bounce"></i>
             </button>
             
@@ -539,7 +558,7 @@
 
         <!-- CONSOLE -->
         <div class="bg-black border border-slate-800 rounded-xl p-4 font-mono text-sm h-48 overflow-y-auto shadow-inner" id="consoleOutput">
-            <div class="text-emerald-500 mb-2">> System Ready. V4.5 Loaded.</div>
+            <div class="text-emerald-500 mb-2">> System Ready. V4.6 Loaded.</div>
         </div>
 
     </main>
@@ -599,11 +618,11 @@
             const isActive = document.getElementById('webhookActive').checked;
             const label = document.getElementById('webhookStatusLabel');
             if (isActive) {
-                label.innerText = "Ativar Webhook";
+                label.innerText = "Webhook Ativado";
                 label.classList.add("text-emerald-400");
                 label.classList.remove("text-slate-400");
             } else {
-                label.innerText = "Ativar Webhook";
+                label.innerText = "Webhook Desativado";
                 label.classList.add("text-slate-400");
                 label.classList.remove("text-emerald-400");
             }
@@ -670,8 +689,7 @@
         function clearForm() {
             document.getElementById("hunterForm").reset();
             document.getElementById("resultsPanel").classList.add("hidden");
-            // Also reset webhook manually if needed, or keep it separate as per UI logic
-            toggleWebhookStatus(); 
+            toggleWebhookStatus(); // Reset label color
             log("Formulário limpo.");
         }
         
@@ -777,7 +795,7 @@
                 }
             };
 
-            log("Empacotando payload V4.5...", "info");
+            log("Empacotando payload V4.6...", "info");
             console.log(filters); 
 
             // UI Loading
@@ -826,14 +844,30 @@
                 } else {
                     const err = await response.text();
                     log(`Erro no disparo: ${err}`, "error");
+                    
+                    // 🔍 DIAGNÓSTICO DE ERRO PARA O USUÁRIO
+                    if(err.includes("CORS")) {
+                        log("⚠️ DIAGNÓSTICO: Bloqueio de CORS. O Kestra não permitiu o acesso.", "error");
+                        log("👉 Ação: Verifique as variáveis de ambiente no Easypanel (Kestra).", "warn");
+                    } else if(err.includes("404")) {
+                        log("⚠️ DIAGNÓSTICO: Endereço não encontrado (404).", "error");
+                        log("👉 Ação: Verifique a URL do Kestra na engrenagem.", "warn");
+                    }
+
                     updateResults("ERRO", "Falha API", "#", "text-red-500");
                 }
             } catch (error) {
                 log(`Falha de conexão: ${error.message}`, "error");
+                
+                if(error.message.includes("Failed to fetch")) {
+                     log("⚠️ DIAGNÓSTICO: O navegador não conseguiu chegar no servidor.", "error");
+                     log("👉 Possíveis causas: 1. URL com HTTP (inseguro) em site HTTPS. 2. Bloqueio de CORS. 3. Servidor Offline.", "warn");
+                }
+
                 updateResults("OFF", "Sem Conexão", "#", "text-red-500");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<span>EXECUTAR MINERAÇÃO V4.3</span><i class="fa-solid fa-rocket"></i>`;
+                btn.innerHTML = `<span>EXECUTAR MINERAÇÃO V4.6</span><i class="fa-solid fa-rocket"></i>`;
             }
         }
 
@@ -841,7 +875,7 @@
             loadConfig();
             loadTheme();
             loadWebhookConfig(); // Load saved webhook settings
-            log("Painel V4.5 Iniciado. Aguardando comando.");
+            log("Painel V4.6 Iniciado. Aguardando comando.");
         };
     </script>
 </body>
