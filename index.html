@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕵️ Caçador PRO v4.12 | Biotchelly</title>
+    <title>🕵️ Command Center V5.1 | Biotchelly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -37,6 +37,13 @@
         /* Animations */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .fade-in { animation: fadeIn 0.3s ease-in; }
+
+        /* Tabs Logic */
+        .tab-btn { @apply px-6 py-3 font-bold text-sm uppercase tracking-wide border-b-2 border-transparent transition-all duration-200 text-slate-500 hover:text-white cursor-pointer; }
+        .tab-btn.active { @apply border-blue-500 text-blue-400 bg-slate-800/50 rounded-t-lg; }
+        
+        .tab-content { @apply hidden; }
+        .tab-content.active { @apply block fade-in; }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -95,10 +102,16 @@
                     </div>
                 </div>
 
-                <!-- API Token (Opcional) -->
-                <div>
-                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Token Casa dos Dados (Opcional)</label>
-                    <input type="text" id="apiTokenCasaDados" placeholder="Cole seu token aqui" class="input-pro border-emerald-900 focus:border-emerald-500">
+                <!-- API Tokens -->
+                <div class="space-y-3 pt-2 border-t border-slate-700">
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-emerald-500 mb-1">Token Casa dos Dados</label>
+                        <input type="text" id="apiTokenCasaDados" placeholder="Cole seu token aqui" class="input-pro border-emerald-900 focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-red-500 mb-1">Token SerpApi (Google Maps)</label>
+                        <input type="text" id="apiTokenSerpApi" placeholder="Cole sua chave SerpApi" class="input-pro border-red-900 focus:border-red-500">
+                    </div>
                 </div>
             </div>
 
@@ -110,17 +123,17 @@
     </div>
 
     <!-- MAIN INTERFACE -->
-    <main class="w-full max-w-7xl mx-auto space-y-8">
+    <main class="w-full max-w-7xl mx-auto space-y-6">
         
-        <!-- HEADER (Sem fundo azul grande, botões azuis) -->
+        <!-- HEADER -->
         <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-800">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 shadow-lg">
                     <i class="fa-solid fa-crosshairs text-blue-500 text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black text-white tracking-tight">CAÇADOR <span class="text-blue-500">V4.12</span></h1>
-                    <p class="text-slate-500 text-xs font-mono font-bold uppercase tracking-widest">Painel de Inteligência de Mercado</p>
+                    <h1 class="text-3xl font-black text-white tracking-tight">COMMAND CENTER <span class="text-blue-500">V5.1</span></h1>
+                    <p class="text-slate-500 text-xs font-mono font-bold uppercase tracking-widest">Biotchelly Intelligence Systems</p>
                 </div>
             </div>
             
@@ -137,267 +150,359 @@
             </div>
         </div>
 
-        <form id="hunterForm" onsubmit="event.preventDefault(); startHunt();" class="space-y-8 fade-in">
+        <!-- TABS NAVIGATION -->
+        <div class="flex border-b border-slate-700 mb-6 overflow-x-auto">
+            <button class="tab-btn active" onclick="openTab('tab-cacador', this)">
+                <i class="fa-solid fa-database mr-2"></i> Caçador (Dados)
+            </button>
+            <button class="tab-btn" onclick="openTab('tab-maps', this)">
+                <i class="fa-solid fa-map-location-dot mr-2"></i> Google Maps
+            </button>
+            <button class="tab-btn" onclick="openTab('tab-sniper', this)">
+                <i class="fa-solid fa-bullseye mr-2"></i> Sniper (Disparo)
+            </button>
+        </div>
+
+        <form id="hunterForm" onsubmit="event.preventDefault(); startHunt();">
             
-            <!-- 1. IDENTIFICAÇÃO -->
-            <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
-                <div class="mb-4 flex items-center gap-2 border-b border-slate-700/50 pb-2">
-                    <i class="fa-solid fa-magnifying-glass text-blue-500"></i>
-                    <h3 class="text-sm font-bold text-white uppercase">Identificação</h3>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- CNPJ + Botão Padronizado -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">CNPJ</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="cnpj" placeholder="Ex: 33.000.167/0001-01" class="input-pro">
-                            <!-- Botão Inserir em Lote: Azul com texto cinza claro -->
-                            <button type="button" class="btn-jobs px-4 rounded-md text-xs whitespace-nowrap">Inserir em Lote</button>
-                        </div>
+            <!-- 🕵️ ABA 1: CAÇADOR -->
+            <div id="tab-cacador" class="tab-content active space-y-8 fade-in">
+                <!-- 1. IDENTIFICAÇÃO & RESULTADOS -->
+                <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
+                    <div class="mb-4 flex items-center gap-2 border-b border-slate-700/50 pb-2">
+                        <i class="fa-solid fa-magnifying-glass text-blue-500"></i>
+                        <h3 class="text-sm font-bold text-white uppercase">Identificação</h3>
                     </div>
 
-                    <!-- BUSCA TEXTUAL (Clean) -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">BUSCA TEXTUAL</label>
-                        <input type="text" id="termo" placeholder="Digite o termo e aperte enter (Ex: Barbearia, Padaria...)" class="input-pro text-lg">
-                        
-                        <div class="flex gap-6 mt-3 pl-1">
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" id="checkRazao" checked class="checkbox-pro">
-                                <span class="text-sm text-slate-400 group-hover:text-white transition">Razão Social</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" id="checkFantasia" checked class="checkbox-pro">
-                                <span class="text-sm text-slate-400 group-hover:text-white transition">Nome Fantasia</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" id="checkSocio" checked class="checkbox-pro">
-                                <span class="text-sm text-slate-400 group-hover:text-white transition">Nome do Sócio</span>
-                            </label>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mt-2 italic pl-1">Defina em quais campos deseja realizar a pesquisa.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-1">Tipo de Pesquisa</label>
-                            <select id="tipoPesquisa" class="input-pro">
-                                <option value="exata">Exata</option>
-                                <option value="radical">Radical</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-1">CNPJ Raiz</label>
-                            <input type="text" id="cnpjRaiz" maxlength="8" placeholder="Somente os 8 dígitos" class="input-pro">
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 2. LOCALIZAÇÃO (IBGE) -->
-            <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
-                <div class="mb-4 flex items-center gap-2 border-b border-slate-700/50 pb-2">
-                    <i class="fa-solid fa-map-location-dot text-blue-500"></i>
-                    <h3 class="text-sm font-bold text-white uppercase">Localização</h3>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <!-- Estado -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">Estado (UF)</label>
-                        <select id="uf" class="input-pro" onchange="loadCities(this.value)">
-                            <option value="">Selecione...</option>
-                            <option value="AC">Acre</option>
-                            <option value="AL">Alagoas</option>
-                            <option value="AP">Amapá</option>
-                            <option value="AM">Amazonas</option>
-                            <option value="BA">Bahia</option>
-                            <option value="CE">Ceará</option>
-                            <option value="DF">Distrito Federal</option>
-                            <option value="ES">Espírito Santo</option>
-                            <option value="GO">Goiás</option>
-                            <option value="MA">Maranhão</option>
-                            <option value="MT">Mato Grosso</option>
-                            <option value="MS">Mato Grosso do Sul</option>
-                            <option value="MG">Minas Gerais</option>
-                            <option value="PA">Pará</option>
-                            <option value="PB">Paraíba</option>
-                            <option value="PR">Paraná</option>
-                            <option value="PE">Pernambuco</option>
-                            <option value="PI">Piauí</option>
-                            <option value="RJ">Rio de Janeiro</option>
-                            <option value="RN">Rio Grande do Norte</option>
-                            <option value="RS">Rio Grande do Sul</option>
-                            <option value="RO">Rondônia</option>
-                            <option value="RR">Roraima</option>
-                            <option value="SC">Santa Catarina</option>
-                            <option value="SP">São Paulo</option>
-                            <option value="SE">Sergipe</option>
-                            <option value="TO">Tocantins</option>
-                        </select>
-                    </div>
-
-                    <!-- MUNICÍPIO -->
-                    <div class="relative">
-                        <label class="block text-xs font-bold text-slate-400 mb-1">Município</label>
-                        <div class="relative">
-                            <select id="municipioInput" class="input-pro disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                <option value="">Selecione UF primeiro...</option>
-                            </select>
+                    <div class="space-y-6">
+                        <!-- Linha 1: CNPJ e RESULTADOS -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            <div class="md:col-span-8">
+                                <label class="block text-xs font-bold text-slate-400 mb-1">CNPJ</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="cnpj" placeholder="Ex: 33.000.167/0001-01" class="input-pro">
+                                    <button type="button" class="btn-jobs px-4 rounded-md text-xs whitespace-nowrap">Inserir em Lote</button>
+                                </div>
+                            </div>
                             
-                            <!-- Loader -->
-                            <div id="cityLoader" class="hidden absolute right-8 top-3 text-blue-500">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            <!-- 📊 PAINEL DE RESULTADOS (CAÇADOR) -->
+                            <div class="md:col-span-4 bg-slate-900 border border-slate-700 rounded-md p-3 flex flex-col justify-center">
+                                <span class="text-[10px] uppercase font-bold text-slate-500 mb-1">Status da Última Missão</span>
+                                <div class="flex justify-between items-end">
+                                    <div>
+                                        <span class="text-2xl font-black text-emerald-400" id="dashFound">0</span>
+                                        <span class="text-xs text-slate-400">Encontradas</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-2xl font-black text-blue-400" id="dashSaved">0</span>
+                                        <span class="text-xs text-slate-400">Salvas</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p id="cityCount" class="text-[10px] text-slate-500 mt-1 h-3"></p>
-                    </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">Bairro</label>
-                        <input type="text" id="bairro" placeholder="Digite o bairro" class="input-pro">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">CEP</label>
-                        <input type="text" id="cep" placeholder="00000-000" class="input-pro">
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. SITUAÇÃO E CNAE -->
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-800/40 border border-slate-700 rounded-lg p-6">
-                    <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-traffic-light text-blue-500 mr-2"></i> Situação Cadastral</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitAtiva" checked class="checkbox-pro"> <span class="text-sm">Ativa</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitBaixada" class="checkbox-pro"> <span class="text-sm">Baixada</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitInapta" class="checkbox-pro"> <span class="text-sm">Inapta</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitSuspensa" class="checkbox-pro"> <span class="text-sm">Suspensa</span></label>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800/40 border border-slate-700 rounded-lg p-6">
-                    <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-briefcase text-blue-500 mr-2"></i> Atividade</h3>
-                    <input type="text" id="cnae" placeholder="Código ou nome da atividade" class="input-pro mb-2">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <div class="relative inline-block w-8 h-4 align-middle select-none">
-                            <input type="checkbox" id="cnaeSecundaria" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"/>
-                            <label for="cnaeSecundaria" class="toggle-label block overflow-hidden h-4 rounded-full bg-slate-700 cursor-pointer"></label>
+                        <!-- BUSCA TEXTUAL -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">BUSCA TEXTUAL</label>
+                            <input type="text" id="termo" placeholder="Digite o termo e aperte enter (Ex: Barbearia, Padaria...)" class="input-pro text-lg">
+                            
+                            <div class="flex gap-6 mt-3 pl-1">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" id="checkRazao" checked class="checkbox-pro">
+                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Razão Social</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" id="checkFantasia" checked class="checkbox-pro">
+                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Nome Fantasia</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" id="checkSocio" checked class="checkbox-pro">
+                                    <span class="text-sm text-slate-400 group-hover:text-white transition">Nome do Sócio</span>
+                                </label>
+                            </div>
                         </div>
-                        <span class="text-xs text-slate-400">Incluir Atividade Secundária</span>
-                    </label>
-                </div>
-            </section>
 
-            <!-- 4. CONTATO -->
-            <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
-                <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-address-book text-blue-500 mr-2"></i> Contato</h3>
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-slate-400 mb-1">DDD</label>
-                        <input type="text" id="ddd" placeholder="11" maxlength="2" class="input-pro text-center">
-                    </div>
-                    <div class="md:col-span-2">
-                         <label class="block text-xs font-bold text-slate-400 mb-1">Telefone</label>
-                         <input type="text" id="telefone" placeholder="XXXXXXXXX" class="input-pro">
-                    </div>
-                    <div class="md:col-span-3 flex flex-wrap gap-4 items-center">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="comEmail" class="checkbox-pro"> <span class="text-sm">Com E-mail</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="soCelular" class="checkbox-pro"> <span class="text-sm">Somente Celular</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="soFixo" class="checkbox-pro"> <span class="text-sm">Somente Fixo</span></label>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. FILTROS AVANÇADOS -->
-            <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
-                <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-sliders text-blue-500 mr-2"></i> Filtros Avançados</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- MEI -->
-                    <div class="space-y-3">
-                        <span class="text-xs font-bold text-purple-400 uppercase">Regime MEI</span>
-                        <div class="flex justify-between items-center"><span class="text-sm">Somente MEI</span> <input type="checkbox" id="swOnlyMei" class="checkbox-pro"></div>
-                        <div class="flex justify-between items-center"><span class="text-sm">Excluir MEI</span> <input type="checkbox" id="swExcludeMei" class="checkbox-pro"></div>
-                        <div class="pt-2 border-t border-slate-700/50">
-                            <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-400">Excluídas do MEI</span> <input type="checkbox" id="swExcludedFromMei" class="checkbox-pro"></div>
-                            <div class="flex gap-2"><input type="date" id="meiExcDe" class="input-pro p-1 text-xs"><input type="date" id="meiExcAte" class="input-pro p-1 text-xs"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Tipo de Pesquisa</label>
+                                <select id="tipoPesquisa" class="input-pro">
+                                    <option value="exata">Exata</option>
+                                    <option value="radical">Radical</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">CNPJ Raiz</label>
+                                <input type="text" id="cnpjRaiz" maxlength="8" placeholder="Somente os 8 dígitos" class="input-pro">
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- SIMPLES -->
-                    <div class="space-y-3">
-                        <span class="text-xs font-bold text-blue-400 uppercase">Simples Nacional</span>
-                        <div class="flex justify-between items-center"><span class="text-sm">Do Simples</span> <input type="checkbox" id="swOnlySimples" class="checkbox-pro"></div>
-                        <div class="flex justify-between items-center"><span class="text-sm">Excluir Simples</span> <input type="checkbox" id="swExcludeSimples" class="checkbox-pro"></div>
-                        <div class="pt-2 border-t border-slate-700/50">
-                            <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-400">Excluídas do Simples</span> <input type="checkbox" id="swExcludedFromSimples" class="checkbox-pro"></div>
-                            <div class="flex gap-2"><input type="date" id="simplesExcDe" class="input-pro p-1 text-xs"><input type="date" id="simplesExcAte" class="input-pro p-1 text-xs"></div>
+                <!-- 2. LOCALIZAÇÃO -->
+                <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
+                    <div class="mb-4 flex items-center gap-2 border-b border-slate-700/50 pb-2">
+                        <i class="fa-solid fa-map-location-dot text-blue-500"></i>
+                        <h3 class="text-sm font-bold text-white uppercase">Localização</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Estado (UF)</label>
+                            <select id="uf" class="input-pro" onchange="loadCities(this.value)">
+                                <option value="">Selecione...</option>
+                                <option value="AC">Acre</option>
+                                <option value="AL">Alagoas</option>
+                                <option value="AP">Amapá</option>
+                                <option value="AM">Amazonas</option>
+                                <option value="BA">Bahia</option>
+                                <option value="CE">Ceará</option>
+                                <option value="DF">Distrito Federal</option>
+                                <option value="ES">Espírito Santo</option>
+                                <option value="GO">Goiás</option>
+                                <option value="MA">Maranhão</option>
+                                <option value="MT">Mato Grosso</option>
+                                <option value="MS">Mato Grosso do Sul</option>
+                                <option value="MG">Minas Gerais</option>
+                                <option value="PA">Pará</option>
+                                <option value="PB">Paraíba</option>
+                                <option value="PR">Paraná</option>
+                                <option value="PE">Pernambuco</option>
+                                <option value="PI">Piauí</option>
+                                <option value="RJ">Rio de Janeiro</option>
+                                <option value="RN">Rio Grande do Norte</option>
+                                <option value="RS">Rio Grande do Sul</option>
+                                <option value="RO">Rondônia</option>
+                                <option value="RR">Roraima</option>
+                                <option value="SC">Santa Catarina</option>
+                                <option value="SP">São Paulo</option>
+                                <option value="SE">Sergipe</option>
+                                <option value="TO">Tocantins</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Município</label>
+                            <div class="relative">
+                                <select id="municipioInput" class="input-pro disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                    <option value="">Selecione UF primeiro...</option>
+                                </select>
+                                <div id="cityLoader" class="hidden absolute right-8 top-3 text-blue-500">
+                                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                </div>
+                            </div>
+                            <p id="cityCount" class="text-[10px] text-slate-500 mt-1 h-3"></p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Bairro</label>
+                            <input type="text" id="bairro" placeholder="Digite o bairro" class="input-pro">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">CEP</label>
+                            <input type="text" id="cep" placeholder="00000-000" class="input-pro">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FILTROS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 lg:col-span-2">
+                        <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-filter text-blue-500 mr-2"></i> Filtros de Negócio</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- SITUAÇÃO -->
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-slate-400">Situação</label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitAtiva" checked class="checkbox-pro"> <span class="text-xs">Ativa</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="sitBaixada" class="checkbox-pro"> <span class="text-xs">Baixada</span></label>
+                            </div>
+                            <!-- MEI/SIMPLES -->
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-slate-400">Regime</label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="swExcludeMei" class="checkbox-pro"> <span class="text-xs">Excluir MEI</span></label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="swOnlySimples" class="checkbox-pro"> <span class="text-xs">Somente Simples</span></label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 lg:col-span-2">
+                        <h3 class="text-sm font-bold text-white uppercase mb-4 border-b border-slate-700/50 pb-2"><i class="fa-solid fa-calendar text-blue-500 mr-2"></i> Período e Capital</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Abertura</label>
+                                <div class="flex gap-2">
+                                    <input type="date" id="dataAberturaDe" class="input-pro text-xs p-2">
+                                    <input type="date" id="dataAberturaAte" class="input-pro text-xs p-2">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Capital Social</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="capitalMin" placeholder="Min" class="input-pro text-xs p-2">
+                                    <input type="number" id="capitalMax" placeholder="Max" class="input-pro text-xs p-2">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- WEBHOOK & AÇÃO -->
+                <section class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-lg">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="flex-1 w-full space-y-3">
+                            <h3 class="text-sm font-bold text-white mb-2"><i class="fa-solid fa-satellite-dish text-emerald-500 mr-2"></i> Webhook (Opcional)</h3>
+                            <input type="url" id="webhookUrl" placeholder="https://seu-webhook.com/endpoint" class="input-pro text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="webhookActive" class="checkbox-pro text-emerald-500">
+                                <span class="text-xs text-emerald-400 font-bold">Ativar envio em tempo real</span>
+                            </label>
+                        </div>
+                        <button id="btnHunt" type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-12 rounded-lg shadow-xl shadow-blue-900/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-lg group">
+                            <span>EXECUTAR CAÇADA</span>
+                            <i class="fa-solid fa-rocket group-hover:animate-bounce"></i>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 🗺️ ABA 2: GOOGLE MAPS (SERPAPI) -->
+            <div id="tab-maps" class="tab-content space-y-8 fade-in">
+                <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
+                    <div class="mb-6 flex items-center gap-2 border-b border-slate-700/50 pb-2">
+                        <i class="fa-solid fa-map text-red-500"></i>
+                        <h3 class="text-sm font-bold text-white uppercase">Busca Geográfica (SerpApi)</h3>
+                    </div>
+                    
+                    <!-- 📊 RESULTADOS MAPS -->
+                    <div class="bg-slate-900 border border-slate-700 rounded-md p-4 mb-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Status Maps</span>
+                            <span class="text-xs text-slate-400">Pronto para extração</span>
+                        </div>
+                        <div class="text-right flex gap-6">
+                            <div>
+                                <span class="text-2xl font-black text-red-500 block leading-none" id="mapsFound">0</span>
+                                <span class="text-[10px] text-slate-500 uppercase">Locais</span>
+                            </div>
+                            <div>
+                                <span class="text-2xl font-black text-blue-500 block leading-none" id="mapsSaved">0</span>
+                                <span class="text-[10px] text-slate-500 uppercase">Salvos</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ESTRUTURA -->
-                    <div class="space-y-3">
-                        <span class="text-xs font-bold text-yellow-400 uppercase">Estrutura</span>
-                        <div class="flex justify-between items-center"><span class="text-sm">Somente Matriz</span> <input type="checkbox" id="swOnlyMatriz" class="checkbox-pro"></div>
-                        <div class="flex justify-between items-center"><span class="text-sm">Somente Filial</span> <input type="checkbox" id="swOnlyFilial" class="checkbox-pro"></div>
-                        <div class="pt-2 border-t border-slate-700/50">
-                            <div class="flex justify-between items-center"><span class="text-sm text-red-400">Excluir "Contab"</span> <input type="checkbox" id="swExcludeContab" class="checkbox-pro"></div>
-                            <div class="flex justify-between items-center"><span class="text-sm text-red-400">Excluir Visualizadas</span> <input type="checkbox" id="swExcludeViewed" class="checkbox-pro"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Termo de Busca</label>
+                            <input type="text" placeholder="Ex: Restaurantes, Escolas, Mecânicas" class="input-pro">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Localização Central</label>
+                            <input type="text" placeholder="Ex: Av. Paulista, 1000 - SP" class="input-pro">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Raio de Busca (Metros)</label>
+                            <input type="number" value="1000" class="input-pro">
+                        </div>
+                        
+                        <!-- NOVOS FILTROS -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Filtro WhatsApp</label>
+                            <select id="filterWhatsapp" class="input-pro">
+                                <option value="all">Todos</option>
+                                <option value="with_whatsapp">Somente com WhatsApp</option>
+                                <option value="without_whatsapp">Somente sem WhatsApp</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Filtro Website</label>
+                            <select id="filterWebsite" class="input-pro">
+                                <option value="all">Todos</option>
+                                <option value="with_website">Somente com Site</option>
+                                <option value="without_website">Somente sem Site</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-end">
+                            <button type="button" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-md transition shadow-md">
+                                <i class="fa-solid fa-magnifying-glass-location mr-2"></i> Buscar no Mapa
+                            </button>
                         </div>
                     </div>
-                </div>
+                </section>
+            </div>
 
-                <!-- DATAS E VALORES -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-slate-700/50">
-                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-2">Data de Abertura (Range)</label>
-                        <div class="flex items-center gap-2">
-                            <input type="date" id="dataAberturaDe" class="input-pro">
-                            <span class="text-slate-500">até</span>
-                            <input type="date" id="dataAberturaAte" class="input-pro">
-                        </div>
-                     </div>
-                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-2">Capital Social (R$)</label>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="capitalMin" placeholder="Mínimo" class="input-pro">
-                            <span class="text-slate-500">até</span>
-                            <input type="number" id="capitalMax" placeholder="Máximo" class="input-pro">
-                        </div>
-                     </div>
-                </div>
-            </section>
-
-            <!-- 6. WEBHOOKS -->
-            <section class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-lg">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div class="flex-1 w-full space-y-3">
-                        <h3 class="text-sm font-bold text-white mb-2"><i class="fa-solid fa-satellite-dish text-emerald-500 mr-2"></i> Notificação (Webhook)</h3>
-                        <input type="url" id="webhookUrl" placeholder="https://seu-webhook.com/endpoint" class="input-pro text-xs">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="webhookActive" class="checkbox-pro text-emerald-500">
-                            <span class="text-xs text-emerald-400 font-bold">Ativar envio em tempo real</span>
-                        </label>
+            <!-- 🎯 ABA 3: SNIPER (Placeholder) -->
+            <div id="tab-sniper" class="tab-content space-y-8 fade-in">
+                <section class="bg-slate-800/40 border border-slate-700 rounded-lg p-6 shadow-sm">
+                    <div class="mb-6 flex items-center gap-2 border-b border-slate-700/50 pb-2">
+                        <i class="fa-solid fa-crosshairs text-purple-500"></i>
+                        <h3 class="text-sm font-bold text-white uppercase">Configuração de Disparo</h3>
                     </div>
-                    <button id="btnHunt" type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-12 rounded-lg shadow-xl shadow-blue-900/20 transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-3 text-lg group">
-                        <span>EXECUTAR MINERAÇÃO</span>
-                        <i class="fa-solid fa-rocket group-hover:animate-bounce"></i>
-                    </button>
-                </div>
-            </section>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <!-- Configuração -->
+                        <div class="md:col-span-4 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Canal de Envio</label>
+                                <select class="input-pro">
+                                    <option>WhatsApp (Evolution API)</option>
+                                    <option>E-mail Marketing</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Cadência (Delay)</label>
+                                <select class="input-pro">
+                                    <option>Rápido (1 msg/min)</option>
+                                    <option selected>Seguro (1 msg a cada 5 min)</option>
+                                    <option>Lento (1 msg a cada 15 min)</option>
+                                </select>
+                            </div>
+                            <div class="bg-slate-900 p-4 rounded-md border border-slate-700">
+                                <span class="text-xs font-bold text-purple-400 block mb-2">IA Contextual</span>
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                    <input type="checkbox" checked class="checkbox-pro">
+                                    <span class="text-xs text-slate-300">Ler "Sobre" da empresa</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" checked class="checkbox-pro">
+                                    <span class="text-xs text-slate-300">Personalizar com Nome do Sócio</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Template -->
+                        <div class="md:col-span-8">
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Template da Mensagem (Prompt IA)</label>
+                            <textarea class="w-full h-48 bg-slate-900 border border-slate-700 rounded-md p-3 text-white placeholder-slate-600 focus:border-purple-500 focus:outline-none transition text-sm font-mono" placeholder="Olá {primeiro_nome}, vi que a {empresa} atua no ramo de..."></textarea>
+                            <div class="mt-4 flex justify-end">
+                                <button type="button" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-md transition shadow-md flex items-center gap-2">
+                                    <i class="fa-solid fa-play"></i> INICIAR DISPAROS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
 
             <!-- 📊 CONSOLE -->
-            <div class="bg-black border border-slate-800 rounded-lg p-4 font-mono text-xs h-48 overflow-y-auto shadow-inner" id="consoleOutput">
-                <div class="text-blue-500 mb-1">> System Ready. V4.12 Loaded.</div>
+            <div class="bg-black border border-slate-800 rounded-lg p-4 font-mono text-xs h-48 overflow-y-auto shadow-inner mt-8" id="consoleOutput">
+                <div class="text-blue-500 mb-1">> System Ready. V5.1 Loaded.</div>
             </div>
 
         </form>
     </main>
 
     <script>
-        // --- CORE LOGIC V4.12 ---
+        // --- LOGIC V5.1 ---
+
+        // Tab Switching
+        function openTab(tabId, btn) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
 
         const log = (msg, type = 'info') => {
             const consoleDiv = document.getElementById('consoleOutput');
@@ -410,7 +515,7 @@
             consoleDiv.scrollTop = consoleDiv.scrollHeight;
         };
 
-        // 1. CARREGAMENTO DE CIDADES (SELECT FIX)
+        // 1. CIDADES (SELECT FIX)
         async function loadCities(state) {
             const cityInput = document.getElementById('municipioInput');
             const loader = document.getElementById('cityLoader');
@@ -423,7 +528,6 @@
                 return;
             }
 
-            // UI Loading
             cityInput.disabled = true;
             cityInput.innerHTML = '<option value="">Carregando cidades...</option>';
             loader.classList.remove('hidden');
@@ -434,7 +538,6 @@
                 if (!response.ok) throw new Error("Falha na API IBGE");
                 const cities = await response.json();
 
-                // Sort & Populate Select
                 cities.sort((a, b) => a.nome.localeCompare(b.nome));
                 
                 let optionsHtml = '<option value="">Selecione ou digite...</option>';
@@ -456,7 +559,7 @@
             }
         }
 
-        // 2. DIAGNÓSTICO DE CONEXÃO (PING)
+        // 2. DIAGNÓSTICO
         async function testConnection() {
             const url = document.getElementById('kestraUrl').value.replace(/\/$/, "");
             const statusEl = document.getElementById('connectionStatus');
@@ -552,8 +655,7 @@
             };
 
             log("Preparando ogiva de dados...", "info");
-            console.log("Payload:", payload);
-
+            
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ENVIANDO...`;
 
@@ -561,6 +663,7 @@
             formData.append('filters_json', JSON.stringify(payload));
             formData.append('termo', payload.termo); 
             formData.append('estado', payload.filtros.uf);
+            formData.append('casa_dados_token', config.apiTokenCasaDados || '');
 
             const endpoint = `${config.url}/api/v1/executions/${config.namespace}/${config.flowId}?wait=true`;
 
@@ -571,25 +674,34 @@
                     const data = await response.json();
                     log(`🚀 Missão Iniciada! ID: ${data.id}`, "success");
                     log(`Link: ${config.url}/ui/executions/${config.namespace}/${config.flowId}/${data.id}`, "info");
+                    
+                    // Update Dashboard
+                    if (data.outputs && data.outputs.count) {
+                        document.getElementById('dashSaved').innerText = data.outputs.count;
+                        document.getElementById('dashFound').innerText = data.outputs.total_found || data.outputs.count;
+                        log(`Relatório: ${data.outputs.count} empresas salvas.`, "success");
+                    }
+
                 } else {
                     const txt = await response.text();
                     log(`Erro Kestra: ${response.status} - ${txt}`, "error");
                 }
             } catch (error) {
                 log(`Erro Fatal: ${error.message}`, "error");
-                log("Verifique o Console do Navegador (F12) para detalhes de CORS.", "error");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<span>EXECUTAR MINERAÇÃO</span><i class="fa-solid fa-rocket"></i>`;
+                btn.innerHTML = `<span>EXECUTAR CAÇADA</span><i class="fa-solid fa-rocket"></i>`;
             }
         }
 
-        // --- CONFIG MANAGEMENT ---
+        // --- CONFIG ---
         function getConfig() {
             return {
                 url: document.getElementById('kestraUrl').value.replace(/\/$/, ""),
                 namespace: document.getElementById('kestraNamespace').value,
-                flowId: document.getElementById('kestraFlowId').value
+                flowId: document.getElementById('kestraFlowId').value,
+                apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
+                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value
             };
         }
 
@@ -598,19 +710,21 @@
                 url: document.getElementById('kestraUrl').value,
                 namespace: document.getElementById('kestraNamespace').value,
                 flowId: document.getElementById('kestraFlowId').value,
-                apiToken: document.getElementById('apiTokenCasaDados').value
+                apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
+                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value
             };
-            localStorage.setItem('biotchelly_config_v4', JSON.stringify(data));
+            localStorage.setItem('biotchelly_config_v5', JSON.stringify(data));
             toggleConfig();
-            log("Configurações salvas no navegador.", "success");
+            log("Configurações salvas.", "success");
         }
 
         function loadConfig() {
-            const saved = JSON.parse(localStorage.getItem('biotchelly_config_v4') || '{}');
+            const saved = JSON.parse(localStorage.getItem('biotchelly_config_v5') || '{}');
             if (saved.url) document.getElementById('kestraUrl').value = saved.url;
             if (saved.namespace) document.getElementById('kestraNamespace').value = saved.namespace;
             if (saved.flowId) document.getElementById('kestraFlowId').value = saved.flowId;
-            if (saved.apiToken) document.getElementById('apiTokenCasaDados').value = saved.apiToken;
+            if (saved.apiTokenCasaDados) document.getElementById('apiTokenCasaDados').value = saved.apiTokenCasaDados;
+            if (saved.apiTokenSerpApi) document.getElementById('apiTokenSerpApi').value = saved.apiTokenSerpApi;
             
             if (!document.getElementById('kestraUrl').value) document.getElementById('kestraUrl').value = "https://kestra.biotchellyprospecta.online";
         }
@@ -629,9 +743,7 @@
         }
 
         function loadTheme() {
-            if (localStorage.getItem('theme') === 'light') {
-                toggleTheme();
-            }
+            if (localStorage.getItem('theme') === 'light') toggleTheme();
         }
 
         function toggleConfig() {
@@ -646,7 +758,7 @@
         window.onload = () => {
             loadConfig();
             loadTheme();
-            log("Sistema V4.12 Inicializado. Pronto para caça.");
+            log("Painel V5.1 Inicializado.");
         };
 
     </script>
