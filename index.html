@@ -1407,6 +1407,9 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    
+                    // DEBUG: Mostra exatamente o que chegou do Kestra
+                    log("🔍 DEBUG RAW: " + JSON.stringify(data), "info");
 
                     // Handle Kestra Execution Output Structure (Robust)
                     let saldo = 0;
