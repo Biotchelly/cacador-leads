@@ -528,17 +528,6 @@
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
 
-                // Security Check: Mixed Content / Localhost
-                if (window.location.protocol === 'https:' && webhookUrl.includes('http://') && (webhookUrl.includes('localhost') || webhookUrl.includes('127.0.0.1'))) {
-                    log('⚠️ Erro de Segurança Detectado:', 'error');
-                    log('Você está acessando este site via HTTPS (seguro), mas tentando conectar ao Kestra Local (HTTP).', 'error');
-                    log('O navegador bloqueou esta conexão ("Mixed Content").', 'error');
-                    log('SOLUÇÃO: Use o frontend rodando localmente (http://localhost:8000) ou configure HTTPS para seu Kestra.', 'error');
-                    processBtn.disabled = false;
-                    processBtn.innerHTML = '<i class="fa-solid fa-play"></i> Processar Arquivo';
-                    return;
-                }
-
                 log(`Enviando para o Backend (${webhookUrl})...`);
 
                 try {
@@ -558,15 +547,18 @@
                         }
                     } else {
                         log(`❌ Erro no envio: ${response.status} ${response.statusText}`, 'error');
+                        // Log extra para ajudar debugging
+                        if (response.status === 0) log('⚠️ Erro de Rede/CORS. Verifique as configurações do Servidor Kestra.', 'error');
                     }
                 } catch (error) {
                     log(`❌ Erro de conexão: ${error.message}`, 'error');
+                    log('💡 Dica: Verifique se o Kestra permite CORS ou se a URL está correta.', 'info');
                 }
 
                 processBtn.disabled = false;
                 processBtn.innerHTML = '<i class="fa-solid fa-play"></i> Processar Arquivo';
             };
-
+            
             reader.readAsText(currentFile);
         });
 
