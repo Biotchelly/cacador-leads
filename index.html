@@ -994,405 +994,16 @@
                 const termo = document.getElementById('termo').value;
                 if (!termo) return log("Erro: Preencha o Termo de Busca.", "error");
 
-                // Check balance before executing search
-                try {
-                    const fetchUrl = config.useProxy ?
-                        `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
-                        config.webhookUrl;
 
-                    // Check balance (Direct API) before searching.
-                    const balanceUrl = "https://api.casadosdados.com.br/v5/saldo";
-                    const balanceFetchUrl = config.useProxy ?
-                        `https://corsproxy.io/?${encodeURIComponent(balanceUrl)}` :
-                        balanceUrl;
 
-                    try {
-                        const balResp = await fetch(balanceFetchUrl, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'api-key': config.apiTokenCasaDados
-                            }
-                        });
-
-                        if (balResp.ok) {
-                            const balData = await balResp.json();
-                            const saldo = balData.saldo_total !== undefined ? balData.saldo_total : (balData.saldo || 0);
-
-                            if (saldo <= 0) {
-                                log("❌ SALDO INSUFICIENTE!", "error");
-                                log(`   Saldo atual: ${saldo} créditos`, "error");
-                                log("   Recarregue sua conta na Casa dos Dados para continuar.", "error");
-                                if (btn) {
-                                    btn.disabled = false;
-                                    btn.innerHTML = "PESQUISAR";
-                                }
-                                return;
-                            }
-                            log(`✅ Saldo verificado: ${saldo} créditos`, "success");
-                        }
-                    } catch (e) {
-                        console.warn("Could not verify balance before search, proceeding anyway...", e);
-                    }
-
-                    payload = {
-                        operation_mode: "SEARCH_ONLY",  // Changed from HUNT_CASADADOS
-                        frontend_payload: {
-                            token_casa_dados: config.apiTokenCasaDados,
-                            filters: {
-                                cnpj: document.getElementById('cnpj').value,
-                                termo: termo,
-                                checks: {
-                                    razao: document.getElementById('checkRazao').checked,
-                                    fantasia: document.getElementById('checkFantasia').checked,
-                                    socio: document.getElementById('checkSocio').checked
-                                },
-                                tipo: document.getElementById('tipoPesquisa').value,
-                                cnpj_raiz: document.getElementById('cnpjRaiz').value,
-                                uf: document.getElementById('uf').value,
-                                municipio: document.getElementById('municipio').value,
-                                bairro: document.getElementById('bairro').value,
-                                cep: document.getElementById('cep').value,
-                                situacao: {
-                                    ativa: document.getElementById('sitAtiva').checked,
-                                    baixada: document.getElementById('sitBaixada').checked
-                                },
-                                mei: {
-                                    exclude: document.getElementById('swExcludeMei').checked
-                                },
-                                simples: {
-                                    only: document.getElementById('swOnlySimples').checked
-                                },
-                                datas: {
-                                    abertura_de: document.getElementById('dataAberturaDe').value,
-                                    abertura_ate: document.getElementById('dataAberturaAte').value
-                                },
-                                capital: {
-                                    min: document.getElementById('capitalMin').value,
-                                    max: document.getElementById('capitalMax').value
-                                },
-                                cnae: {
-                                    codigo_nome: document.getElementById('cnaeInput').value,
-                                    incluir_secundaria: document.getElementById('cnaeSecundario').checked
-                                },
-                                contato: {
-                                    tem_telefone: document.getElementById('filterTelefone').checked,
-                                    somente_fixo: document.getElementById('filterFixo').checked,
-                                    somente_celular: document.getElementById('filterCelular').checked,
-                                    tem_email: document.getElementById('filterEmail').checked
-                                }
-                            }
-                        }
-                    };
-                }
-            // MODO: CAÇADA VIA GOOGLE MAPS
-            else if (activeTab === 'tab-maps') {
-                    const termo = document.getElementById('mapsTermo').value;
-                    if (!termo) return log("Erro: Preencha o Termo de Busca no Maps.", "error");
-
-                    payload = {
-                        operation_mode: "HUNT_MAPS",
-                        frontend_payload: {
-                            token_serpapi: config.apiTokenSerpApi,
-                            filters: {
-                                termo: termo,
-                                localizacao: document.getElementById('mapsLocation').value,
-                                radius: document.getElementById('mapsRadius').value,
-                                whatsapp_filter: document.getElementById('filterWhatsapp').value,
-                                website_filter: document.getElementById('filterWebsite').value
-                            }
-                        }
-                    };
-                }
-
-                // DEBUG: Log completo
-                console.group('🔍 DEBUG - Webhook Request');
-                console.log('URL:', config.webhookUrl);
-                console.log('Modo:', payload.operation_mode);
-                console.log('Payload:', JSON.stringify(payload, null, 2));
-                console.groupEnd();
-
-                log(`📡 Pesquisando...`, "info");
-                log(`   Modo: ${payload.operation_mode}`, "info");
-
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> PESQUISANDO...`;
-                }
+                // Check balance (Direct API) before searching.
+                const balanceUrl = "https://api.casadosdados.com.br/v5/saldo";
+                const balanceFetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(balanceUrl)}` :
+                    balanceUrl;
 
                 try {
-                    const fetchUrl = config.useProxy ?
-                        `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
-                        config.webhookUrl;
-
-                    log(`📡 Conectando via ${config.useProxy ? 'Proxy' : 'Direct'}...`, "info");
-
-                    const response = await fetch(fetchUrl, {
-                        method: 'POST',
-                        // mode: 'cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    console.log('📨 Response Status:', response.status);
-                    console.log('📨 Response OK:', response.ok);
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('✅ Response Data:', data);
-
-                        log(`✅ Pesquisa concluída!`, "success");
-
-                        // Update ENCONTRADAS counter with real results
-                        const found = data.found || 0;
-                        document.getElementById('dashFound').textContent = found;
-                        log(`   📊 ${found} empresas encontradas`, "success");
-
-                        // Store results for later export
-                        window.lastSearchResults = data;
-                    } else {
-                        const txt = await response.text();
-                        console.error('❌ Error Response:', txt);
-
-                        log(`❌ Erro HTTP ${response.status}`, "error");
-                        log(`   ${txt.substring(0, 150)}`, "error");
-                    }
-                } catch (error) {
-                    console.error('❌ Fetch Error:', error);
-
-                    log(`❌ Erro de conexão: ${error.message}`, "error");
-
-                    if (error.message.includes('CORS')) {
-                        log(`   💡 Problema de CORS detectado`, "error");
-                    } else if (error.message.includes('Failed to fetch')) {
-                        log(`   💡 Verificar se Kestra está online`, "error");
-                    }
-                } finally {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> <span>PESQUISAR</span>`;
-                    }
-                }
-            }
-
-            // SNIPER TOGGLE
-            function toggleSniper(checkbox) {
-                sniperActive = checkbox.checked;
-                const statusText = document.getElementById('sniperStatusText');
-
-                if (sniperActive) {
-                    statusText.textContent = 'LIGADO';
-                    statusText.className = 'text-sm font-bold text-emerald-500';
-                    log('🎯 SNIPER ATIVADO - Modo automático', 'success');
-
-                    // Inicia polling a cada 30 segundos
-                    sniperInterval = setInterval(triggerSniper, 30000);
-                } else {
-                    statusText.textContent = 'DESLIGADO';
-                    statusText.className = 'text-sm font-bold text-red-500';
-                    log('⏸️ SNIPER DESATIVADO', 'info');
-
-                    if (sniperInterval) {
-                        clearInterval(sniperInterval);
-                        sniperInterval = null;
-                    }
-                }
-            }
-
-            // TRIGGER SNIPER (Manual ou Automático)
-            async function triggerSniper() {
-                const config = getConfig();
-
-                if (!config.webhookUrl) {
-                    return log("Erro: Configure o webhook primeiro.", "error");
-                }
-
-                const payload = {
-                    operation_mode: "SNIPE",
-                    frontend_payload: {
-                        sniper_config: {
-                            cadence: document.getElementById('sniperCadence').value,
-                            respect_business_hours: document.getElementById('respectBusinessHours').checked
-                        }
-                    }
-                };
-
-                console.log('🎯 Sniper Payload:', JSON.stringify(payload, null, 2));
-                log('🎯 Disparando Sniper...', 'info');
-
-                try {
-                    const fetchUrl = config.useProxy ?
-                        `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
-                        config.webhookUrl;
-
-                    const response = await fetch(fetchUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('✅ Sniper Response:', data);
-                        log(`✅ Sniper executado! ID: ${data.id}`, 'success');
-                    } else {
-                        const txt = await response.text();
-                        console.error('❌ Sniper Error:', txt);
-                        log(`❌ Erro no Sniper: ${response.status}`, 'error');
-                    }
-                } catch (error) {
-                    log(`❌ Erro: ${error.message}`, 'error');
-                }
-            }
-
-            // CONFIG & UTILS
-            function getConfig() {
-                return {
-                    webhookUrl: document.getElementById('kestraWebhookUrl').value.replace(/\/$/, ""),
-                    apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
-                    apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value,
-                    useProxy: document.getElementById('useProxy').checked
-                };
-            }
-
-            function saveConfig() {
-                const data = {
-                    webhookUrl: document.getElementById('kestraWebhookUrl').value,
-                    apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
-                    apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value,
-                    useProxy: document.getElementById('useProxy').checked
-                };
-                localStorage.setItem('biotchelly_config_v52', JSON.stringify(data));
-                toggleConfig();
-                log("Configurações salvas.", "success");
-            }
-
-            function loadConfig() {
-                const saved = JSON.parse(localStorage.getItem('biotchelly_config_v52') || '{}');
-                if (saved.webhookUrl) document.getElementById('kestraWebhookUrl').value = saved.webhookUrl;
-                if (saved.apiTokenCasaDados) document.getElementById('apiTokenCasaDados').value = saved.apiTokenCasaDados;
-                if (saved.apiTokenSerpApi) document.getElementById('apiTokenSerpApi').value = saved.apiTokenSerpApi;
-                if (saved.useProxy !== undefined) document.getElementById('useProxy').checked = saved.useProxy;
-
-                // Set default if not saved (for new users, maybe default true if issues persist?)
-                if (saved.useProxy === undefined) document.getElementById('useProxy').checked = true;
-            }
-
-            function toggleConfig() {
-                document.getElementById('configModal').classList.toggle('hidden');
-            }
-
-            function clearForm() {
-                document.getElementById('hunterForm').reset();
-                log("Formulário limpo.", "info");
-            }
-
-            // Dropdown Toggle
-            function toggleMoreOptions() {
-                const menu = document.getElementById('moreOptionsMenu');
-                menu.classList.toggle('hidden');
-            }
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function (event) {
-                const menu = document.getElementById('moreOptionsMenu');
-                const btn = document.getElementById('btnMoreOptions');
-                if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
-                    menu.classList.add('hidden');
-                }
-            });
-
-            // Export Results
-            async function exportResults() {
-                const config = getConfig();
-
-                if (!window.lastSearchResults || !window.lastSearchResults.companies) {
-                    log("❌ Execute uma pesquisa primeiro!", "error");
-                    return;
-                }
-
-                if (!config.webhookUrl) {
-                    log("❌ Configure a URL do Webhook primeiro!", "error");
-                    toggleConfig();
-                    return;
-                }
-
-                log("📦 Exportando resultados para NocoDB...", "info");
-
-                try {
-                    const fetchUrl = config.useProxy ?
-                        `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
-                        config.webhookUrl;
-
-                    const response = await fetch(fetchUrl, {
-                        method: 'POST',
-                        // mode: 'cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            operation_mode: "EXPORT_TO_NOCODB",
-                            frontend_payload: {
-                                companies: window.lastSearchResults.companies
-                            }
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        const saved = data.saved || 0;
-
-                        document.getElementById('dashSaved').textContent = saved;
-                        log(`✅ ${saved} empresas salvas no NocoDB!`, "success");
-                    } else {
-                        const errorText = await response.text();
-                        log(`❌ Erro ao exportar: ${response.status}`, "error");
-                        log(`   ${errorText.substring(0, 100)}`, "error");
-                    }
-                } catch (error) {
-                    log(`❌ Erro de conexão: ${error.message}`, "error");
-                }
-            }
-
-            // View Generated Files
-            function viewGeneratedFiles() {
-                toggleMoreOptions();
-                log("📁 Visualizando arquivos gerados...", "info");
-                log("   Funcionalidade em desenvolvimento", "info");
-            }
-
-            // Save Search
-            function saveSearch() {
-                toggleMoreOptions();
-                const searchName = prompt("Nome da pesquisa:");
-                if (searchName) {
-                    // TODO: Salvar configuração de pesquisa no localStorage ou backend
-                    log(`💾 Pesquisa "${searchName}" salva com sucesso!`, "success");
-                }
-            }
-
-            // Check Balance
-            // Check Balance - Direct API Call (Bypassing Kestra to avoid Async/Auth issues)
-            async function checkBalance() {
-                toggleMoreOptions();
-                const config = getConfig();
-
-                if (!config.apiTokenCasaDados) {
-                    log("❌ Configure o Token da Casa dos Dados primeiro!", "error");
-                    toggleConfig();
-                    return;
-                }
-
-                log("🔄 Consultando saldo (Direto na API)...", "info");
-
-                try {
-                    // Use Direct API V5 via Proxy
-                    // Note: We use the proxy to bypass CORS on the browser
-                    const targetUrl = "https://api.casadosdados.com.br/v5/saldo";
-
-                    const fetchUrl = config.useProxy ?
-                        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` :
-                        targetUrl;
-
-                    const response = await fetch(fetchUrl, {
+                    const balResp = await fetch(balanceFetchUrl, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1400,93 +1011,478 @@
                         }
                     });
 
-                    if (response.ok) {
-                        const data = await response.json();
+                    if (balResp.ok) {
+                        const balData = await balResp.json();
+                        const saldo = balData.saldo_total !== undefined ? balData.saldo_total : (balData.saldo || 0);
 
-                        // DEBUG: Verifique a estrutura bruta se necessário
-                        log("🔍 Resposta API: " + JSON.stringify(data), "info");
-
-                        // Extract Balance (V5 uses saldo_total, handle potential variations)
-                        const saldo = data.saldo_total !== undefined ? data.saldo_total : (data.saldo || 0);
-
-                        if (saldo >= 0) {
-                            log(`💰 Saldo disponível: ${saldo} créditos`, "success");
-                        } else {
-                            log(`⚠️ Saldo retornou valor estranho: ${saldo}`, "warning");
+                        if (saldo <= 0) {
+                            log("❌ SALDO INSUFICIENTE!", "error");
+                            log(`   Saldo atual: ${saldo} créditos`, "error");
+                            log("   Recarregue sua conta na Casa dos Dados para continuar.", "error");
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = "PESQUISAR";
+                            }
+                            return;
                         }
-                    } else {
-                        const errorText = await response.text();
-                        log(`❌ Erro API: ${response.status}`, "error");
-                        // log(`   ${errorText}`, "error");
+                        log(`✅ Saldo verificado: ${saldo} créditos`, "success");
                     }
-                } catch (error) {
-                    log(`❌ Erro de conexão: ${error.message}`, "error");
-                }
-            }
-
-
-
-
-
-
-
-
-            // Helper: Poll Kestra API for Completion
-            async function waitForCompletion(executionId, config) {
-                let baseUrl = config.webhookUrl.split('/executions/webhook/')[0];
-
-                // List of URLs to try. 1: With 'main' (if present), 2: Without 'main' (cleanup)
-                const urlsToTry = [];
-                urlsToTry.push(`${baseUrl}/executions/${executionId}`);
-
-                if (baseUrl.includes('/main')) {
-                    urlsToTry.push(baseUrl.replace('/main', '') + `/executions/${executionId}`);
+                } catch (e) {
+                    console.warn("Could not verify balance before search, proceeding anyway...", e);
                 }
 
-                log(`🔍 Polling ID: ${executionId}`, "info");
-
-                for (let i = 0; i < 20; i++) { // 20 attempts
-                    await new Promise(r => setTimeout(r, 1000));
-
-                    for (const executionUrl of urlsToTry) {
-                        const fetchUrl = config.useProxy ?
-                            `https://corsproxy.io/?${encodeURIComponent(executionUrl)}` :
-                            executionUrl;
-
-                        try {
-                            const res = await fetch(fetchUrl);
-
-                            if (res.status === 404) continue; // Try next URL or next attempt
-                            if (res.status === 401 || res.status === 403) {
-                                throw new Error(`Auth Error (${res.status}) - API Privada`);
-                            }
-                            if (!res.ok) throw new Error(`API Status ${res.status}`);
-
-                            const pData = await res.json();
-                            if (pData.state.current === 'SUCCESS' || pData.state.current === 'WARNING') {
-                                return pData;
-                            }
-                            if (pData.state.current === 'FAILED' || pData.state.current === 'KILLED') {
-                                throw new Error("Flow Failed");
-                            }
-                            // If still RUNNING/CREATED, break inner loop to wait and retry same URLs
-                            break;
-                        } catch (e) {
-                            // Only log if it's a hard error, not just a 404 retry
-                            if (!e.message.includes('404')) {
-                                console.warn(`Poll error (${executionUrl}):`, e);
-                                if (e.message.includes('Auth Error')) throw e; // Stop trying if auth failed
+                payload = {
+                    operation_mode: "SEARCH_ONLY",  // Changed from HUNT_CASADADOS
+                    frontend_payload: {
+                        token_casa_dados: config.apiTokenCasaDados,
+                        filters: {
+                            cnpj: document.getElementById('cnpj').value,
+                            termo: termo,
+                            checks: {
+                                razao: document.getElementById('checkRazao').checked,
+                                fantasia: document.getElementById('checkFantasia').checked,
+                                socio: document.getElementById('checkSocio').checked
+                            },
+                            tipo: document.getElementById('tipoPesquisa').value,
+                            cnpj_raiz: document.getElementById('cnpjRaiz').value,
+                            uf: document.getElementById('uf').value,
+                            municipio: document.getElementById('municipio').value,
+                            bairro: document.getElementById('bairro').value,
+                            cep: document.getElementById('cep').value,
+                            situacao: {
+                                ativa: document.getElementById('sitAtiva').checked,
+                                baixada: document.getElementById('sitBaixada').checked
+                            },
+                            mei: {
+                                exclude: document.getElementById('swExcludeMei').checked
+                            },
+                            simples: {
+                                only: document.getElementById('swOnlySimples').checked
+                            },
+                            datas: {
+                                abertura_de: document.getElementById('dataAberturaDe').value,
+                                abertura_ate: document.getElementById('dataAberturaAte').value
+                            },
+                            capital: {
+                                min: document.getElementById('capitalMin').value,
+                                max: document.getElementById('capitalMax').value
+                            },
+                            cnae: {
+                                codigo_nome: document.getElementById('cnaeInput').value,
+                                incluir_secundaria: document.getElementById('cnaeSecundario').checked
+                            },
+                            contato: {
+                                tem_telefone: document.getElementById('filterTelefone').checked,
+                                somente_fixo: document.getElementById('filterFixo').checked,
+                                somente_celular: document.getElementById('filterCelular').checked,
+                                tem_email: document.getElementById('filterEmail').checked
                             }
                         }
                     }
-                }
-                throw new Error("Timeout waiting for execution");
+                };
+            }
+            // MODO: CAÇADA VIA GOOGLE MAPS
+            else if (activeTab === 'tab-maps') {
+                const termo = document.getElementById('mapsTermo').value;
+                if (!termo) return log("Erro: Preencha o Termo de Busca no Maps.", "error");
+
+                payload = {
+                    operation_mode: "HUNT_MAPS",
+                    frontend_payload: {
+                        token_serpapi: config.apiTokenSerpApi,
+                        filters: {
+                            termo: termo,
+                            localizacao: document.getElementById('mapsLocation').value,
+                            radius: document.getElementById('mapsRadius').value,
+                            whatsapp_filter: document.getElementById('filterWhatsapp').value,
+                            website_filter: document.getElementById('filterWebsite').value
+                        }
+                    }
+                };
             }
 
-            window.onload = () => {
-                loadConfig();
-                log("Command Center V5.2 Inicializado. Backend: 09_command_center_backend");
+            // DEBUG: Log completo
+            console.group('🔍 DEBUG - Webhook Request');
+            console.log('URL:', config.webhookUrl);
+            console.log('Modo:', payload.operation_mode);
+            console.log('Payload:', JSON.stringify(payload, null, 2));
+            console.groupEnd();
+
+            log(`📡 Pesquisando...`, "info");
+            log(`   Modo: ${payload.operation_mode}`, "info");
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> PESQUISANDO...`;
+            }
+
+            try {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                log(`📡 Conectando via ${config.useProxy ? 'Proxy' : 'Direct'}...`, "info");
+
+                const response = await fetch(fetchUrl, {
+                    method: 'POST',
+                    // mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log('📨 Response Status:', response.status);
+                console.log('📨 Response OK:', response.ok);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Response Data:', data);
+
+                    log(`✅ Pesquisa concluída!`, "success");
+
+                    // Update ENCONTRADAS counter with real results
+                    const found = data.found || 0;
+                    document.getElementById('dashFound').textContent = found;
+                    log(`   📊 ${found} empresas encontradas`, "success");
+
+                    // Store results for later export
+                    window.lastSearchResults = data;
+                } else {
+                    const txt = await response.text();
+                    console.error('❌ Error Response:', txt);
+
+                    log(`❌ Erro HTTP ${response.status}`, "error");
+                    log(`   ${txt.substring(0, 150)}`, "error");
+                }
+            } catch (error) {
+                console.error('❌ Fetch Error:', error);
+
+                log(`❌ Erro de conexão: ${error.message}`, "error");
+
+                if (error.message.includes('CORS')) {
+                    log(`   💡 Problema de CORS detectado`, "error");
+                } else if (error.message.includes('Failed to fetch')) {
+                    log(`   💡 Verificar se Kestra está online`, "error");
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> <span>PESQUISAR</span>`;
+                }
+            }
+        }
+
+        // SNIPER TOGGLE
+        function toggleSniper(checkbox) {
+            sniperActive = checkbox.checked;
+            const statusText = document.getElementById('sniperStatusText');
+
+            if (sniperActive) {
+                statusText.textContent = 'LIGADO';
+                statusText.className = 'text-sm font-bold text-emerald-500';
+                log('🎯 SNIPER ATIVADO - Modo automático', 'success');
+
+                // Inicia polling a cada 30 segundos
+                sniperInterval = setInterval(triggerSniper, 30000);
+            } else {
+                statusText.textContent = 'DESLIGADO';
+                statusText.className = 'text-sm font-bold text-red-500';
+                log('⏸️ SNIPER DESATIVADO', 'info');
+
+                if (sniperInterval) {
+                    clearInterval(sniperInterval);
+                    sniperInterval = null;
+                }
+            }
+        }
+
+        // TRIGGER SNIPER (Manual ou Automático)
+        async function triggerSniper() {
+            const config = getConfig();
+
+            if (!config.webhookUrl) {
+                return log("Erro: Configure o webhook primeiro.", "error");
+            }
+
+            const payload = {
+                operation_mode: "SNIPE",
+                frontend_payload: {
+                    sniper_config: {
+                        cadence: document.getElementById('sniperCadence').value,
+                        respect_business_hours: document.getElementById('respectBusinessHours').checked
+                    }
+                }
             };
+
+            console.log('🎯 Sniper Payload:', JSON.stringify(payload, null, 2));
+            log('🎯 Disparando Sniper...', 'info');
+
+            try {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                const response = await fetch(fetchUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Sniper Response:', data);
+                    log(`✅ Sniper executado! ID: ${data.id}`, 'success');
+                } else {
+                    const txt = await response.text();
+                    console.error('❌ Sniper Error:', txt);
+                    log(`❌ Erro no Sniper: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // CONFIG & UTILS
+        function getConfig() {
+            return {
+                webhookUrl: document.getElementById('kestraWebhookUrl').value.replace(/\/$/, ""),
+                apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
+                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value,
+                useProxy: document.getElementById('useProxy').checked
+            };
+        }
+
+        function saveConfig() {
+            const data = {
+                webhookUrl: document.getElementById('kestraWebhookUrl').value,
+                apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
+                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value,
+                useProxy: document.getElementById('useProxy').checked
+            };
+            localStorage.setItem('biotchelly_config_v52', JSON.stringify(data));
+            toggleConfig();
+            log("Configurações salvas.", "success");
+        }
+
+        function loadConfig() {
+            const saved = JSON.parse(localStorage.getItem('biotchelly_config_v52') || '{}');
+            if (saved.webhookUrl) document.getElementById('kestraWebhookUrl').value = saved.webhookUrl;
+            if (saved.apiTokenCasaDados) document.getElementById('apiTokenCasaDados').value = saved.apiTokenCasaDados;
+            if (saved.apiTokenSerpApi) document.getElementById('apiTokenSerpApi').value = saved.apiTokenSerpApi;
+            if (saved.useProxy !== undefined) document.getElementById('useProxy').checked = saved.useProxy;
+
+            // Set default if not saved (for new users, maybe default true if issues persist?)
+            if (saved.useProxy === undefined) document.getElementById('useProxy').checked = true;
+        }
+
+        function toggleConfig() {
+            document.getElementById('configModal').classList.toggle('hidden');
+        }
+
+        function clearForm() {
+            document.getElementById('hunterForm').reset();
+            log("Formulário limpo.", "info");
+        }
+
+        // Dropdown Toggle
+        function toggleMoreOptions() {
+            const menu = document.getElementById('moreOptionsMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('moreOptionsMenu');
+            const btn = document.getElementById('btnMoreOptions');
+            if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Export Results
+        async function exportResults() {
+            const config = getConfig();
+
+            if (!window.lastSearchResults || !window.lastSearchResults.companies) {
+                log("❌ Execute uma pesquisa primeiro!", "error");
+                return;
+            }
+
+            if (!config.webhookUrl) {
+                log("❌ Configure a URL do Webhook primeiro!", "error");
+                toggleConfig();
+                return;
+            }
+
+            log("📦 Exportando resultados para NocoDB...", "info");
+
+            try {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                const response = await fetch(fetchUrl, {
+                    method: 'POST',
+                    // mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        operation_mode: "EXPORT_TO_NOCODB",
+                        frontend_payload: {
+                            companies: window.lastSearchResults.companies
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const saved = data.saved || 0;
+
+                    document.getElementById('dashSaved').textContent = saved;
+                    log(`✅ ${saved} empresas salvas no NocoDB!`, "success");
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erro ao exportar: ${response.status}`, "error");
+                    log(`   ${errorText.substring(0, 100)}`, "error");
+                }
+            } catch (error) {
+                log(`❌ Erro de conexão: ${error.message}`, "error");
+            }
+        }
+
+        // View Generated Files
+        function viewGeneratedFiles() {
+            toggleMoreOptions();
+            log("📁 Visualizando arquivos gerados...", "info");
+            log("   Funcionalidade em desenvolvimento", "info");
+        }
+
+        // Save Search
+        function saveSearch() {
+            toggleMoreOptions();
+            const searchName = prompt("Nome da pesquisa:");
+            if (searchName) {
+                // TODO: Salvar configuração de pesquisa no localStorage ou backend
+                log(`💾 Pesquisa "${searchName}" salva com sucesso!`, "success");
+            }
+        }
+
+        // Check Balance
+        // Check Balance - Direct API Call (Bypassing Kestra to avoid Async/Auth issues)
+        async function checkBalance() {
+            toggleMoreOptions();
+            const config = getConfig();
+
+            if (!config.apiTokenCasaDados) {
+                log("❌ Configure o Token da Casa dos Dados primeiro!", "error");
+                toggleConfig();
+                return;
+            }
+
+            log("🔄 Consultando saldo (Direto na API)...", "info");
+
+            try {
+                // Use Direct API V5 via Proxy
+                // Note: We use the proxy to bypass CORS on the browser
+                const targetUrl = "https://api.casadosdados.com.br/v5/saldo";
+
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` :
+                    targetUrl;
+
+                const response = await fetch(fetchUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'api-key': config.apiTokenCasaDados
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // DEBUG: Verifique a estrutura bruta se necessário
+                    log("🔍 Resposta API: " + JSON.stringify(data), "info");
+
+                    // Extract Balance (V5 uses saldo_total, handle potential variations)
+                    const saldo = data.saldo_total !== undefined ? data.saldo_total : (data.saldo || 0);
+
+                    if (saldo >= 0) {
+                        log(`💰 Saldo disponível: ${saldo} créditos`, "success");
+                    } else {
+                        log(`⚠️ Saldo retornou valor estranho: ${saldo}`, "warning");
+                    }
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erro API: ${response.status}`, "error");
+                    // log(`   ${errorText}`, "error");
+                }
+            } catch (error) {
+                log(`❌ Erro de conexão: ${error.message}`, "error");
+            }
+        }
+
+
+
+
+
+
+
+
+        // Helper: Poll Kestra API for Completion
+        async function waitForCompletion(executionId, config) {
+            let baseUrl = config.webhookUrl.split('/executions/webhook/')[0];
+
+            // List of URLs to try. 1: With 'main' (if present), 2: Without 'main' (cleanup)
+            const urlsToTry = [];
+            urlsToTry.push(`${baseUrl}/executions/${executionId}`);
+
+            if (baseUrl.includes('/main')) {
+                urlsToTry.push(baseUrl.replace('/main', '') + `/executions/${executionId}`);
+            }
+
+            log(`🔍 Polling ID: ${executionId}`, "info");
+
+            for (let i = 0; i < 20; i++) { // 20 attempts
+                await new Promise(r => setTimeout(r, 1000));
+
+                for (const executionUrl of urlsToTry) {
+                    const fetchUrl = config.useProxy ?
+                        `https://corsproxy.io/?${encodeURIComponent(executionUrl)}` :
+                        executionUrl;
+
+                    try {
+                        const res = await fetch(fetchUrl);
+
+                        if (res.status === 404) continue; // Try next URL or next attempt
+                        if (res.status === 401 || res.status === 403) {
+                            throw new Error(`Auth Error (${res.status}) - API Privada`);
+                        }
+                        if (!res.ok) throw new Error(`API Status ${res.status}`);
+
+                        const pData = await res.json();
+                        if (pData.state.current === 'SUCCESS' || pData.state.current === 'WARNING') {
+                            return pData;
+                        }
+                        if (pData.state.current === 'FAILED' || pData.state.current === 'KILLED') {
+                            throw new Error("Flow Failed");
+                        }
+                        // If still RUNNING/CREATED, break inner loop to wait and retry same URLs
+                        break;
+                    } catch (e) {
+                        // Only log if it's a hard error, not just a 404 retry
+                        if (!e.message.includes('404')) {
+                            console.warn(`Poll error (${executionUrl}):`, e);
+                            if (e.message.includes('Auth Error')) throw e; // Stop trying if auth failed
+                        }
+                    }
+                }
+            }
+            throw new Error("Timeout waiting for execution");
+        }
+
+        window.onload = () => {
+            loadConfig();
+            log("Command Center V5.2 Inicializado. Backend: 09_command_center_backend");
+        };
     </script>
 </body>
 
