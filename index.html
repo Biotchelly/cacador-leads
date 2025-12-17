@@ -1463,44 +1463,51 @@
 
         // Helper: Poll Kestra API for Completion
         async function waitForCompletion(executionId, config) {
-            // Transform Webhook URL to API URL logic
-            // Base URL assumption: remove /executions/webhook/... 
-            // Webhook: .../api/v1/executions/webhook/namespace/flow/key
-            // API:     .../api/v1/executions/{id}
+            let baseUrl = config.webhookUrl.split('/executions/webhook/')[0]; 
             
-            let baseUrl = config.webhookUrl;
-            if (baseUrl.includes('/executions/webhook/')) {
-                 baseUrl = baseUrl.split('/executions/webhook/')[0];
-            } else {
-                 // Fallback if URL structure is different, try to guess base
-                 // Assume standard Kestra path
-                 const match = baseUrl.match(/^(https?:\/\/[^\/]+\/api\/v1)/);
-                 if (match) baseUrl = match[1];
+            // List of URLs to try. 1: With 'main' (if present), 2: Without 'main' (cleanup)
+            const urlsToTry = [];
+            urlsToTry.push(`${baseUrl}/executions/${executionId}`);
+            
+            if (baseUrl.includes('/main')) {
+                urlsToTry.push(baseUrl.replace('/main', '') + `/executions/${executionId}`);
             }
 
-            const executionUrl = `${baseUrl}/executions/${executionId}`;
-            log(`🔍 Polling: ${executionUrl}`, "info");
+            log(`🔍 Polling ID: ${executionId}`, "info");
 
-            const fetchUrl = config.useProxy ?
-                `https://corsproxy.io/?${encodeURIComponent(executionUrl)}` :
-                executionUrl;
-
-            for (let i = 0; i < 20; i++) { // Max 20 attempts
+            for (let i = 0; i < 20; i++) { // 20 attempts
                 await new Promise(r => setTimeout(r, 1000));
                 
-                try {
-                    const res = await fetch(fetchUrl);
-                    if (!res.ok) throw new Error("API Error " + res.status);
-                    
-                    const pData = await res.json();
-                    if (pData.state.current === 'SUCCESS' || pData.state.current === 'WARNING') {
-                        return pData;
+                for (const executionUrl of urlsToTry) {
+                    const fetchUrl = config.useProxy ?
+                        `https://corsproxy.io/?${encodeURIComponent(executionUrl)}` :
+                        executionUrl;
+
+                    try {
+                        const res = await fetch(fetchUrl);
+                        
+                        if (res.status === 404) continue; // Try next URL or next attempt
+                        if (res.status === 401 || res.status === 403) {
+                             throw new Error(`Auth Error (${res.status}) - API Privada`);
+                        }
+                        if (!res.ok) throw new Error(`API Status ${res.status}`);
+                        
+                        const pData = await res.json();
+                        if (pData.state.current === 'SUCCESS' || pData.state.current === 'WARNING') {
+                            return pData;
+                        }
+                        if (pData.state.current === 'FAILED' || pData.state.current === 'KILLED') {
+                            throw new Error("Flow Failed");
+                        }
+                        // If still RUNNING/CREATED, break inner loop to wait and retry same URLs
+                        break; 
+                    } catch (e) {
+                         // Only log if it's a hard error, not just a 404 retry
+                         if (!e.message.includes('404')) {
+                             console.warn(`Poll error (${executionUrl}):`, e);
+                             if (e.message.includes('Auth Error')) throw e; // Stop trying if auth failed
+                         }
                     }
-                    if (pData.state.current === 'FAILED' || pData.state.current === 'KILLED') {
-                        throw new Error("Flow Failed");
-                    }
-                } catch (e) {
-                    console.warn("Polling error:", e);
                 }
             }
             throw new Error("Timeout waiting for execution");
