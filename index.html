@@ -239,6 +239,18 @@
                         <input type="password" id="apiTokenSerpApi" placeholder="Cole sua chave SerpApi"
                             class="input-pro border-red-900 focus:border-red-500">
                     </div>
+                    <div>
+                        <label
+                            class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                            <input type="checkbox" id="useProxy" class="checkbox-pro">
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-300">
+                                <i class="fa-solid fa-shield-halved text-orange-500 mr-1"></i>
+                                Ativar Proxy (Bypass CORS)
+                            </span>
+                        </label>
+                        <p class="text-[10px] text-slate-500 ml-7">Ative se estiver enfrentando erros de conexão ou
+                            CORS.</p>
+                    </div>
                 </div>
             </div>
 
@@ -984,9 +996,13 @@
 
                 // Check balance before executing search
                 try {
-                    const balanceCheck = await fetch(`${config.webhookUrl}`, {
+                    const fetchUrl = config.useProxy ?
+                        `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                        config.webhookUrl;
+
+                    const balanceCheck = await fetch(fetchUrl, {
                         method: 'POST',
-                        mode: 'cors',
+                        // mode: 'cors', // Removed forced mode to compatibility
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             operation_mode: "CHECK_BALANCE",
@@ -1099,9 +1115,15 @@
             }
 
             try {
-                const response = await fetch(config.webhookUrl, {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                log(`📡 Conectando via ${config.useProxy ? 'Proxy' : 'Direct'}...`, "info");
+
+                const response = await fetch(fetchUrl, {
                     method: 'POST',
-                    mode: 'cors',
+                    // mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
@@ -1193,7 +1215,11 @@
             log('🎯 Disparando Sniper...', 'info');
 
             try {
-                const response = await fetch(config.webhookUrl, {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                const response = await fetch(fetchUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -1218,7 +1244,8 @@
             return {
                 webhookUrl: document.getElementById('kestraWebhookUrl').value.replace(/\/$/, ""),
                 apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
-                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value
+                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value,
+                useProxy: document.getElementById('useProxy').checked
             };
         }
 
@@ -1226,7 +1253,8 @@
             const data = {
                 webhookUrl: document.getElementById('kestraWebhookUrl').value,
                 apiTokenCasaDados: document.getElementById('apiTokenCasaDados').value,
-                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value
+                apiTokenSerpApi: document.getElementById('apiTokenSerpApi').value,
+                useProxy: document.getElementById('useProxy').checked
             };
             localStorage.setItem('biotchelly_config_v52', JSON.stringify(data));
             toggleConfig();
@@ -1238,6 +1266,10 @@
             if (saved.webhookUrl) document.getElementById('kestraWebhookUrl').value = saved.webhookUrl;
             if (saved.apiTokenCasaDados) document.getElementById('apiTokenCasaDados').value = saved.apiTokenCasaDados;
             if (saved.apiTokenSerpApi) document.getElementById('apiTokenSerpApi').value = saved.apiTokenSerpApi;
+            if (saved.useProxy !== undefined) document.getElementById('useProxy').checked = saved.useProxy;
+
+            // Set default if not saved (for new users, maybe default true if issues persist?)
+            if (saved.useProxy === undefined) document.getElementById('useProxy').checked = true;
         }
 
         function toggleConfig() {
@@ -1282,9 +1314,13 @@
             log("📦 Exportando resultados para NocoDB...", "info");
 
             try {
-                const response = await fetch(config.webhookUrl, {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                const response = await fetch(fetchUrl, {
                     method: 'POST',
-                    mode: 'cors',
+                    // mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         operation_mode: "EXPORT_TO_NOCODB",
@@ -1347,9 +1383,13 @@
             log("🔄 Consultando saldo...", "info");
 
             try {
-                const response = await fetch(config.webhookUrl, {
+                const fetchUrl = config.useProxy ?
+                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
+                    config.webhookUrl;
+
+                const response = await fetch(fetchUrl, {
                     method: 'POST',
-                    mode: 'cors',
+                    // mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         operation_mode: "CHECK_BALANCE",
