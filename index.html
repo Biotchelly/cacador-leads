@@ -415,6 +415,17 @@
                         <input type="text" class="form-input" id="webhookUrl"
                             value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads/biotchelly_cacador_leads_key">
                     </div>
+
+                    <div style="margin-top: 0.5rem;">
+                        <label class="flex items-center gap-2 cursor-pointer"
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="useProxy" checked style="width: 1rem; height: 1rem;">
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">
+                                <i class="fa-solid fa-shield-halved" style="color: #f97316; margin-right: 4px;"></i>
+                                Ativar Proxy (Bypass CORS)
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
             </div>
@@ -527,11 +538,21 @@
                 };
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
+                const useProxy = document.getElementById('useProxy').checked;
 
-                log(`Enviando para o Backend (${webhookUrl})...`);
+                log(`Preparando envio...`);
+
+                let finalUrl = webhookUrl;
+                if (useProxy) {
+                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`;
+                    log(`🛡️ Usando Proxy Externo (corsproxy.io) para Bypass CORS...`);
+                } else {
+                    log(`Enviando diretamente para: ${webhookUrl}`);
+                }
 
                 try {
-                    const response = await fetch(webhookUrl, {
+                    // Envia requisição (com ou sem proxy externo)
+                    const response = await fetch(finalUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
@@ -547,18 +568,20 @@
                         }
                     } else {
                         log(`❌ Erro no envio: ${response.status} ${response.statusText}`, 'error');
-                        // Log extra para ajudar debugging
-                        if (response.status === 0) log('⚠️ Erro de Rede/CORS. Verifique as configurações do Servidor Kestra.', 'error');
+                        if (response.status === 0 || response.status === 404) {
+                            log('⚠️ Erro de Rede ou URL Inválida. Verifique se o Kestra está acessível.', 'error');
+                            if (!useProxy) log('💡 Dica: Tente marcar a opção "Ativar Proxy".', 'info');
+                        }
                     }
                 } catch (error) {
                     log(`❌ Erro de conexão: ${error.message}`, 'error');
-                    log('💡 Dica: Verifique se o Kestra permite CORS ou se a URL está correta.', 'info');
+                    if (!useProxy) log('💡 Dica: Ative a opção "Ativar Proxy" para resolver erros de CORS.', 'info');
                 }
 
                 processBtn.disabled = false;
                 processBtn.innerHTML = '<i class="fa-solid fa-play"></i> Processar Arquivo';
             };
-            
+
             reader.readAsText(currentFile);
         });
 
