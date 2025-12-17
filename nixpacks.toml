@@ -1,8 +1,4 @@
-[phases.setup]
-nixPkgs = ["python3"]
-
-[phases.install]
-cmds = ["python3 -m pip install -r requirements.txt"]
+providers = ["python"]
 
 [start]
-cmd = "python3 app.py"
+cmd = "python app.py"
