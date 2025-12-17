@@ -1383,9 +1383,15 @@
             log("🔄 Consultando saldo...", "info");
 
             try {
+                // Ensure we wait for execution completion to get outputs
+                let targetUrl = config.webhookUrl;
+                if (!targetUrl.includes('wait=true')) {
+                    targetUrl += targetUrl.includes('?') ? '&wait=true' : '?wait=true';
+                }
+
                 const fetchUrl = config.useProxy ?
-                    `https://corsproxy.io/?${encodeURIComponent(config.webhookUrl)}` :
-                    config.webhookUrl;
+                    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` :
+                    targetUrl;
 
                 const response = await fetch(fetchUrl, {
                     method: 'POST',
@@ -1402,10 +1408,14 @@
                 if (response.ok) {
                     const data = await response.json();
 
-                    // Handle Kestra Execution Output Structure
+                    // Handle Kestra Execution Output Structure (Robust)
                     let saldo = 0;
-                    if (data.outputs && data.outputs.exec_check_balance && data.outputs.exec_check_balance.vars) {
-                        saldo = data.outputs.exec_check_balance.vars.saldo;
+                    const taskOut = data.outputs ? data.outputs.exec_check_balance : null;
+
+                    if (taskOut) {
+                        saldo = taskOut.saldo ||
+                            (taskOut.vars ? taskOut.vars.saldo : 0) ||
+                            (taskOut.values ? taskOut.values.saldo : 0);
                     } else if (data.saldo) {
                         saldo = data.saldo;
                     }
