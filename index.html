@@ -1401,7 +1401,16 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    const saldo = data.saldo || 0;
+
+                    // Handle Kestra Execution Output Structure
+                    let saldo = 0;
+                    if (data.outputs && data.outputs.exec_check_balance && data.outputs.exec_check_balance.vars) {
+                        saldo = data.outputs.exec_check_balance.vars.saldo;
+                    } else if (data.saldo) {
+                        saldo = data.saldo;
+                    }
+
+                    saldo = saldo || 0;
 
                     if (saldo > 0) {
                         log(`💰 Saldo disponível: ${saldo} créditos`, "success");
