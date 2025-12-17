@@ -1364,6 +1364,7 @@
         }
 
         // Check Balance
+        // Check Balance - Direct API Call (Bypassing Kestra to avoid Async/Auth issues)
         async function checkBalance() {
             toggleMoreOptions();
             const config = getConfig();
@@ -1374,101 +1375,64 @@
                 return;
             }
 
-            if (!config.webhookUrl) {
-                log("❌ Configure a URL do Webhook primeiro!", "error");
-                toggleConfig();
-                return;
-            }
-
-            log("🔄 Consultando saldo...", "info");
+            log("🔄 Consultando saldo (Direto na API)...", "info");
 
             try {
-                // Ensure we wait for execution completion to get outputs
-                let targetUrl = config.webhookUrl;
-                if (!targetUrl.includes('wait=true')) {
-                    targetUrl += targetUrl.includes('?') ? '&wait=true' : '?wait=true';
-                }
+                // Use Direct API V5 via Proxy
+                // Note: We use the proxy to bypass CORS on the browser
+                const targetUrl = "https://api.casadosdados.com.br/v5/saldo";
 
                 const fetchUrl = config.useProxy ?
                     `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` :
                     targetUrl;
 
                 const response = await fetch(fetchUrl, {
-                    method: 'POST',
-                    // mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        operation_mode: "CHECK_BALANCE",
-                        frontend_payload: {
-                            token_casa_dados: config.apiTokenCasaDados
-                        }
-                    })
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'api-key': config.apiTokenCasaDados
+                    }
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // DEBUG: Mostra o que chegou
-                    log("🔍 DEBUG KESTRA: " + (data.state ? data.state.current : "UNKNOWN"), "info");
 
-                    // Se estiver apenas CRIADO (Async), precisamos fazer Polling
-                    if (data.state && (data.state.current === 'CREATED' || data.state.current === 'RUNNING')) {
-                        log("⏳ Aguardando processamento...", "info");
-                        try {
-                            // Helper defined below
-                            const finalData = await waitForCompletion(data.id, config);
-                            if (finalData) {
-                                // Update 'data' with the final result so output extraction works
-                                const newData = finalData;
-                                // Preserve original parsing logic by using this new object
-                                // We can't reassign const 'data', so we use a new variable for extraction
-                                data.outputs = newData.outputs;
-                                data.saldo = newData.saldo; // In case it's flat
-                            }
-                        } catch (e) {
-                            log("⚠️ Não foi possível obter o resultado final (API bloqueada ou timeout).", "warning");
-                            console.error(e);
-                        }
-                    }
+                    // DEBUG: Verifique a estrutura bruta se necessário
+                    log("🔍 Resposta API: " + JSON.stringify(data), "info");
 
-                    // Handle Kestra Execution Output Structure (Robust)
-                    let saldo = 0;
-                    const taskOut = data.outputs ? data.outputs.exec_check_balance : null;
+                    // Extract Balance (V5 uses saldo_total, handle potential variations)
+                    const saldo = data.saldo_total !== undefined ? data.saldo_total : (data.saldo || 0);
 
-                    if (taskOut) {
-                        saldo = taskOut.saldo ||
-                            (taskOut.vars ? taskOut.vars.saldo : 0) ||
-                            (taskOut.values ? taskOut.values.saldo : 0);
-                    } else if (data.saldo) {
-                        saldo = data.saldo;
-                    }
-
-                    saldo = saldo || 0;
-
-                    if (saldo > 0) {
+                    if (saldo >= 0) {
                         log(`💰 Saldo disponível: ${saldo} créditos`, "success");
                     } else {
-                        log(`⚠️ Saldo insuficiente: ${saldo} créditos`, "error");
-                        log("   Recarregue sua conta para continuar usando o serviço.", "error");
+                        log(`⚠️ Saldo retornou valor estranho: ${saldo}`, "warning");
                     }
                 } else {
                     const errorText = await response.text();
-                    log(`❌ Erro ao consultar saldo: ${response.status}`, "error");
-                    log(`   ${errorText.substring(0, 100)}`, "error");
+                    log(`❌ Erro API: ${response.status}`, "error");
+                    // log(`   ${errorText}`, "error");
                 }
             } catch (error) {
                 log(`❌ Erro de conexão: ${error.message}`, "error");
             }
         }
 
+
+
+
+
+
+
+
         // Helper: Poll Kestra API for Completion
         async function waitForCompletion(executionId, config) {
-            let baseUrl = config.webhookUrl.split('/executions/webhook/')[0]; 
-            
+            let baseUrl = config.webhookUrl.split('/executions/webhook/')[0];
+
             // List of URLs to try. 1: With 'main' (if present), 2: Without 'main' (cleanup)
             const urlsToTry = [];
             urlsToTry.push(`${baseUrl}/executions/${executionId}`);
-            
+
             if (baseUrl.includes('/main')) {
                 urlsToTry.push(baseUrl.replace('/main', '') + `/executions/${executionId}`);
             }
@@ -1477,7 +1441,7 @@
 
             for (let i = 0; i < 20; i++) { // 20 attempts
                 await new Promise(r => setTimeout(r, 1000));
-                
+
                 for (const executionUrl of urlsToTry) {
                     const fetchUrl = config.useProxy ?
                         `https://corsproxy.io/?${encodeURIComponent(executionUrl)}` :
@@ -1485,13 +1449,13 @@
 
                     try {
                         const res = await fetch(fetchUrl);
-                        
+
                         if (res.status === 404) continue; // Try next URL or next attempt
                         if (res.status === 401 || res.status === 403) {
-                             throw new Error(`Auth Error (${res.status}) - API Privada`);
+                            throw new Error(`Auth Error (${res.status}) - API Privada`);
                         }
                         if (!res.ok) throw new Error(`API Status ${res.status}`);
-                        
+
                         const pData = await res.json();
                         if (pData.state.current === 'SUCCESS' || pData.state.current === 'WARNING') {
                             return pData;
@@ -1500,13 +1464,13 @@
                             throw new Error("Flow Failed");
                         }
                         // If still RUNNING/CREATED, break inner loop to wait and retry same URLs
-                        break; 
+                        break;
                     } catch (e) {
-                         // Only log if it's a hard error, not just a 404 retry
-                         if (!e.message.includes('404')) {
-                             console.warn(`Poll error (${executionUrl}):`, e);
-                             if (e.message.includes('Auth Error')) throw e; // Stop trying if auth failed
-                         }
+                        // Only log if it's a hard error, not just a 404 retry
+                        if (!e.message.includes('404')) {
+                            console.warn(`Poll error (${executionUrl}):`, e);
+                            if (e.message.includes('Auth Error')) throw e; // Stop trying if auth failed
+                        }
                     }
                 }
             }
