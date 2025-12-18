@@ -352,6 +352,43 @@
 
         <div class="content">
 
+            <!-- Painel de Controle Superior -->
+            <div class="config-grid">
+                <div class="config-card">
+                    <div class="config-header">
+                        <i class="fa-solid fa-gear"></i> Configurações do Ciclo
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IDs das Inboxes (Chatwoot)</label>
+                        <input type="text" class="form-input" id="inboxIds" placeholder="Ex: 1, 2, 5" value="1">
+                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para rodízio
+                            (anti-ban).</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
+                        <input type="number" class="form-input" id="reloadCount" value="5">
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <div class="config-header">
+                        <i class="fa-solid fa-clock"></i> Horário e Cadência
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cadência Sniper</label>
+                        <select class="form-select" id="sniperCadence">
+                            <option value="safe" selected>Segura (Média 5 min)</option>
+                            <option value="human">Humana (Média 15 min)</option>
+                            <option value="fast">Rápida (Média 1 min)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max. Disparos por Ciclo</label>
+                        <input type="number" class="form-input" id="maxShots" value="10">
+                    </div>
+                </div>
+            </div>
+
             <!-- File Upload -->
             <div class="dropzone-container">
                 <div class="dropzone" id="dropzone">
@@ -369,77 +406,45 @@
                 </div>
             </div>
 
-            <!-- Settings -->
-            <div class="config-grid">
-
-                <div class="config-card">
-                    <div class="config-header">
-                        <i class="fa-solid fa-crosshairs"></i> Sniper Mode
-                    </div>
-
+            <!-- Toggles de Operação -->
+            <div class="config-card" style="margin-bottom: 2rem;">
+                <div class="config-header">
+                    <i class="fa-solid fa-rocket"></i> Ações do Operador
+                </div>
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
                     <div class="form-group">
-                        <div class="form-label">Status</div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-checkbox" id="reloadEnabled">
+                            <div class="toggle-input"></div>
+                            <span>Executar Recarga</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
                         <label class="toggle-switch">
                             <input type="checkbox" class="toggle-checkbox" id="sniperEnabled">
                             <div class="toggle-input"></div>
-                            <span id="sniperStatusText">Desativado</span>
-                        </label>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Cadência de Disparo</label>
-                        <select class="form-select" id="sniperCadence">
-                            <option value="safe" selected>Segura (5 min)</option>
-                            <option value="fast">Rápida (1 min)</option>
-                            <option value="slow">Lenta (15 min)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="config-card">
-                    <div class="config-header">
-                        <i class="fa-brands fa-whatsapp"></i> Chatwoot
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Inbox ID (Caixa de Entrada)</label>
-                        <input type="number" class="form-input" id="inboxId" placeholder="Ex: 1" value="1">
-                        <small
-                            style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
-                            ID da caixa de entrada que fará os disparos.
-                        </small>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 1rem;">
-                        <label class="form-label">Kestra Webhook URL</label>
-                        <input type="text" class="form-input" id="webhookUrl"
-                            value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads/biotchelly_cacador_leads_key">
-                    </div>
-
-                    <div style="margin-top: 0.5rem;">
-                        <label class="flex items-center gap-2 cursor-pointer"
-                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="useProxy" checked style="width: 1rem; height: 1rem;">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">
-                                <i class="fa-solid fa-shield-halved" style="color: #f97316; margin-right: 4px;"></i>
-                                Ativar Proxy (Bypass CORS)
-                            </span>
+                            <span>Ligar Sniper 🔫</span>
                         </label>
                     </div>
                 </div>
 
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="form-label">Kestra Webhook URL</label>
+                    <input type="text" class="form-input" id="webhookUrl"
+                        value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
+                </div>
             </div>
 
             <!-- Actions -->
-            <button class="action-btn" id="processBtn" disabled>
-                <i class="fa-solid fa-play"></i> Processar Arquivo
+            <button class="action-btn" id="processBtn">
+                <i class="fa-solid fa-play"></i> Executar Operação
             </button>
 
             <!-- Console -->
             <div class="console" id="console">
                 <div class="console-line">
                     <span class="console-time">[sys]</span>
-                    <span>Sistema pronto. Aguardando arquivo...</span>
+                    <span>Painel pronto. Configure e clique em Executar Operação.</span>
                 </div>
             </div>
 
@@ -503,86 +508,70 @@
                 document.getElementById('fileName').textContent = file.name;
                 document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
                 fileInfo.classList.add('visible');
-                processBtn.disabled = false;
-                log(`Arquivo carregado: ${file.name}`);
+                log(`Arquivo CSV carregado: ${file.name}`);
             } else {
                 log('Erro: Por favor, selecione um arquivo .csv válido.', 'error');
             }
         }
 
-        // --- UI Logic ---
-        const sniperToggle = document.getElementById('sniperEnabled');
-        sniperToggle.addEventListener('change', (e) => {
-            document.getElementById('sniperStatusText').textContent = e.target.checked ? 'Ativado' : 'Desativado';
-        });
-
         // --- Process Logic ---
         processBtn.addEventListener('click', async () => {
-            if (!currentFile) return;
+            const sniperEnabled = document.getElementById('sniperEnabled').checked;
+            const reloadEnabled = document.getElementById('reloadEnabled').checked;
+
+            if (!currentFile && !sniperEnabled && !reloadEnabled) {
+                log('Erro: Carregue um arquivo ou habilite Recarga/Sniper.', 'error');
+                return;
+            }
 
             processBtn.disabled = true;
             processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
-            log('Iniciando leitura do arquivo...');
 
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const csvContent = e.target.result;
-                log(`Arquivo lido. Tamanho: ${csvContent.length} bytes.`);
-
+            const sendData = async (csvContent = null) => {
                 const payload = {
                     csv_content: csvContent,
-                    filename: currentFile.name,
-                    sniper_enabled: document.getElementById('sniperEnabled').checked,
+                    filename: currentFile ? currentFile.name : 'não enviado',
+                    reload_enabled: reloadEnabled,
+                    sniper_enabled: sniperEnabled,
+                    reload_count: parseInt(document.getElementById('reloadCount').value),
+                    max_disparos_ciclo: parseInt(document.getElementById('maxShots').value),
                     sniper_cadence: document.getElementById('sniperCadence').value,
-                    chatwoot_inbox_id: document.getElementById('inboxId').value
+                    chatwoot_inbox_ids: document.getElementById('inboxIds').value
                 };
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
-                const useProxy = document.getElementById('useProxy').checked;
-
-                log(`Preparando envio...`);
-
-                let finalUrl = webhookUrl;
-                if (useProxy) {
-                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`;
-                    log(`🛡️ Usando Proxy Externo (corsproxy.io) para Bypass CORS...`);
-                } else {
-                    log(`Enviando diretamente para: ${webhookUrl}`);
-                }
+                log(`🚀 Enviando comando para o Kestra...`);
 
                 try {
-                    // Envia requisição (com ou sem proxy externo)
-                    const response = await fetch(finalUrl, {
+                    const response = await fetch(webhookUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
                     if (response.ok) {
-                        try {
-                            const jsonRes = await response.json();
-                            log('✅ Sucesso! Fluxo iniciado.');
-                            if (jsonRes.imported_count) log(`Registros importados: ${jsonRes.imported_count}`);
-                        } catch (e) {
-                            log('✅ Sucesso! Fluxo iniciado (sem resposta JSON).');
-                        }
+                        log('✅ Sucesso! Fluxo disparado no Kestra.');
                     } else {
-                        log(`❌ Erro no envio: ${response.status} ${response.statusText}`, 'error');
-                        if (response.status === 0 || response.status === 404) {
-                            log('⚠️ Erro de Rede ou URL Inválida. Verifique se o Kestra está acessível.', 'error');
-                            if (!useProxy) log('💡 Dica: Tente marcar a opção "Ativar Proxy".', 'info');
-                        }
+                        log(`❌ Erro no envio: ${response.status}`, 'error');
                     }
                 } catch (error) {
                     log(`❌ Erro de conexão: ${error.message}`, 'error');
-                    if (!useProxy) log('💡 Dica: Ative a opção "Ativar Proxy" para resolver erros de CORS.', 'info');
+                } finally {
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = '<i class="fa-solid fa-play"></i> Executar Operação';
                 }
-
-                processBtn.disabled = false;
-                processBtn.innerHTML = '<i class="fa-solid fa-play"></i> Processar Arquivo';
             };
 
-            reader.readAsText(currentFile);
+            if (currentFile) {
+                log('Lendo arquivo CSV...');
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    await sendData(e.target.result);
+                };
+                reader.readAsText(currentFile);
+            } else {
+                await sendData();
+            }
         });
 
         function log(msg, type = 'info') {
