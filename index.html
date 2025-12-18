@@ -375,12 +375,9 @@
                         <i class="fa-solid fa-clock"></i> Horário e Cadência
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Cadência Sniper</label>
-                        <select class="form-select" id="sniperCadence">
-                            <option value="safe" selected>Segura (Média 5 min)</option>
-                            <option value="human">Humana (Média 15 min)</option>
-                            <option value="fast">Rápida (Média 1 min)</option>
-                        </select>
+                        <label class="form-label">Cadência Sniper (Minutos)</label>
+                        <input type="number" class="form-input" id="sniperCadence" value="5" min="1">
+                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre cada disparo.</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Max. Disparos por Ciclo</label>
@@ -413,18 +410,20 @@
                 </div>
                 <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
                     <div class="form-group">
-                        <label class="toggle-switch">
+                        <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
                             <input type="checkbox" class="toggle-checkbox" id="reloadEnabled">
                             <div class="toggle-input"></div>
                             <span>Executar Recarga</span>
                         </label>
+                        <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Traz novos leads do pool para a fila.</small>
                     </div>
                     <div class="form-group">
-                        <label class="toggle-switch">
+                        <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
                             <input type="checkbox" class="toggle-checkbox" id="sniperEnabled">
                             <div class="toggle-input"></div>
                             <span>Ligar Sniper 🔫</span>
                         </label>
+                        <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Faz o disparo real para quem está na fila.</small>
                     </div>
                 </div>
 
