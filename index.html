@@ -374,6 +374,17 @@
 
                 <div class="config-card">
                     <div class="config-header">
+                        <i class="fa-solid fa-database"></i> CRM NocoDB
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ID da Tabela (Destino)</label>
+                        <input type="text" class="form-input" id="tableId" placeholder="ID da tabela no NocoDB" value="vw79xqghy8955pye">
+                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão: vw79xqghy8955pye</small>
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <div class="config-header">
                         <i class="fa-solid fa-clock"></i> Horário e Cadência
                     </div>
                     <div class="form-group">
@@ -550,7 +561,8 @@
                     reload_count: parseInt(document.getElementById('reloadCount').value),
                     max_disparos_ciclo: parseInt(document.getElementById('maxShots').value),
                     sniper_cadence: document.getElementById('sniperCadence').value,
-                    chatwoot_inbox_ids: document.getElementById('inboxIds').value
+                    chatwoot_inbox_ids: document.getElementById('inboxIds').value,
+                    table_id: document.getElementById('tableId').value
                 };
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
