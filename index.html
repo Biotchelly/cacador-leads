@@ -569,6 +569,9 @@
             processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
 
             const sendData = async (csvContent = null) => {
+                const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
+                log(`📦 Preparando payload (${payloadSize} KB)...`);
+
                 const payload = {
                     csv_content: csvContent,
                     filename: currentFile ? currentFile.name : 'não enviado',
@@ -586,11 +589,11 @@
                 const webhookUrl = document.getElementById('webhookUrl').value;
                 const useProxy = document.getElementById('useProxy').checked;
 
-                const tryFetch = async (url, label) => {
-                    log(`📡 Tentativa: ${label}...`);
+                const tryFetch = async (url, label, timeoutMs = 60000) => {
+                    log(`📡 Tentativa: ${label} (Timeout: ${timeoutMs / 1000}s)...`);
                     try {
                         const controller = new AbortController();
-                        const id = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                        const id = setTimeout(() => controller.abort(), timeoutMs);
 
                         const response = await fetch(url, {
                             method: 'POST',
@@ -602,41 +605,42 @@
                         clearTimeout(id);
                         return response;
                     } catch (e) {
-                        log(`⚠️ Falha na tentativa (${label}): ${e.message}`, 'error');
+                        const errorMsg = e.name === 'AbortError' ? 'Timeout (Servidor demorou demais)' : e.message;
+                        log(`⚠️ Falha na tentativa (${label}): ${errorMsg}`, 'error');
                         return null;
                     }
                 };
 
                 let response = null;
 
-                // Fluxo de Resiliência
                 if (useProxy) {
-                    // Tenta Proxy 1 (corsproxy.io)
-                    const proxyUrl1 = `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`;
-                    response = await tryFetch(proxyUrl1, "Proxy Principal");
+                    const proxies = [
+                        { name: "Proxy 1 (corsproxy.io)", url: `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}` },
+                        { name: "Proxy 2 (AllOrigins)", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}` },
+                        { name: "Proxy 3 (CORS Anywhere)", url: `https://cors-anywhere.herokuapp.com/${webhookUrl}` }
+                    ];
 
-                    // Tenta Proxy 2 (FallBack se o 1 falhar) - Usando AllOrigins
-                    if (!response || !response.ok) {
-                        const proxyUrl2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}`;
-                        response = await tryFetch(proxyUrl2, "Proxy Secundário (AllOrigins)");
+                    for (const proxy of proxies) {
+                        response = await tryFetch(proxy.url, proxy.name, 60000);
+                        if (response && response.ok) break;
+                        log(`🔄 Alternando para próximo proxy...`);
                     }
                 } else {
-                    // Tenta Direto
-                    response = await tryFetch(webhookUrl, "Conexão Direta");
+                    response = await tryFetch(webhookUrl, "Conexão Direta", 30000);
                 }
 
                 if (response && response.ok) {
                     log('✅ Sucesso Absoluto! Comando recebido pelo Kestra.');
-                    // Feedback visual de sucesso
                     const originalBg = processBtn.style.backgroundColor;
                     processBtn.style.backgroundColor = '#10b981';
                     setTimeout(() => processBtn.style.backgroundColor = originalBg, 2000);
                 } else {
                     const status = response ? response.status : 'SEM RESPOSTA';
-                    log(`❌ Falha Crítica: Status ${status}. Verifique o console do navegador (F12) para detalhes de rede.`, 'error');
+                    log(`❌ Falha Crítica: Status ${status}.`, 'error');
+                    log(`🛑 Todos os proxies falharam ou o arquivo é grande demais para webhooks síncronos.`, 'error');
 
                     if (useProxy) {
-                        log('💡 DICA: Tente desativar o Proxy e use uma extensão de "Allow CORS" no Chrome.', 'info');
+                        log('💡 DICA: Desative o Proxy no painel e use uma extensão de "Allow CORS" no Chrome.', 'info');
                     }
                 }
 
