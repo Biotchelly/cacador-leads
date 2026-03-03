@@ -502,7 +502,14 @@
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label class="form-label">Kestra Webhook URL</label>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
+                        <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
+                            style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                            <i class="fa-solid fa-plug"></i> Testar URL
+                        </button>
+                    </div>
                     <input type="text" class="form-input" id="webhookUrl"
                         value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
                 </div>
@@ -670,6 +677,12 @@
                         response = await tryFetch(proxy.url, proxy.name, 60000);
                         if (response && response.ok) break;
                     }
+
+                    // Fallback para Direto mesmo se estiver no modo proxy
+                    if (!response || !response.ok) {
+                        log("🩹 Tentando Fallback Final (Modo Direto)...", "warning");
+                        response = await tryFetch(webhookUrl, "Modo Direto (Último Recurso)", 30000);
+                    }
                 } else {
                     response = await tryFetch(webhookUrl, "Modo Extensão (Direto)", 30000);
                 }
@@ -678,7 +691,7 @@
                     log('✅ Sucesso Absoluto!', 'success');
                 } else {
                     log(`❌ Falha Crítica.`, 'error');
-                    log(`💡 MODO DE EMERGÊNCIA: Se o erro persistir, ative a extensão "Allow CORS" ou clique no botão "COPIAR CURL" acima e cole no terminal do seu computador.`, 'warning');
+                    log(`💡 MODO DE EMERGÊNCIA: Ligue a extensão "Allow CORS" ou clique em "COPIAR CURL" e cole no terminal.`, 'warning');
                     copyCurlBtn.style.display = 'block';
                 }
                 processBtn.disabled = false;
