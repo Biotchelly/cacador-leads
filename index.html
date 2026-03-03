@@ -459,40 +459,52 @@
                     </div>
                 </div>
 
+                <div class="config-card"
+                    style="margin-top: 1rem; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
+                    <div class="config-header" style="color: #f59e0b;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Modo de Conexão
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="connMode" value="extension" checked
+                                style="width: 1.1rem; height: 1.1rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600;">Modo Estável (Com Extensão)</span>
+                        </label>
+                        <small
+                            style="margin-left: 1.6rem; color: #10b981; font-size: 0.7rem; display: block; margin-top: -4px;">
+                            <i class="fa-solid fa-check-double"></i> Recomendado. Requer extensão "Allow CORS" ativada.
+                        </small>
+
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 4px;">
+                            <input type="radio" name="connMode" value="proxy" style="width: 1.1rem; height: 1.1rem;">
+                            <span style="font-size: 0.85rem;">Modo Proxy (Lento/Instável)</span>
+                        </label>
+                        <small
+                            style="margin-left: 1.6rem; color: var(--text-secondary); font-size: 0.7rem; display: block; margin-top: -4px;">
+                            Tenta 4 túneis diferentes. Pode falhar com arquivos grandes.
+                        </small>
+                    </div>
+
+                    <div id="proxyHelper"
+                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafcepgnnocghjocpjjnjpncdajoe"
+                                target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold;">
+                                <i class="fa-solid fa-download"></i> Baixar Extensão "Allow CORS"
+                            </a>
+                            <button onclick="copyCurl()" id="copyCurlBtn"
+                                style="display:none; background: #374151; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer;">
+                                <i class="fa-solid fa-terminal"></i> Copiar CURL
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-top: 1rem;">
                     <label class="form-label">Kestra Webhook URL</label>
                     <input type="text" class="form-input" id="webhookUrl"
                         value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
-                </div>
-
-                <div
-                    style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="useProxy" checked style="width: 1rem; height: 1rem;">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">
-                                <i class="fa-solid fa-shield-halved" style="color: #f97316;"></i> Usar Proxies
-                            </span>
-                        </label>
-                        <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
-                            style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
-                            <i class="fa-solid fa-plug"></i> Testar Conexão
-                        </button>
-                    </div>
-
-                    <div id="proxyHelper"
-                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-                        <span style="color: #94a3b8; font-weight: 600;"><i class="fa-solid fa-circle-info"></i>
-                            Resolução de Problemas:</span>
-                        <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"
-                            style="color: var(--accent-color); text-decoration: none;">
-                            1. Ativar Proxy 3 (Bypass 403)
-                        </a>
-                        <a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafcepgnnocghjocpjjnjpncdajoe"
-                            target="_blank" style="color: #10b981; text-decoration: none; font-weight: bold;">
-                            2. Instalar Extensão (Altamente Recomendado)
-                        </a>
-                    </div>
                 </div>
             </div>
 
@@ -505,7 +517,7 @@
             <div class="console" id="console">
                 <div class="console-line">
                     <span class="console-timestamp">[00:00:00]</span>
-                    <span class="console-msg">Painel pronto. Configure e clique em Executar Operação.</span>
+                    <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
                 </div>
             </div>
 
@@ -517,29 +529,23 @@
         function setTheme(theme) {
             const root = document.documentElement;
             const buttons = document.querySelectorAll('.theme-btn');
-
             buttons.forEach(btn => btn.classList.remove('active'));
-
             if (theme === 'system') {
                 const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
             } else {
                 root.setAttribute('data-theme', theme);
             }
-
-            // Safe selector for active button
             const activeBtn = document.querySelector(`.theme-btn[onclick*="${theme}"]`);
             if (activeBtn) activeBtn.classList.add('active');
-
             localStorage.setItem('theme', theme);
         }
-
-        // Init Theme
         const savedTheme = localStorage.getItem('theme') || 'system';
         setTheme(savedTheme);
 
         // State & Elements
         let currentFile = null;
+        let lastPayload = null; // Stored for CURL generation
         const dropZone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
@@ -547,43 +553,36 @@
         const fileSizeDisp = document.getElementById('fileSize');
         const processBtn = document.getElementById('processBtn');
         const consoleEl = document.getElementById('console');
+        const copyCurlBtn = document.getElementById('copyCurlBtn');
 
-        // Professional Log Function
         const log = (msg, type = 'info') => {
             const line = document.createElement('div');
             line.className = 'console-line';
             const now = new Date();
             const time = now.toTimeString().split(' ')[0];
-
-            let icon = '📡';
-            if (type === 'error') icon = '❌';
-            if (type === 'success') icon = '✅';
-            if (type === 'warning') icon = '⚠️';
-
             line.innerHTML = `<span class="console-timestamp">[${time}]</span> <span class="console-msg">${msg}</span>`;
             if (type === 'error') line.style.color = '#ef4444';
             if (type === 'success') line.style.color = '#10b981';
-
+            if (type === 'warning') line.style.color = '#f59e0b';
             consoleEl.appendChild(line);
             consoleEl.scrollTop = consoleEl.scrollHeight;
         };
 
+        const copyCurl = () => {
+            if (!lastPayload) return;
+            const curl = `curl -X POST "${document.getElementById('webhookUrl').value}" -H "Content-Type: application/json" -d '${JSON.stringify(lastPayload).replace(/'/g, "'\\''")}'`;
+            navigator.clipboard.writeText(curl).then(() => {
+                const oldText = copyCurlBtn.innerHTML;
+                copyCurlBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                setTimeout(() => copyCurlBtn.innerHTML = oldText, 2000);
+            });
+        };
+
         // UI Event Listeners
         dropZone.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFile(e.target.files[0]);
-        });
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFile(e.target.files[0]); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
@@ -598,14 +597,13 @@
                 fileInfo.classList.add('visible');
                 log(`Arquivo CSV carregado: ${file.name}`, 'success');
             } else {
-                log('Erro: Por favor, selecione um arquivo .csv válido.', 'error');
+                log('Erro: Selecione um arquivo .csv válido.', 'error');
             }
         };
 
         processBtn.addEventListener('click', async () => {
             const reloadEnabled = document.getElementById('reloadEnabled').checked;
             const sniperEnabled = document.getElementById('sniperEnabled').checked;
-
             if (!currentFile && !reloadEnabled && !sniperEnabled) {
                 log('Erro: Carregue um arquivo ou habilite Recarga/Sniper.', 'error');
                 return;
@@ -614,11 +612,9 @@
             processBtn.disabled = true;
             const originalContent = processBtn.innerHTML;
             processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+            copyCurlBtn.style.display = 'none';
 
             const sendData = async (csvContent = null) => {
-                const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
-                log(`📦 Preparando payload (${payloadSize} KB)...`);
-
                 const payload = {
                     csv_content: csvContent,
                     filename: currentFile ? currentFile.name : 'não enviado',
@@ -632,17 +628,17 @@
                     vendedor_nome: document.getElementById('vendedorNome').value,
                     chatwoot_agent_id: document.getElementById('agentId').value ? parseInt(document.getElementById('agentId').value) : null
                 };
+                lastPayload = payload;
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
-                const useProxy = document.getElementById('useProxy').checked;
+                const connMode = document.querySelector('input[name="connMode"]:checked').value;
 
                 const tryFetch = async (url, label, timeoutMs = 60000) => {
-                    log(`📡 Tentativa: ${label} (Timeout: ${timeoutMs / 1000}s)...`);
+                    log(`📡 Tentativa: ${label}...`);
                     const startTime = performance.now();
                     try {
                         const controller = new AbortController();
                         const id = setTimeout(() => controller.abort(), timeoutMs);
-
                         const response = await fetch(url, {
                             method: 'POST',
                             mode: 'cors',
@@ -656,48 +652,35 @@
                         return response;
                     } catch (e) {
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
-                        const errorMsg = e.name === 'AbortError' ? `Timeout após ${duration}s` : e.message;
-                        log(`⚠️ Falha na tentativa (${label}): ${errorMsg}`, 'error');
+                        const errorMsg = e.name === 'AbortError' ? `Timeout (${duration}s)` : e.message;
+                        log(`⚠️ Falha (${label}): ${errorMsg}`, 'error');
                         return null;
                     }
                 };
 
                 let response = null;
-
-                if (useProxy) {
+                if (connMode === 'proxy') {
                     const proxies = [
                         { name: "Proxy 1 (corsproxy.io)", url: `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}` },
                         { name: "Proxy 2 (AllOrigins)", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}` },
                         { name: "Proxy 3 (CORS Anywhere)", url: `https://cors-anywhere.herokuapp.com/${webhookUrl}` },
                         { name: "Proxy 4 (ThingProxy)", url: `https://thingproxy.freeboard.io/fetch/${webhookUrl}` }
                     ];
-
                     for (const proxy of proxies) {
                         response = await tryFetch(proxy.url, proxy.name, 60000);
                         if (response && response.ok) break;
-                        if (response && response.status === 403 && proxy.name.includes("CORS Anywhere")) {
-                            log("🛑 Erro 403 no Proxy 3: Requer ativação manual no link acima!", "error");
-                        }
                     }
-                }
-
-                // Fallback Automático para Direto
-                if (!response || !response.ok) {
-                    if (useProxy) log("🩹 Tentando Fallback de Segurança (Conexão Direta)...", "warning");
-                    response = await tryFetch(webhookUrl, "Conexão Direta (Bypass Extensão)", 30000);
+                } else {
+                    response = await tryFetch(webhookUrl, "Modo Extensão (Direto)", 30000);
                 }
 
                 if (response && response.ok) {
-                    log('✅ Sucesso Absoluto! Comando recebido pelo Kestra.', 'success');
-                    const originalBg = processBtn.style.backgroundColor;
-                    processBtn.style.backgroundColor = '#10b981';
-                    setTimeout(() => processBtn.style.backgroundColor = originalBg, 2000);
+                    log('✅ Sucesso Absoluto!', 'success');
                 } else {
-                    const status = response ? response.status : 'SEM RESPOSTA';
-                    log(`❌ Falha Crítica: Status ${status}.`, 'error');
-                    log(`🛑 Todos os canais falharam. Verifique os alertas acima.`, 'error');
+                    log(`❌ Falha Crítica.`, 'error');
+                    log(`💡 MODO DE EMERGÊNCIA: Se o erro persistir, ative a extensão "Allow CORS" ou clique no botão "COPIAR CURL" acima e cole no terminal do seu computador.`, 'warning');
+                    copyCurlBtn.style.display = 'block';
                 }
-
                 processBtn.disabled = false;
                 processBtn.innerHTML = originalContent;
             };
@@ -705,9 +688,7 @@
             if (currentFile) {
                 log('Lendo arquivo CSV...');
                 const reader = new FileReader();
-                reader.onload = async (e) => {
-                    await sendData(e.target.result);
-                };
+                reader.onload = async (e) => await sendData(e.target.result);
                 reader.readAsText(currentFile);
             } else {
                 await sendData();
