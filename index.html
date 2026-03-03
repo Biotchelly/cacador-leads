@@ -465,18 +465,34 @@
                         value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
                 </div>
 
-                <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 4px;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="useProxy" checked style="width: 1rem; height: 1rem;">
-                        <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">
-                            <i class="fa-solid fa-shield-halved" style="color: #f97316; margin-right: 4px;"></i>
-                            Ativar Proxies (Bypass CORS)
-                        </span>
-                    </label>
-                    <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"
-                        style="font-size: 0.65rem; color: var(--accent-color); text-decoration: none; margin-left: 1.5rem;">
-                        <i class="fa-solid fa-link"></i> Ativar Proxy 3 (Se der erro 403)
-                    </a>
+                <div
+                    style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="useProxy" checked style="width: 1rem; height: 1rem;">
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">
+                                <i class="fa-solid fa-shield-halved" style="color: #f97316;"></i> Usar Proxies
+                            </span>
+                        </label>
+                        <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
+                            style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                            <i class="fa-solid fa-plug"></i> Testar Conexão
+                        </button>
+                    </div>
+
+                    <div id="proxyHelper"
+                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.05); pt: 4px;">
+                        <span style="color: #94a3b8; font-weight: 600;"><i class="fa-solid fa-circle-info"></i>
+                            Resolução de Problemas:</span>
+                        <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"
+                            style="color: var(--accent-color); text-decoration: none;">
+                            1. Ativar Proxy 3 (Bypass 403)
+                        </a>
+                        <a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafcepgnnocghjocpjjnjpncdajoe"
+                            target="_blank" style="color: #10b981; text-decoration: none;">
+                            2. Instalar Extensão (Recomendado)
+                        </a>
+                    </div>
                 </div>
             </div>
 
