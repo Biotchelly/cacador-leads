@@ -481,7 +481,7 @@
                     </div>
 
                     <div id="proxyHelper"
-                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.05); pt: 4px;">
+                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
                         <span style="color: #94a3b8; font-weight: 600;"><i class="fa-solid fa-circle-info"></i>
                             Resolução de Problemas:</span>
                         <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"
@@ -489,8 +489,8 @@
                             1. Ativar Proxy 3 (Bypass 403)
                         </a>
                         <a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafcepgnnocghjocpjjnjpncdajoe"
-                            target="_blank" style="color: #10b981; text-decoration: none;">
-                            2. Instalar Extensão (Recomendado)
+                            target="_blank" style="color: #10b981; text-decoration: none; font-weight: bold;">
+                            2. Instalar Extensão (Altamente Recomendado)
                         </a>
                     </div>
                 </div>
@@ -504,8 +504,8 @@
             <!-- Console -->
             <div class="console" id="console">
                 <div class="console-line">
-                    <span class="console-time">[sys]</span>
-                    <span>Painel pronto. Configure e clique em Executar Operação.</span>
+                    <span class="console-timestamp">[00:00:00]</span>
+                    <span class="console-msg">Painel pronto. Configure e clique em Executar Operação.</span>
                 </div>
             </div>
 
@@ -535,52 +535,85 @@
         const savedTheme = localStorage.getItem('theme') || 'system';
         setTheme(savedTheme);
 
-        // --- Drag & Drop Logic ---
-        const dropzone = document.getElementById('dropzone');
+        // State
+        let currentFile = null;
+        let reloadEnabled = true;
+        let sniperEnabled = true;
+
+        // Elements
+        const dropZone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
+        const fileNameDisp = document.getElementById('fileName');
+        const reloadToggle = document.getElementById('reloadEnabled'); // Assuming this is the checkbox
+        const sniperToggle = document.getElementById('sniperEnabled'); // Assuming this is the checkbox
         const processBtn = document.getElementById('processBtn');
-        let currentFile = null;
+        const consoleEl = document.getElementById('console');
 
-        dropzone.addEventListener('click', () => fileInput.click());
+        // Functions
+        const log = (msg, type = 'info') => {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
 
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('dragover');
-        });
+            let icon = '📡';
+            if (type === 'error') icon = '❌';
+            if (type === 'success') icon = '✅';
+            if (type === 'warning') icon = '⚠️';
 
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('dragover');
-        });
+            line.innerHTML = `<span class="console-timestamp">[${time}]</span> <span class="console-msg">${msg}</span>`;
+            if (type === 'error') line.style.color = '#ef4444';
+            if (type === 'success') line.style.color = '#10b981';
 
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-            handleFile(e.dataTransfer.files[0]);
-        });
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+
+        // UI Handlers
+        // The original HTML uses checkboxes, not toggle buttons, so the toggle logic needs to be adapted.
+        // For now, I'll keep the original checkbox behavior for reloadEnabled and sniperEnabled.
+        // The provided snippet for UI Handlers seems to assume different HTML structure for toggles.
+        // I will adapt the `processBtn.onclick` to read the checkbox states directly.
+
+        dropZone.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleFile(e.target.files[0]);
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
 
-        function handleFile(file) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        const handleFile = (file) => {
             if (file && file.name.endsWith('.csv')) {
                 currentFile = file;
-                document.getElementById('fileName').textContent = file.name;
+                fileNameDisp.textContent = file.name;
                 document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
-                fileInfo.classList.add('visible');
+                fileInfo.classList.add('visible'); // Assuming 'visible' is the class to show file info
                 log(`Arquivo CSV carregado: ${file.name}`);
             } else {
                 log('Erro: Por favor, selecione um arquivo .csv válido.', 'error');
             }
-        }
+        };
 
-        // --- Process Logic ---
         processBtn.addEventListener('click', async () => {
-            const sniperEnabled = document.getElementById('sniperEnabled').checked;
-            const reloadEnabled = document.getElementById('reloadEnabled').checked;
+            reloadEnabled = document.getElementById('reloadEnabled').checked;
+            sniperEnabled = document.getElementById('sniperEnabled').checked;
 
-            if (!currentFile && !sniperEnabled && !reloadEnabled) {
+            if (!currentFile && !reloadEnabled && !sniperEnabled) {
                 log('Erro: Carregue um arquivo ou habilite Recarga/Sniper.', 'error');
                 return;
             }
@@ -653,8 +686,12 @@
                         }
                         log(`🔄 Alternando para próximo canal...`);
                     }
-                } else {
-                    response = await tryFetch(webhookUrl, "Conexão Direta", 30000);
+                }
+
+                // Fallback Automático para Direto se tudo falhar ou proxy estiver desativado
+                if (!response || !response.ok) {
+                    if (useProxy) log("🩹 Tentando Fallback de Segurança (Conexão Direta)...", "warning");
+                    response = await tryFetch(webhookUrl, "Conexão Direta (Bypass Extensão)", 30000);
                 }
 
                 if (response && response.ok) {
@@ -665,10 +702,10 @@
                 } else {
                     const status = response ? response.status : 'SEM RESPOSTA';
                     log(`❌ Falha Crítica: Status ${status}.`, 'error');
-                    log(`🛑 Todos os proxies falharam ou o arquivo é grande demais para webhooks síncronos.`, 'error');
+                    log(`🛑 Todos os canais falharam. O arquivo pode ser grande demais ou há bloqueio de rede.`, 'error');
 
                     if (useProxy) {
-                        log('💡 RECOMENDAÇÃO: Desative o Proxy no painel e instale a extensão "Allow CORS: Access-Control-Allow-Origin" no seu Chrome para conexão direta e ultra-veloz.', 'info');
+                        log('💡 SOLUÇÃO DEFINITIVA: Instale a extensão "Allow CORS" no link acima, ative-a e desmarque "Usar Proxies".', 'info');
                     }
                 }
 
