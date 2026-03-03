@@ -523,11 +523,14 @@
             if (theme === 'system') {
                 const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
-                document.querySelector('[onclick="setTheme(\'system\')"]').classList.add('active');
             } else {
                 root.setAttribute('data-theme', theme);
-                document.querySelector(`[onclick="setTheme('${theme}')"]`).classList.add('active');
             }
+
+            // Safe selector for active button
+            const activeBtn = document.querySelector(`.theme-btn[onclick*="${theme}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
             localStorage.setItem('theme', theme);
         }
 
@@ -535,22 +538,17 @@
         const savedTheme = localStorage.getItem('theme') || 'system';
         setTheme(savedTheme);
 
-        // State
+        // State & Elements
         let currentFile = null;
-        let reloadEnabled = true;
-        let sniperEnabled = true;
-
-        // Elements
         const dropZone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
         const fileNameDisp = document.getElementById('fileName');
-        const reloadToggle = document.getElementById('reloadEnabled'); // Assuming this is the checkbox
-        const sniperToggle = document.getElementById('sniperEnabled'); // Assuming this is the checkbox
+        const fileSizeDisp = document.getElementById('fileSize');
         const processBtn = document.getElementById('processBtn');
         const consoleEl = document.getElementById('console');
 
-        // Functions
+        // Professional Log Function
         const log = (msg, type = 'info') => {
             const line = document.createElement('div');
             line.className = 'console-line';
@@ -570,12 +568,7 @@
             consoleEl.scrollTop = consoleEl.scrollHeight;
         };
 
-        // UI Handlers
-        // The original HTML uses checkboxes, not toggle buttons, so the toggle logic needs to be adapted.
-        // For now, I'll keep the original checkbox behavior for reloadEnabled and sniperEnabled.
-        // The provided snippet for UI Handlers seems to assume different HTML structure for toggles.
-        // I will adapt the `processBtn.onclick` to read the checkbox states directly.
-
+        // UI Event Listeners
         dropZone.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', (e) => {
@@ -601,17 +594,17 @@
             if (file && file.name.endsWith('.csv')) {
                 currentFile = file;
                 fileNameDisp.textContent = file.name;
-                document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
-                fileInfo.classList.add('visible'); // Assuming 'visible' is the class to show file info
-                log(`Arquivo CSV carregado: ${file.name}`);
+                if (fileSizeDisp) fileSizeDisp.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                fileInfo.classList.add('visible');
+                log(`Arquivo CSV carregado: ${file.name}`, 'success');
             } else {
                 log('Erro: Por favor, selecione um arquivo .csv válido.', 'error');
             }
         };
 
         processBtn.addEventListener('click', async () => {
-            reloadEnabled = document.getElementById('reloadEnabled').checked;
-            sniperEnabled = document.getElementById('sniperEnabled').checked;
+            const reloadEnabled = document.getElementById('reloadEnabled').checked;
+            const sniperEnabled = document.getElementById('sniperEnabled').checked;
 
             if (!currentFile && !reloadEnabled && !sniperEnabled) {
                 log('Erro: Carregue um arquivo ou habilite Recarga/Sniper.', 'error');
@@ -619,6 +612,7 @@
             }
 
             processBtn.disabled = true;
+            const originalContent = processBtn.innerHTML;
             processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
 
             const sendData = async (csvContent = null) => {
@@ -658,7 +652,7 @@
                         });
                         clearTimeout(id);
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
-                        if (response.ok) log(`⏱️ Resposta em ${duration}s via ${label}`);
+                        if (response.ok) log(`⏱️ Resposta em ${duration}s via ${label}`, 'success');
                         return response;
                     } catch (e) {
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
@@ -684,33 +678,28 @@
                         if (response && response.status === 403 && proxy.name.includes("CORS Anywhere")) {
                             log("🛑 Erro 403 no Proxy 3: Requer ativação manual no link acima!", "error");
                         }
-                        log(`🔄 Alternando para próximo canal...`);
                     }
                 }
 
-                // Fallback Automático para Direto se tudo falhar ou proxy estiver desativado
+                // Fallback Automático para Direto
                 if (!response || !response.ok) {
                     if (useProxy) log("🩹 Tentando Fallback de Segurança (Conexão Direta)...", "warning");
                     response = await tryFetch(webhookUrl, "Conexão Direta (Bypass Extensão)", 30000);
                 }
 
                 if (response && response.ok) {
-                    log('✅ Sucesso Absoluto! Comando recebido pelo Kestra.');
+                    log('✅ Sucesso Absoluto! Comando recebido pelo Kestra.', 'success');
                     const originalBg = processBtn.style.backgroundColor;
                     processBtn.style.backgroundColor = '#10b981';
                     setTimeout(() => processBtn.style.backgroundColor = originalBg, 2000);
                 } else {
                     const status = response ? response.status : 'SEM RESPOSTA';
                     log(`❌ Falha Crítica: Status ${status}.`, 'error');
-                    log(`🛑 Todos os canais falharam. O arquivo pode ser grande demais ou há bloqueio de rede.`, 'error');
-
-                    if (useProxy) {
-                        log('💡 SOLUÇÃO DEFINITIVA: Instale a extensão "Allow CORS" no link acima, ative-a e desmarque "Usar Proxies".', 'info');
-                    }
+                    log(`🛑 Todos os canais falharam. Verifique os alertas acima.`, 'error');
                 }
 
                 processBtn.disabled = false;
-                processBtn.innerHTML = '<i class="fa-solid fa-play"></i> Executar Operação';
+                processBtn.innerHTML = originalContent;
             };
 
             if (currentFile) {
@@ -724,17 +713,6 @@
                 await sendData();
             }
         });
-
-        function log(msg, type = 'info') {
-            const consoleEl = document.getElementById('console');
-            const time = new Date().toLocaleTimeString();
-            const line = document.createElement('div');
-            line.className = 'console-line';
-            line.style.color = type === 'error' ? '#fb7185' : 'inherit';
-            line.innerHTML = `<span class="console-time">[${time}]</span><span>${msg}</span>`;
-            consoleEl.appendChild(line);
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-        }
 
     </script>
 </body>
