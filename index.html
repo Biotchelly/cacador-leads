@@ -487,17 +487,23 @@
                     </div>
 
                     <div id="proxyHelper"
-                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafcepgnnocghjocpjjnjpncdajoe"
-                                target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: bold;">
-                                <i class="fa-solid fa-download"></i> Baixar Extensão "Allow CORS"
+                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
+                        <span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-link-slash"></i> Links
+                            Atualizados (2026):</span>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="https://chromewebstore.google.com/detail/moesif-origin-cors-change/digfbfapnobgndndbneagpbhpccmhlba"
+                                target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                1. Moesif CORS (Recomendado)
                             </a>
-                            <button onclick="copyCurl()" id="copyCurlBtn"
-                                style="display:none; background: #374151; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer;">
-                                <i class="fa-solid fa-terminal"></i> Copiar CURL
-                            </button>
+                            <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc"
+                                target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                2. CORS Unblock (Alternativa)
+                            </a>
                         </div>
+                        <button onclick="copyCurl()" id="copyCurlBtn"
+                            style="display:none; background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 5px; font-weight: bold; width: fit-content; align-self: center;">
+                            <i class="fa-solid fa-terminal"></i> COPIAR COMANDO CURL (SOLUÇÃO 100%)
+                        </button>
                     </div>
                 </div>
 
@@ -690,8 +696,10 @@
                 if (response && response.ok) {
                     log('✅ Sucesso Absoluto!', 'success');
                 } else {
-                    log(`❌ Falha Crítica.`, 'error');
-                    log(`💡 MODO DE EMERGÊNCIA: Ligue a extensão "Allow CORS" ou clique em "COPIAR CURL" e cole no terminal.`, 'warning');
+                    log(`❌ Falha Crítica de Navegador.`, 'error');
+                    log(`� EMERGÊNCIA: O navegador bloqueou todas as tentativas.`, 'warning');
+                    log(`1. Certifique-se que baixou e LIGOU a extensão nos links acima.`, 'info');
+                    log(`2. OU: Clique no botão VERMELHO "COPIAR COMANDO CURL" e cole no terminal (PowerShell/CMD).`, 'info');
                     copyCurlBtn.style.display = 'block';
                 }
                 processBtn.disabled = false;
