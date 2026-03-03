@@ -628,6 +628,9 @@
             copyCurlBtn.style.display = 'none';
 
             const sendData = async (csvContent = null) => {
+                const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
+                log(`📦 Criando payload (${payloadSize} KB)...`);
+
                 const payload = {
                     csv_content: csvContent,
                     filename: currentFile ? currentFile.name : 'não enviado',
