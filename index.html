@@ -383,6 +383,20 @@
                         <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão:
                             moqw8l0lnh76bvm</small>
                     </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label class="form-label">👤 Vendedor Responsável</label>
+                        <input type="text" class="form-input" id="vendedorNome" placeholder="Nome do vendedor"
+                            value="Gestão">
+                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Nome para atribuição no
+                            CRM.</small>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label class="form-label">🆔 ID do Agente (Chatwoot)</label>
+                        <input type="number" class="form-input" id="agentId" placeholder="ID do Agente no Chatwoot"
+                            value="">
+                        <small style="color: var(--text-secondary); font-size: 0.75rem;">ID numérico para atribuição de
+                            conversa.</small>
+                    </div>
                 </div>
 
                 <div class="config-card">
@@ -564,7 +578,9 @@
                     max_disparos_ciclo: parseInt(document.getElementById('maxShots').value),
                     sniper_cadence: document.getElementById('sniperCadence').value,
                     chatwoot_inbox_ids: document.getElementById('inboxIds').value,
-                    table_id: document.getElementById('tableId').value
+                    table_id: document.getElementById('tableId').value,
+                    vendedor_nome: document.getElementById('vendedorNome').value,
+                    chatwoot_agent_id: document.getElementById('agentId').value ? parseInt(document.getElementById('agentId').value) : null
                 };
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
