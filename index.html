@@ -466,7 +466,7 @@
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="radio" name="connMode" value="extension" checked
+                            <input type="radio" name="connMode" value="extension"
                                 style="width: 1.1rem; height: 1.1rem;">
                             <span style="font-size: 0.85rem; font-weight: 600;">Modo Estável (Com Extensão)</span>
                         </label>
@@ -487,12 +487,14 @@
 
                         <label
                             style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 8px;">
-                            <input type="radio" name="connMode" value="private" style="width: 1.1rem; height: 1.1rem;">
+                            <input type="radio" name="connMode" value="private" checked
+                                style="width: 1.1rem; height: 1.1rem;">
                             <span style="font-size: 0.85rem; font-weight: 700; color: #8b5cf6;">🚀 Modo Turbo (Proxy
                                 Privado)</span>
                         </label>
-                        <div id="privateProxyConfig" style="margin-left: 1.6rem; margin-top: 4px; display: none;">
+                        <div id="privateProxyConfig" style="margin-left: 1.6rem; margin-top: 4px; display: block;">
                             <input type="text" class="form-input" id="privateProxyUrl"
+                                value="https://falling-farm-7c4e.maxyadm.workers.dev"
                                 placeholder="https://seu-worker.workers.dev"
                                 style="padding: 4px 8px; font-size: 0.8rem;">
                             <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
@@ -712,7 +714,9 @@
                         processBtn.innerHTML = originalContent;
                         return;
                     }
-                    const finalUrl = `${privateUrl.rstrip('/')}/?url=${encodeURIComponent(webhookUrl)}`;
+                    // Remove barra final se existir e monta a URL
+                    const cleanProxyUrl = privateUrl.replace(/\/$/, "");
+                    const finalUrl = `${cleanProxyUrl}/?url=${encodeURIComponent(webhookUrl)}`;
                     response = await tryFetch(finalUrl, "Proxy Privado (Modo Turbo)", 60000);
                 } else if (connMode === 'proxy') {
                     const proxies = [
