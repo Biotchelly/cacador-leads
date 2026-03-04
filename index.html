@@ -448,7 +448,7 @@
                 </div>
                 <!-- Hidden UI for Ultimate Fallback -->
                 <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
-                    enctype="multipart/form-data">
+                    enctype="application/x-www-form-urlencoded">
                     <input type="hidden" name="payload" id="ultimatePayload">
                 </form>
                 <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
@@ -708,7 +708,8 @@
             }
         };
 
-        processBtn.addEventListener('click', async () => {
+        processBtn.addEventListener('click', async (e) => {
+            window._lastEvent = e; // Store event for Shift-key check
             const reloadEnabled = document.getElementById('reloadEnabled').checked;
             const sniperEnabled = document.getElementById('sniperEnabled').checked;
             if (!currentFile && !reloadEnabled && !sniperEnabled) {
@@ -802,11 +803,19 @@
                                 const payloadInput = document.getElementById('ultimatePayload');
                                 form.action = url;
                                 payloadInput.value = JSON.stringify(payload);
+
+                                // Dica Ninja: Se segurar Shift, abre em nova aba para ver o erro real!
+                                if (window._lastEvent && window._lastEvent.shiftKey) {
+                                    form.target = "_blank";
+                                    log("🛠️ Debug: Abrindo envio em nova aba para inspeção.", "info");
+                                } else {
+                                    form.target = "ultimateFrame";
+                                }
+
                                 form.submit();
 
-                                log(`🏁 DISPARO BERSERKER REALIZADO! (Via Form em ${label})`, 'success');
-                                log(`Jobs ensina: Usei um formulário oculto 'multipart'. Isso é imune a CORS. Verifique o Kestra em 30s.`, 'jobs');
-                                log(`⚠️ Nota: Como este modo é 'cego', não consigo confirmar se o Kestra aceitou, mas o dado FOI enviado.`, 'warning');
+                                log(`🏁 DISPARO BERSERKER REALIZADO! (Modo Cego via ${label})`, 'warning');
+                                log(`Jobs ensina: Este modo é imune a CORS, mas não me deixa ler a resposta. Se não aparecer no Kestra, segure SHIFT e clique em Executar para ver o erro real!`, 'jobs');
                                 return { ok: true, status: 202, text: () => Promise.resolve("Form Success") };
                             } catch (e3) {
                                 log(`Falha total em ${label}: ${e3.message}`, 'error');
