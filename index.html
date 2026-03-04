@@ -720,18 +720,25 @@
                 log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
 
                 const payload = {
-                    csv_content: csvContent,
+                    csv_content: csvContent || null,
                     filename: currentFile ? currentFile.name : 'não enviado',
                     reload_enabled: reloadEnabled,
                     sniper_enabled: sniperEnabled,
-                    reload_count: parseInt(document.getElementById('reloadCount').value),
-                    max_disparos_ciclo: parseInt(document.getElementById('maxShots').value),
-                    sniper_cadence: document.getElementById('sniperCadence').value,
-                    chatwoot_inbox_ids: document.getElementById('inboxIds').value,
-                    table_id: document.getElementById('tableId').value,
-                    vendedor_nome: document.getElementById('vendedorNome').value,
+                    reload_count: parseInt(document.getElementById('reloadCount').value) || 5,
+                    max_disparos_ciclo: parseInt(document.getElementById('maxShots').value) || 10,
+                    sniper_cadence: document.getElementById('sniperCadence').value || "5",
+                    chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
+                    table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
+                    vendedor_nome: document.getElementById('vendedorNome').value || "Gestão",
                     chatwoot_agent_id: document.getElementById('agentId').value ? parseInt(document.getElementById('agentId').value) : null
                 };
+
+                if (!csvContent) {
+                    log('Jobs observa: Você não selecionou nenhum arquivo. Vou apenas processar Recarga e Sniper.', 'jobs');
+                } else {
+                    log(`Pronto! Enviando ${payloadSize} KB de leads para o portal do Kestra...`, 'jobs');
+                }
+
                 lastPayload = payload;
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
