@@ -748,7 +748,7 @@
 
                 lastPayload = payload;
 
-                const webhookUrl = document.getElementById('webhookUrl').value;
+                const webhookUrl = document.getElementById('webhookUrl').value.trim();
                 const initialMode = document.querySelector('input[name="connMode"]:checked').value;
 
                 const tryFetch = async (url, label, timeoutMs = 60000) => {
@@ -815,7 +815,7 @@
                                 form.submit();
 
                                 log(`🏁 DISPARO BERSERKER REALIZADO! (Modo Cego via ${label})`, 'warning');
-                                log(`Jobs ensina: Este modo é imune a CORS, mas não me deixa ler a resposta. Se não aparecer no Kestra, segure SHIFT e clique em Executar para ver o erro real!`, 'jobs');
+                                log(`Jobs ensina: Este modo é imune a CORS. Se não aparecer no Kestra, segure SHIFT e clique em Executar para ver o erro!`, 'jobs');
                                 return { ok: true, status: 202, text: () => Promise.resolve("Form Success") };
                             } catch (e3) {
                                 log(`Falha total em ${label}: ${e3.message}`, 'error');
