@@ -482,8 +482,23 @@
                         </label>
                         <small
                             style="margin-left: 1.6rem; color: var(--text-secondary); font-size: 0.7rem; display: block; margin-top: -4px;">
-                            Tenta 4 túneis diferentes. Pode falhar com arquivos grandes.
+                            Tenta túneis públicos. Pode falhar com arquivos grandes (>50KB).
                         </small>
+
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 8px;">
+                            <input type="radio" name="connMode" value="private" style="width: 1.1rem; height: 1.1rem;">
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #8b5cf6;">🚀 Modo Turbo (Proxy
+                                Privado)</span>
+                        </label>
+                        <div id="privateProxyConfig" style="margin-left: 1.6rem; margin-top: 4px; display: none;">
+                            <input type="text" class="form-input" id="privateProxyUrl"
+                                placeholder="https://seu-worker.workers.dev"
+                                style="padding: 4px 8px; font-size: 0.8rem;">
+                            <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
+                                <i class="fa-solid fa-bolt"></i> Recomendado para uso definitivo no navegador.
+                            </small>
+                        </div>
                     </div>
 
                     <div id="proxyHelper"
@@ -504,6 +519,14 @@
                             style="display:none; background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 5px; font-weight: bold; width: fit-content; align-self: center;">
                             <i class="fa-solid fa-terminal"></i> COPIAR COMANDO CURL (SOLUÇÃO 100%)
                         </button>
+                        <div id="psFallback"
+                            style="display:none; text-align: center; margin-top: 5px; padding: 8px; background: rgba(37, 99, 235, 0.1); border: 1px dashed var(--accent-color); border-radius: 6px;">
+                            <span
+                                style="font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 4px;">🚀
+                                <b>Opção Ninja:</b> Use o script que criei na pasta:</span>
+                            <code
+                                style="font-size: 0.75rem; background: var(--console-bg); color: var(--console-text); padding: 2px 4px; border-radius: 4px;">Upload_Leads_Garantido.ps1</code>
+                        </div>
                     </div>
                 </div>
 
@@ -681,7 +704,17 @@
                 };
 
                 let response = null;
-                if (connMode === 'proxy') {
+                if (connMode === 'private') {
+                    const privateUrl = document.getElementById('privateProxyUrl').value.trim();
+                    if (!privateUrl) {
+                        log('❌ Erro: Configure a URL do seu Proxy Privado.', 'error');
+                        processBtn.disabled = false;
+                        processBtn.innerHTML = originalContent;
+                        return;
+                    }
+                    const finalUrl = `${privateUrl.rstrip('/')}/?url=${encodeURIComponent(webhookUrl)}`;
+                    response = await tryFetch(finalUrl, "Proxy Privado (Modo Turbo)", 60000);
+                } else if (connMode === 'proxy') {
                     const proxies = [
                         { name: "Proxy 1 (corsproxy.io)", url: `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}` },
                         { name: "Proxy 2 (CORS Anywhere)", url: `https://cors-anywhere.herokuapp.com/${webhookUrl}` },
@@ -702,14 +735,20 @@
                 }
 
                 if (response && response.ok) {
-                    log('✅ Comando enviado!', 'success');
-                    log('💡 DICA: Se nada aparecer no Kestra, o proxy pode ter apagado os dados. Use o Modo Extensão para 100% de sucesso.', 'info');
+                    if (connMode === 'proxy' && csvContent && csvContent.length > 50000) {
+                        log('⚠️ COMANDO ACEITO, MAS ATENÇÃO!', 'warning');
+                        log('O Proxy pode ter apagado seus dados por causa do tamanho do arquivo.', 'warning');
+                        log('Confira o log no Kestra. Se disser "0 bytes", use o MODO ESTÁVEL.', 'info');
+                    } else {
+                        log('✅ Comando enviado com sucesso!', 'success');
+                    }
                 } else {
                     log(`❌ Falha Crítica de Navegador.`, 'error');
                     log(`🚨 EMERGÊNCIA: O navegador bloqueou todas as tentativas.`, 'warning');
                     log(`1. Certifique-se que baixou e LIGOU a extensão nos links acima.`, 'info');
-                    log(`2. OU: Clique no botão VERMELHO "COPIAR COMANDO CURL" e cole no terminal (PowerShell/CMD).`, 'info');
+                    log(`2. OU: Use o script "Upload_Leads_Garantido.ps1" na sua pasta.`, 'info');
                     copyCurlBtn.style.display = 'block';
+                    document.getElementById('psFallback').style.display = 'block';
                 }
                 processBtn.disabled = false;
                 processBtn.innerHTML = originalContent;
@@ -725,6 +764,23 @@
             }
         });
 
+        // Toggle Private Proxy Input
+        document.querySelectorAll('input[name="connMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const configDiv = document.getElementById('privateProxyConfig');
+                if (configDiv) {
+                    configDiv.style.display = (e.target.value === 'private') ? 'block' : 'none';
+                }
+            });
+        });
+
+        // Initialize display state
+        window.addEventListener('load', () => {
+            const privateRadio = document.querySelector('input[name="connMode"][value="private"]');
+            if (privateRadio && privateRadio.checked) {
+                document.getElementById('privateProxyConfig').style.display = 'block';
+            }
+        });
     </script>
 </body>
 
