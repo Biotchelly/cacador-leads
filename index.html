@@ -9,32 +9,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* Light Theme Defaults */
-            --bg-color: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --accent-color: #2563eb;
-            --accent-hover: #1d4ed8;
-            --border-color: #e5e7eb;
-            --console-bg: #1f2937;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --border-color: #e2e8f0;
+            --console-bg: #0f172a;
             --console-text: #10b981;
-            --dropzone-bg: #eff6ff;
-            --dropzone-border: #bfdbfe;
+            --dropzone-bg: #f1f5f9;
+            --dropzone-border: #cbd5e1;
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
         }
 
         [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f8fafc;
+            --bg-color: #020617;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --accent-color: #3b82f6;
-            --accent-hover: #60a5fa;
-            --border-color: #334155;
-            --console-bg: #020617;
+            --accent-color: #818cf8;
+            --accent-hover: #a5b4fc;
+            --border-color: #1e293b;
+            --console-bg: #010409;
             --console-text: #4ade80;
-            --dropzone-bg: #1e293b;
-            --dropzone-border: #475569;
+            --dropzone-bg: #0f172a;
+            --dropzone-border: #334155;
+            --glass-border: rgba(255, 255, 255, 0.05);
         }
 
         * {
@@ -42,54 +46,91 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            background-color: var(--bg-color);
+            background: radial-gradient(circle at top right, var(--bg-color), #dee2e6);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 2rem;
+            line-height: 1.5;
+        }
+
+        [data-theme="dark"] body {
+            background: radial-gradient(circle at top right, #0f172a, #020617);
         }
 
         .container {
             width: 100%;
-            max-width: 800px;
-            background-color: var(--card-bg);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         header {
-            padding: 2rem;
+            padding: 2.5rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(to right, rgba(99, 102, 241, 0.05), transparent);
         }
 
         header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.75rem;
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
+            letter-spacing: -0.025em;
         }
 
         header h1 i {
-            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #ec4899);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+        }
+
+        .version-badge {
+            font-size: 0.75rem;
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            text-transform: uppercase;
         }
 
         .theme-toggle {
             display: flex;
             gap: 0.5rem;
             background: var(--bg-color);
-            padding: 0.25rem;
+            padding: 0.35rem;
             border-radius: 9999px;
             border: 1px solid var(--border-color);
         }
@@ -97,240 +138,213 @@
         .theme-btn {
             background: none;
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             cursor: pointer;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         .theme-btn.active {
             background-color: var(--card-bg);
             color: var(--accent-color);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .content {
-            padding: 2rem;
-        }
-
-        .dropzone-container {
-            margin-bottom: 2rem;
-        }
-
-        .dropzone {
-            border: 2px dashed var(--dropzone-border);
-            background-color: var(--dropzone-bg);
-            border-radius: 1rem;
-            padding: 4rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dropzone.dragover {
-            border-color: var(--accent-color);
-            transform: scale(1.01);
-        }
-
-        .dropzone i {
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 1rem;
-            opacity: 0.8;
-        }
-
-        .dropzone p {
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
-
-        .dropzone span {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .file-info {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: var(--bg-color);
-            border-radius: 0.75rem;
-            display: none;
-            align-items: center;
-            gap: 1rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .file-info.visible {
-            display: flex;
-        }
-
-        .file-info i {
-            color: #10b981;
+            padding: 3rem;
         }
 
         .config-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .config-card {
             background-color: var(--bg-color);
-            padding: 1.5rem;
-            border-radius: 1rem;
+            padding: 1.75rem;
+            border-radius: 1.5rem;
             border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .config-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
         }
 
         .config-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
             color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .config-header i {
+            color: var(--accent-color);
         }
 
         .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 0;
+            margin-bottom: 1.25rem;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .form-select,
         .form-input {
             width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
             border: 1px solid var(--border-color);
             background-color: var(--card-bg);
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             outline: none;
         }
 
-        .form-select:focus,
         .form-input:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
         }
 
-        .toggle-switch {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        .dropzone-container {
+            margin-bottom: 2.5rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--dropzone-border);
+            background-color: var(--dropzone-bg);
+            border-radius: 2rem;
+            padding: 5rem 2rem;
+            text-align: center;
             cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .toggle-input {
-            width: 44px;
-            height: 24px;
-            background-color: var(--border-color);
-            border-radius: 9999px;
-            position: relative;
-            transition: all 0.3s;
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent-color);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: scale(1.02);
         }
 
-        .toggle-input::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background-color: white;
-            border-radius: 50%;
-            transition: all 0.3s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        .dropzone i {
+            font-size: 4rem;
+            background: linear-gradient(to bottom, var(--accent-color), #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
         }
 
-        .toggle-checkbox {
-            display: none;
+        .dropzone h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
-        .toggle-checkbox:checked+.toggle-input {
-            background-color: var(--accent-color);
-        }
-
-        .toggle-checkbox:checked+.toggle-input::after {
-            transform: translateX(20px);
+        .dropzone p {
+            color: var(--text-secondary);
         }
 
         .action-btn {
             width: 100%;
-            padding: 1rem;
-            background-color: var(--accent-color);
+            padding: 1.25rem;
+            background: linear-gradient(135deg, var(--accent-color), #4f46e5);
             color: white;
             border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 1rem;
+            transition: all 0.3s;
         }
 
         .action-btn:hover {
-            background-color: var(--accent-hover);
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.5);
         }
 
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .action-btn:active {
+            transform: translateY(0);
         }
 
         .console {
-            margin-top: 2rem;
+            margin-top: 3rem;
             background-color: var(--console-bg);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
             color: var(--console-text);
-            height: 150px;
+            height: 200px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .console::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
         }
 
         .console-line {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             display: flex;
-            gap: 0.5rem;
+            gap: 1rem;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .console-time {
-            opacity: 0.5;
-            min-width: 80px;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .console-timestamp {
+            opacity: 0.4;
+            font-size: 0.8rem;
+        }
+
+        .jobs-badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-color);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -339,7 +353,8 @@
 
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-bullseye"></i> Caçador de Leads</h1>
+            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.1 Jobs Edition</span>
+            </h1>
             <div class="theme-toggle">
                 <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
                         class="fa-solid fa-sun"></i></button>
@@ -348,12 +363,16 @@
                 <button class="theme-btn" onclick="setTheme('dark')" title="Escuro"><i
                         class="fa-solid fa-moon"></i></button>
             </div>
-            <div
-                style="margin-left: 10px; font-size: 0.7rem; background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">
-                v4.0</div>
         </header>
 
         <div class="content">
+
+            <!-- Dica do Jobs -->
+            <div
+                style="background: rgba(99, 102, 241, 0.05); padding: 1rem; border-radius: 1rem; border-left: 4px solid var(--accent-color); margin-bottom: 2rem; font-size: 0.9rem;">
+                <strong>📚 Dica do Jobs:</strong> Use o <strong>Modo Turbo</strong> para ignorar bloqueios do Chrome. Se
+                for subir arquivos gigantes, melhor usar o upload direto no Painel do Kestra!
+            </div>
 
             <!-- Painel de Controle Superior -->
             <div class="config-grid">
@@ -610,10 +629,23 @@
             line.className = 'console-line';
             const now = new Date();
             const time = now.toTimeString().split(' ')[0];
-            line.innerHTML = `<span class="console-timestamp">[${time}]</span> <span class="console-msg">${msg}</span>`;
-            if (type === 'error') line.style.color = '#ef4444';
-            if (type === 'success') line.style.color = '#10b981';
-            if (type === 'warning') line.style.color = '#f59e0b';
+
+            let icon = '🚀';
+            if (type === 'error') icon = '❌';
+            if (type === 'success') icon = '✅';
+            if (type === 'warning') icon = '⚠️';
+            if (type === 'jobs') icon = '👨‍🏫';
+
+            line.innerHTML = `
+                <span class="console-timestamp">[${time}]</span>
+                <span class="console-msg">${(type === 'jobs' ? '<span class="jobs-badge">JOBS</span>' : icon)} ${msg}</span>
+            `;
+
+            if (type === 'error') line.style.color = 'var(--danger-color)';
+            if (type === 'success') line.style.color = 'var(--success-color)';
+            if (type === 'warning') line.style.color = 'var(--warning-color)';
+            if (type === 'jobs') line.style.color = 'var(--accent-color)';
+
             consoleEl.appendChild(line);
             consoleEl.scrollTop = consoleEl.scrollHeight;
         };
@@ -685,7 +717,7 @@
 
             const sendData = async (csvContent = null) => {
                 const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
-                log(`📦 Criando payload (${payloadSize} KB)...`);
+                log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
 
                 const payload = {
                     csv_content: csvContent,
@@ -703,16 +735,10 @@
                 lastPayload = payload;
 
                 const webhookUrl = document.getElementById('webhookUrl').value;
-                const connMode = document.querySelector('input[name="connMode"]:checked').value;
-
-                // 🚨 ALERTA DE TAMANHO PARA PROXY
-                if (connMode === 'proxy' && csvContent && csvContent.length > 50000) {
-                    log('⚠️ AVISO: Arquivo muito grande para o Modo Proxy (>50KB).', 'warning');
-                    log('🚀 Sugestão: Use o "Modo Estável (Com Extensão)" para garantir o envio.', 'info');
-                }
+                const initialMode = document.querySelector('input[name="connMode"]:checked').value;
 
                 const tryFetch = async (url, label, timeoutMs = 60000) => {
-                    log(`📡 Tentativa: ${label}...`);
+                    log(`Tentando via ${label}...`, 'info');
                     const startTime = performance.now();
                     try {
                         const controller = new AbortController();
@@ -726,74 +752,49 @@
                         });
                         clearTimeout(id);
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
-                        if (response.ok) log(`⏱️ Resposta em ${duration}s via ${label}`, 'success');
+                        if (response.ok) {
+                            log(`Sucesso via ${label} em ${duration}s!`, 'success');
+                            log(`Agora é com o Kestra. Jobs saindo...`, 'jobs');
+                        }
                         return response;
                     } catch (e) {
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
-                        const errorMsg = e.name === 'AbortError' ? `Timeout (${duration}s)` : e.message;
-                        log(`⚠️ Falha (${label}): ${errorMsg}`, 'error');
+                        log(`Falha na rota ${label}: ${e.name === 'AbortError' ? 'Timeout' : e.message}`, 'warning');
                         return null;
                     }
                 };
 
+                // Lógica de Conexão Resiliente (Jobs Engine)
                 let response = null;
-                if (connMode === 'private') {
-                    const privateUrl = document.getElementById('privateProxyUrl').value.trim();
-                    if (!privateUrl || !privateUrl.startsWith('http')) {
-                        log('❌ Erro: URL do Proxy Privado inválida.', 'error');
-                        processBtn.disabled = false;
-                        processBtn.innerHTML = originalContent;
-                        return;
-                    }
 
-                    // Validação rápida do Proxy
-                    try {
-                        log('🔍 Validando Proxy Privado...');
-                        const pingUrl = privateUrl.replace(/\/$/, "") + "/ping";
-                        const ping = await fetch(pingUrl, { mode: 'cors' }).catch(() => null);
-                        if (!ping || !ping.ok) {
-                            log('⚠️ Alerta: O Proxy não respondeu ao ping. Verifique se deu "Deploy".', 'warning');
-                        } else {
-                            log('✅ Proxy Online!', 'success');
-                        }
-                    } catch (e) { }
-
-                    const cleanProxyUrl = privateUrl.replace(/\/$/, "");
-                    const finalUrl = `${cleanProxyUrl}/?url=${encodeURIComponent(webhookUrl)}`;
-                    response = await tryFetch(finalUrl, "Proxy Privado (Modo Turbo)", 60000);
-                } else if (connMode === 'proxy') {
-                    const proxies = [
-                        { name: "Proxy 1 (corsproxy.io)", url: `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}` },
-                        { name: "Proxy 2 (CORS Anywhere)", url: `https://cors-anywhere.herokuapp.com/${webhookUrl}` },
-                        { name: "Proxy 3 (ThingProxy)", url: `https://thingproxy.freeboard.io/fetch/${webhookUrl}` }
-                    ];
-                    for (const proxy of proxies) {
-                        response = await tryFetch(proxy.url, proxy.name, 60000);
-                        if (response && response.ok) break;
-                    }
-
-                    // Fallback para Direto mesmo se estiver no modo proxy
-                    if (!response || !response.ok) {
-                        log("🩹 Tentando Fallback Final (Modo Direto)...", "warning");
-                        response = await tryFetch(webhookUrl, "Modo Direto (Último Recurso)", 30000);
-                    }
+                // 1. Tentar Modo Selecionado
+                if (initialMode === 'private') {
+                    const privateUrl = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
+                    response = await tryFetch(`${privateUrl}/?url=${encodeURIComponent(webhookUrl)}`, "Proxy Privado (Modo Turbo)");
+                } else if (initialMode === 'extension') {
+                    response = await tryFetch(webhookUrl, "Modo Direto (Extensão)");
                 } else {
-                    response = await tryFetch(webhookUrl, "Modo Extensão (Direto)", 30000);
+                    response = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`, "Proxy 1 (CORSProxy)");
+                }
+
+                // 2. Fallbacks Automáticos se falhar
+                if (!response || !response.ok) {
+                    log("A rota principal falhou. Vou tentar os caminhos alternativos automaticamente!", 'jobs');
+
+                    if (initialMode !== 'private') {
+                        const privateUrl = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
+                        if (privateUrl) response = await tryFetch(`${privateUrl}/?url=${encodeURIComponent(webhookUrl)}`, "Fallback: Proxy Privado");
+                    }
+
+                    if (!response || !response.ok) {
+                        response = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}`, "Fallback: AllOrigins");
+                    }
                 }
 
                 if (response && response.ok) {
-                    if (connMode === 'proxy' && csvContent && csvContent.length > 50000) {
-                        log('⚠️ COMANDO ACEITO, MAS ATENÇÃO!', 'warning');
-                        log('O Proxy pode ter apagado seus dados por causa do tamanho do arquivo.', 'warning');
-                        log('Confira o log no Kestra. Se disser "0 bytes", use o MODO ESTÁVEL.', 'info');
-                    } else {
-                        log('✅ Comando enviado com sucesso!', 'success');
-                    }
+                    log('Tudo certo! Seus leads já estão na mão do Kestra.', 'success');
                 } else {
-                    log(`❌ Falha Crítica de Navegador.`, 'error');
-                    log(`🚨 EMERGÊNCIA: O navegador bloqueou todas as tentativas.`, 'warning');
-                    log(`1. Certifique-se que baixou e LIGOU a extensão nos links acima.`, 'info');
-                    log(`2. OU: Use o script "Upload_Leads_Garantido.ps1" na sua pasta.`, 'info');
+                    log('Navegador bloqueou tudo! Use o script PowerShell ou copie o comando CURL abaixo.', 'error');
                     copyCurlBtn.style.display = 'block';
                     document.getElementById('psFallback').style.display = 'block';
                 }
@@ -802,7 +803,7 @@
             };
 
             if (currentFile) {
-                log('Lendo arquivo CSV...');
+                log('Lendo seu CSV... calma aí, é rapidinho.', 'jobs');
                 const reader = new FileReader();
                 reader.onload = async (e) => await sendData(e.target.result);
                 reader.readAsText(currentFile);
