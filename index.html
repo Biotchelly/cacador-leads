@@ -747,17 +747,28 @@
                 const tryFetch = async (url, label, timeoutMs = 60000) => {
                     log(`Tentando via ${label}...`, 'info');
                     const startTime = performance.now();
-                    try {
+
+                    const performRequest = async (contentType = 'application/json') => {
                         const controller = new AbortController();
                         const id = setTimeout(() => controller.abort(), timeoutMs);
-                        const response = await fetch(url, {
-                            method: 'POST',
-                            mode: 'cors',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                            signal: controller.signal
-                        });
-                        clearTimeout(id);
+                        try {
+                            const response = await fetch(url, {
+                                method: 'POST',
+                                mode: 'cors',
+                                headers: { 'Content-Type': contentType },
+                                body: JSON.stringify(payload),
+                                signal: controller.signal
+                            });
+                            clearTimeout(id);
+                            return response;
+                        } catch (e) {
+                            clearTimeout(id);
+                            throw e;
+                        }
+                    };
+
+                    try {
+                        let response = await performRequest('application/json');
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
                         if (response.ok) {
                             log(`Sucesso via ${label} em ${duration}s!`, 'success');
@@ -765,6 +776,23 @@
                         }
                         return response;
                     } catch (e) {
+                        // 🚀 ESTRATÉGIA SURVIVOR: Fallback para No-Preflight (text/plain)
+                        if (e.name !== 'AbortError') {
+                            log(`⚠️ Bloqueio de Navegador detectado em ${label}. Tentando bypass 'No-Preflight'...`, 'warning');
+                            try {
+                                const response = await performRequest('text/plain');
+                                const duration = ((performance.now() - startTime) / 1000).toFixed(1);
+                                if (response.ok) {
+                                    log(`🎯 BYPASS SUCESSO! Enviado via 'No-Preflight' em ${duration}s.`, 'success');
+                                    log(`Jobs ensina: Usamos texto simples para enganar o bloqueio CORS do Chrome.`, 'jobs');
+                                }
+                                return response;
+                            } catch (e2) {
+                                const duration = ((performance.now() - startTime) / 1000).toFixed(1);
+                                log(`Falha crítica em ${label}: ${e2.message}`, 'error');
+                                return null;
+                            }
+                        }
                         const duration = ((performance.now() - startTime) / 1000).toFixed(1);
                         log(`Falha na rota ${label}: ${e.name === 'AbortError' ? 'Timeout' : e.message}`, 'warning');
                         return null;
