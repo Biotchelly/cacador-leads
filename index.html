@@ -447,7 +447,8 @@
                     <input type="file" id="fileInput" accept=".csv">
                 </div>
                 <!-- Hidden UI for Ultimate Fallback -->
-                <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;">
+                <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
+                    enctype="multipart/form-data">
                     <input type="hidden" name="payload" id="ultimatePayload">
                 </form>
                 <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
@@ -804,7 +805,8 @@
                                 form.submit();
 
                                 log(`🏁 DISPARO BERSERKER REALIZADO! (Via Form em ${label})`, 'success');
-                                log(`Jobs ensina: Usei um formulário oculto. Isso ignora 100% das travas do navegador. O Kestra RECEBEU agora!`, 'jobs');
+                                log(`Jobs ensina: Usei um formulário oculto 'multipart'. Isso é imune a CORS. Verifique o Kestra em 30s.`, 'jobs');
+                                log(`⚠️ Nota: Como este modo é 'cego', não consigo confirmar se o Kestra aceitou, mas o dado FOI enviado.`, 'warning');
                                 return { ok: true, status: 202, text: () => Promise.resolve("Form Success") };
                             } catch (e3) {
                                 log(`Falha total em ${label}: ${e3.message}`, 'error');
