@@ -649,6 +649,12 @@
                 const webhookUrl = document.getElementById('webhookUrl').value;
                 const connMode = document.querySelector('input[name="connMode"]:checked').value;
 
+                // 🚨 ALERTA DE TAMANHO PARA PROXY
+                if (connMode === 'proxy' && csvContent && csvContent.length > 50000) {
+                    log('⚠️ AVISO: Arquivo muito grande para o Modo Proxy (>50KB).', 'warning');
+                    log('🚀 Sugestão: Use o "Modo Estável (Com Extensão)" para garantir o envio.', 'info');
+                }
+
                 const tryFetch = async (url, label, timeoutMs = 60000) => {
                     log(`📡 Tentativa: ${label}...`);
                     const startTime = performance.now();
@@ -678,9 +684,8 @@
                 if (connMode === 'proxy') {
                     const proxies = [
                         { name: "Proxy 1 (corsproxy.io)", url: `https://corsproxy.io/?${encodeURIComponent(webhookUrl)}` },
-                        { name: "Proxy 2 (AllOrigins)", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}` },
-                        { name: "Proxy 3 (CORS Anywhere)", url: `https://cors-anywhere.herokuapp.com/${webhookUrl}` },
-                        { name: "Proxy 4 (ThingProxy)", url: `https://thingproxy.freeboard.io/fetch/${webhookUrl}` }
+                        { name: "Proxy 2 (CORS Anywhere)", url: `https://cors-anywhere.herokuapp.com/${webhookUrl}` },
+                        { name: "Proxy 3 (ThingProxy)", url: `https://thingproxy.freeboard.io/fetch/${webhookUrl}` }
                     ];
                     for (const proxy of proxies) {
                         response = await tryFetch(proxy.url, proxy.name, 60000);
@@ -697,10 +702,11 @@
                 }
 
                 if (response && response.ok) {
-                    log('✅ Sucesso Absoluto!', 'success');
+                    log('✅ Comando enviado!', 'success');
+                    log('💡 DICA: Se nada aparecer no Kestra, o proxy pode ter apagado os dados. Use o Modo Extensão para 100% de sucesso.', 'info');
                 } else {
                     log(`❌ Falha Crítica de Navegador.`, 'error');
-                    log(`� EMERGÊNCIA: O navegador bloqueou todas as tentativas.`, 'warning');
+                    log(`🚨 EMERGÊNCIA: O navegador bloqueou todas as tentativas.`, 'warning');
                     log(`1. Certifique-se que baixou e LIGOU a extensão nos links acima.`, 'info');
                     log(`2. OU: Clique no botão VERMELHO "COPIAR COMANDO CURL" e cole no terminal (PowerShell/CMD).`, 'info');
                     copyCurlBtn.style.display = 'block';
