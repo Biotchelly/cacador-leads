@@ -708,13 +708,25 @@
                 let response = null;
                 if (connMode === 'private') {
                     const privateUrl = document.getElementById('privateProxyUrl').value.trim();
-                    if (!privateUrl) {
-                        log('❌ Erro: Configure a URL do seu Proxy Privado.', 'error');
+                    if (!privateUrl || !privateUrl.startsWith('http')) {
+                        log('❌ Erro: URL do Proxy Privado inválida.', 'error');
                         processBtn.disabled = false;
                         processBtn.innerHTML = originalContent;
                         return;
                     }
-                    // Remove barra final se existir e monta a URL
+
+                    // Validação rápida do Proxy
+                    try {
+                        log('🔍 Validando Proxy Privado...');
+                        const pingUrl = privateUrl.replace(/\/$/, "") + "/ping";
+                        const ping = await fetch(pingUrl, { mode: 'cors' }).catch(() => null);
+                        if (!ping || !ping.ok) {
+                            log('⚠️ Alerta: O Proxy não respondeu ao ping. Verifique se deu "Deploy".', 'warning');
+                        } else {
+                            log('✅ Proxy Online!', 'success');
+                        }
+                    } catch (e) { }
+
                     const cleanProxyUrl = privateUrl.replace(/\/$/, "");
                     const finalUrl = `${cleanProxyUrl}/?url=${encodeURIComponent(webhookUrl)}`;
                     response = await tryFetch(finalUrl, "Proxy Privado (Modo Turbo)", 60000);
