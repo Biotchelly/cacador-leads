@@ -353,7 +353,7 @@
 
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.1 Jobs Edition</span>
+            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.5 Jobs Edition</span>
             </h1>
             <div class="theme-toggle">
                 <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
@@ -750,6 +750,7 @@
                 log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
 
                 const payload = {
+                    kestra_url: webhookUrl, // 🚀 NOVO: Facilita extração pelo Worker v4.5
                     csv_content: csvContent || null,
                     filename: currentFile ? currentFile.name : 'não enviado',
                     reload_enabled: reloadEnabled,
@@ -876,6 +877,7 @@
                 // 1. Tentar Modo Selecionado
                 if (initialMode === 'private') {
                     const privateUrl = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
+                    // 🚀 BUG FIX: Se privateUrl não termina com slash, evitamos barra dupla ou falta dela
                     response = await tryFetch(`${privateUrl}/?url=${encodeURIComponent(webhookUrl)}`, "Proxy Privado (Modo Turbo)");
                 } else if (initialMode === 'extension') {
                     response = await tryFetch(webhookUrl, "Modo Direto (Extensão)");
