@@ -633,11 +633,20 @@
         const copyCurlBtn = document.getElementById('copyCurlBtn');
 
         // Captura de erros globais para diagnóstico Jobs
+        // 🔑 FIX RACE CONDITION: Flag para suprimir erros globais durante operação controlada
+        window._suppressGlobalErrors = false;
+
         window.onerror = function (msg, url, line, col, error) {
+            if (window._suppressGlobalErrors) return true; // Suprimir durante operação
             log(`ERRO DE SCRIP: ${msg} (Linha: ${line})`, 'error');
             return false;
         };
         window.onunhandledrejection = function (event) {
+            if (window._suppressGlobalErrors) {
+                // Consumir silenciosamente — já tratado internamente pelo tryFetch
+                event.preventDefault();
+                return;
+            }
             log(`FALHA ASSÍNCRONA: ${event.reason}`, 'error');
         };
 
@@ -733,6 +742,9 @@
             processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
             copyCurlBtn.style.display = 'none';
 
+            // 🔑 FIX: Ativar supressão de erros globais durante operação controlada
+            window._suppressGlobalErrors = true;
+
             const sendData = async (csvContent = null) => {
                 const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
                 log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
@@ -772,14 +784,19 @@
                     const performRequest = async (contentType = 'application/json', fetchMode = 'cors') => {
                         const controller = new AbortController();
                         const id = setTimeout(() => controller.abort(), timeoutMs);
+                        // 🔑 FIX: Usar .catch() inline para garantir que a promise NUNCA
+                        // seja "unhandled" no event loop, mesmo que o caller a abandone
+                        const fetchPromise = fetch(url, {
+                            method: 'POST',
+                            mode: fetchMode,
+                            headers: { 'Content-Type': contentType },
+                            body: JSON.stringify(payload),
+                            signal: controller.signal
+                        });
+                        // Registrar catch imediatamente para consumir possível rejeição
+                        fetchPromise.catch(() => { });
                         try {
-                            const response = await fetch(url, {
-                                method: 'POST',
-                                mode: fetchMode,
-                                headers: { 'Content-Type': contentType },
-                                body: JSON.stringify(payload),
-                                signal: controller.signal
-                            });
+                            const response = await fetchPromise;
                             clearTimeout(id);
                             return response;
                         } catch (e) {
@@ -832,7 +849,7 @@
 
                                 log(`🏁 DISPARO BERSERKER REALIZADO! (Modo Cego via ${label})`, 'warning');
                                 log(`Jobs ensina: Este modo é imune a CORS. Se não aparecer no Kestra, segure SHIFT e clique em Executar para ver o erro!`, 'jobs');
-                                return { ok: true, status: 202, text: () => Promise.resolve("Form Success") };
+                                return { ok: true, status: 202, _isBerserker: true, text: () => Promise.resolve("Form Success") };
                             } catch (e3) {
                                 log(`Falha total em ${label}: ${e3.message}`, 'error');
                                 return null;
@@ -870,12 +887,19 @@
                 }
 
                 if (response && response.ok) {
-                    log('Tudo certo! Seus leads já estão na mão do Kestra.', 'success');
+                    if (response._isBerserker) {
+                        log('⚡ Berserker confirmado! Disparo blind enviado. Verifique no painel do Kestra se chegou.', 'warning');
+                    } else {
+                        log('✅ Confirmado via resposta HTTP! Seus leads já estão na mão do Kestra.', 'success');
+                    }
                 } else {
                     log('Navegador bloqueou tudo! Use o script PowerShell ou copie o comando CURL abaixo.', 'error');
                     copyCurlBtn.style.display = 'block';
                     document.getElementById('psFallback').style.display = 'block';
                 }
+                // 🔑 FIX: Desativar supressão APÓS pequeno delay para consumir
+                // quaisquer rejeições pendentes do event loop antes de reativar o handler
+                setTimeout(() => { window._suppressGlobalErrors = false; }, 500);
                 processBtn.disabled = false;
                 processBtn.innerHTML = originalContent;
             };
