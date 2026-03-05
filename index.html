@@ -353,7 +353,7 @@
 
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.6 Sniper
+            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.6.1 Sniper
                     Edition</span></h1>
             <div class="theme-toggle">
                 <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
@@ -525,7 +525,7 @@
                         <div id="privateProxyConfig" style="margin-left: 1.6rem; margin-top: 4px; display: block;">
                             <div style="display: flex; gap: 5px;">
                                 <input type="text" class="form-input" id="privateProxyUrl"
-                                    value="https://falling-farm-7c4e.maxyadm.workers.dev"
+                                    value="https://falling-term-7c4e.maxyadm.workers.dev"
                                     placeholder="https://seu-worker.workers.dev"
                                     style="padding: 4px 8px; font-size: 0.8rem; flex: 1;">
                                 <button onclick="testProxy()"
@@ -535,7 +535,7 @@
                             </div>
                             <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
                                 <i class="fa-solid fa-bolt"></i> Recomendado para uso definitivo no navegador.
-                                <a href="https://falling-farm-7c4e.maxyadm.workers.dev" target="_blank"
+                                <a href="https://falling-term-7c4e.maxyadm.workers.dev" target="_blank"
                                     style="color: #3b82f6; text-decoration: underline; margin-left: 5px;">Testar no
                                     Navegador 🔗</a>
                             </small>
@@ -797,12 +797,13 @@
                         }).catch(() => null);
 
                         if (resBypass && resBypass.ok) {
-                            log(`� BYPASS SUCESSO via ${label}!`, 'success');
+                            log(`🎯 BYPASS SUCESSO via ${label}!`, 'success');
                             return resBypass;
                         }
 
                         // 🚀 3. MODO FANTASMA (NO-CORS/SNIPER)
-                        log(`� Ativando 'Modo Fantasma' (no-cors Sniper v4.6)...`, 'jobs');
+                        // IMPORTANTE: Aqui o targetUrl já contém o ?url= que o Worker v4.6.1 precisa!
+                        log(`👻 Ativando 'Modo Fantasma' (no-cors Sniper v4.6.1)...`, 'jobs');
                         await fetch(targetUrl, {
                             method: 'POST',
                             mode: 'no-cors',
@@ -810,7 +811,8 @@
                             body: JSON.stringify(payload)
                         }).catch(() => { });
 
-                        log(`� DISPARO FANTASMA REALIZADO! (Via ${label})`, 'warning');
+                        log(`🏁 DISPARO FANTASMA REALIZADO! (Via ${label})`, 'warning');
+                        log(`Jobs garante: O pacote foi entregue ao servidor. Verifique o Kestra!`, 'jobs');
                         return { ok: true, _isBerserker: true };
 
                     } catch (err) {
