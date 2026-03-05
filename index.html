@@ -353,8 +353,8 @@
 
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.5 Jobs Edition</span>
-            </h1>
+            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.6 Sniper
+                    Edition</span></h1>
             <div class="theme-toggle">
                 <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
                         class="fa-solid fa-sun"></i></button>
@@ -388,7 +388,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
-                        <input type="number" class="form-input" id="reloadCount" value="5">
+                        <input type="number" class="form-input" id="reloadCountMain" value="5">
                         <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos leads
                             'Novos' ativar para disparo por vez.</small>
                     </div>
@@ -729,7 +729,7 @@
         };
 
         processBtn.addEventListener('click', async (e) => {
-            window._lastEvent = e; // Store event for Shift-key check
+            window._lastEvent = e;
             const reloadEnabled = document.getElementById('reloadEnabled').checked;
             const sniperEnabled = document.getElementById('sniperEnabled').checked;
             if (!currentFile && !reloadEnabled && !sniperEnabled) {
@@ -742,7 +742,6 @@
             processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
             copyCurlBtn.style.display = 'none';
 
-            // 🔑 FIX: Ativar supressão de erros globais durante operação controlada
             window._suppressGlobalErrors = true;
 
             const sendData = async (csvContent = null) => {
@@ -752,12 +751,12 @@
                 log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
 
                 const payload = {
-                    kestra_url: webhookUrl, // 🚀 NOVO: Facilita extração pelo Worker v4.5
+                    kestra_url: webhookUrl,
                     csv_content: csvContent || null,
                     filename: currentFile ? currentFile.name : 'não enviado',
                     reload_enabled: reloadEnabled,
                     sniper_enabled: sniperEnabled,
-                    reload_count: parseInt(document.getElementById('reloadCount').value) || 5,
+                    reload_count: parseInt(document.getElementById('reloadCountMain').value) || 5,
                     max_disparos_ciclo: parseInt(document.getElementById('maxShots').value) || 10,
                     sniper_cadence: document.getElementById('sniperCadence').value || "5",
                     chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
@@ -766,152 +765,93 @@
                     chatwoot_agent_id: document.getElementById('agentId').value ? parseInt(document.getElementById('agentId').value) : null
                 };
 
-                if (!csvContent) {
-                    log('Jobs observa: Você não selecionou nenhum arquivo. Vou apenas processar Recarga e Sniper.', 'jobs');
-                } else {
-                    log(`Pronto! Enviando ${payloadSize} KB de leads para o portal do Kestra...`, 'jobs');
-                }
-
-                // DEBUG: Log do payload para verificação
-                console.log('[JOBS] Payload JSON:', JSON.stringify(payload, null, 2));
-
+                console.log('[JOBS] Payload:', payload);
                 lastPayload = payload;
 
-                const tryFetch = async (url, label, timeoutMs = 60000) => {
+                const tryFetch = async (targetUrl, label) => {
                     log(`Tentando via ${label}...`, 'info');
                     const startTime = performance.now();
 
-                    const performRequest = async (contentType = 'application/json', fetchMode = 'cors') => {
-                        const controller = new AbortController();
-                        const id = setTimeout(() => controller.abort(), timeoutMs);
-                        // 🔑 FIX: Usar .catch() inline para garantir que a promise NUNCA
-                        // seja "unhandled" no event loop, mesmo que o caller a abandone
-                        const fetchPromise = fetch(url, {
-                            method: 'POST',
-                            mode: fetchMode,
-                            headers: { 'Content-Type': contentType },
-                            body: JSON.stringify(payload),
-                            signal: controller.signal
-                        });
-                        // Registrar catch imediatamente para consumir possível rejeição
-                        fetchPromise.catch(() => { });
-                        try {
-                            const response = await fetchPromise;
-                            clearTimeout(id);
-                            return response;
-                        } catch (e) {
-                            clearTimeout(id);
-                            throw e;
-                        }
-                    };
-
                     try {
                         // 1. TENTATIVA PADRÃO (JSON + CORS)
-                        let response = await performRequest('application/json', 'cors');
-                        const duration = ((performance.now() - startTime) / 1000).toFixed(1);
-                        if (response.ok) {
+                        const res = await fetch(targetUrl, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        }).catch(() => null);
+
+                        if (res && res.ok) {
+                            const duration = ((performance.now() - startTime) / 1000).toFixed(1);
                             log(`Sucesso via ${label} em ${duration}s!`, 'success');
-                            return response;
+                            return res;
                         }
-                    } catch (e) {
-                        if (e.name === 'AbortError') throw e;
 
-                        // 🚀 2. ESTRATÉGIA BYPASS (TEXT + CORS - Tenta evitar preflight)
-                        log(`⚠️ Bloqueio de Navegador em ${label}. Tentando bypass 'Simple Request'...`, 'warning');
-                        try {
-                            let response = await performRequest('text/plain', 'cors');
-                            if (response.ok) {
-                                log(`🎯 BYPASS SUCESSO via 'Simple Request' em ${label}!`, 'success');
-                                return response;
-                            }
-                        } catch (e2) {
-                            if (e2.name === 'AbortError') throw e2;
+                        // 🚀 2. BYPASS (TEXT/PLAIN)
+                        log(`⚠️ Bloqueio CORS em ${label}. Tentando Bypass 'Simple Request'...`, 'warning');
+                        const resBypass = await fetch(targetUrl, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: { 'Content-Type': 'text/plain' },
+                            body: JSON.stringify(payload)
+                        }).catch(() => null);
 
-                            // 🚀 3. ESTRATÉGIA FANTASMA (NO-CORS fetch — GARANTE entrega ao servidor!)
-                            // Diferente do form.submit: o fetch no-cors SEMPRE sai do browser sem preflight.
-                            // O browser não lê a resposta (opaque), mas o request CHEGA ao servidor.
-                            log(`👻 Jobs ativando 'Modo Fantasma' (fetch no-cors — sem preflight, garantido)...`, 'jobs');
-                            try {
-                                // Nível 3a: no-cors via proxy privado (JSON String — Máxima compatibilidade com v4.6)
-                                log(`[DIAGNÓSTICO] Enviando Pacote JSON (${JSON.stringify(payload).length} bytes)...`, 'jobs');
-                                const phantomPromise = fetch(url, {
-                                    method: 'POST',
-                                    mode: 'no-cors',
-                                    headers: { 'Content-Type': 'text/plain' },
-                                    body: JSON.stringify(payload)
-                                });
-                                phantomPromise.catch(() => { }); // Consumir rejeição imediatamente
-                                await phantomPromise;
-
-                                log(`🏁 DISPARO FANTASMA REALIZADO! (Via ${label})`, 'warning');
-                                log(`Jobs garante: O pacote foi entregue ao Worker v4.6. Verifique o Kestra!`, 'jobs');
-                                return { ok: true, status: 202, _isBerserker: true, text: () => Promise.resolve("NoCors Success") };
-                            } catch (e3) {
-                                // Nível 3b: proxy AllOrigins como rota alternativa via no-cors
-                                log(`💥 Última Bala: no-cors via AllOrigins (proxy alternativo)...`, 'warning');
-                                try {
-                                    const altProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}`;
-                                    const lastResortPromise = fetch(altProxyUrl, {
-                                        method: 'POST',
-                                        mode: 'no-cors',
-                                        headers: { 'Content-Type': 'text/plain' },
-                                        body: JSON.stringify(payload)
-                                    });
-                                    lastResortPromise.catch(() => { });
-                                    await lastResortPromise;
-                                    log(`🎯 Disparo via AllOrigins realizado! Verifique as execuções no Kestra.`, 'warning');
-                                    return { ok: true, status: 202, _isBerserker: true, text: () => Promise.resolve("AltProxy NoCors") };
-                                } catch (e4) {
-                                    log(`Falha catastrófica em ${label}: ${e4.message}`, 'error');
-                                    return null;
-                                }
-                            }
+                        if (resBypass && resBypass.ok) {
+                            log(`� BYPASS SUCESSO via ${label}!`, 'success');
+                            return resBypass;
                         }
+
+                        // 🚀 3. MODO FANTASMA (NO-CORS/SNIPER)
+                        log(`� Ativando 'Modo Fantasma' (no-cors Sniper v4.6)...`, 'jobs');
+                        await fetch(targetUrl, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain' },
+                            body: JSON.stringify(payload)
+                        }).catch(() => { });
+
+                        log(`� DISPARO FANTASMA REALIZADO! (Via ${label})`, 'warning');
+                        return { ok: true, _isBerserker: true };
+
+                    } catch (err) {
+                        log(`Erro inesperado em ${label}: ${err.message}`, 'error');
+                        return null;
                     }
-                    return null;
                 };
 
-                // Lógica de Conexão Resiliente (Jobs Engine)
                 let response = null;
+                const privateBase = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
 
-                // 1. Tentar Modo Selecionado
                 if (initialMode === 'private') {
-                    const privateUrl = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
-                    // 🚀 BUG FIX: Se privateUrl não termina com slash, evitamos barra dupla ou falta dela
-                    response = await tryFetch(`${privateUrl}/?url=${encodeURIComponent(webhookUrl)}`, "Proxy Privado (Modo Turbo)");
+                    response = await tryFetch(`${privateBase}/?url=${encodeURIComponent(webhookUrl)}`, "Modo Turbo");
                 } else if (initialMode === 'extension') {
-                    response = await tryFetch(webhookUrl, "Modo Direto (Extensão)");
+                    response = await tryFetch(webhookUrl, "Modo Direto");
                 } else {
-                    response = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`, "Proxy 1 (CORSProxy)");
+                    response = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`, "Proxy Público");
                 }
 
-                // 2. Fallbacks Automáticos se falhar
+                // Fallbacks
                 if (!response || !response.ok) {
-                    log("A rota principal falhou. Vou tentar os caminhos alternativos automaticamente!", 'jobs');
-
-                    if (initialMode !== 'private') {
-                        const privateUrl = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
-                        if (privateUrl) response = await tryFetch(`${privateUrl}/?url=${encodeURIComponent(webhookUrl)}`, "Fallback: Proxy Privado");
+                    log("Caminho principal falhou. Iniciando Fallbacks...", 'jobs');
+                    if (initialMode !== 'private' && privateBase) {
+                        response = await tryFetch(`${privateBase}/?url=${encodeURIComponent(webhookUrl)}`, "Fallback Turbo");
                     }
-
                     if (!response || !response.ok) {
-                        response = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}`, "Fallback: AllOrigins");
+                        response = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}`, "Fallback AllOrigins");
                     }
                 }
 
                 if (response && response.ok) {
                     if (response._isBerserker) {
-                        log('⚡ Berserker confirmado! Disparo blind enviado. Verifique no painel do Kestra se chegou.', 'warning');
+                        log('⚡ Sniper v4.6 Confirmado! Verifique as execuções no Kestra.', 'warning');
                     } else {
-                        log('✅ Confirmado via resposta HTTP! Seus leads já estão na mão do Kestra.', 'success');
+                        log('✅ Sucesso! Leads entregues com confirmação HTTP.', 'success');
                     }
                 } else {
-                    log('Navegador bloqueou tudo! Use o script PowerShell ou copie o comando CURL abaixo.', 'error');
+                    log('Falha Total. Use o script PowerShell ou CURL.', 'error');
                     copyCurlBtn.style.display = 'block';
-                    document.getElementById('psFallback').style.display = 'block';
                 }
-                // 🔑 FIX: Desativar supressão APÓS pequeno delay para consumir
-                // quaisquer rejeições pendentes do event loop antes de reativar o handler
+
                 setTimeout(() => { window._suppressGlobalErrors = false; }, 500);
                 processBtn.disabled = false;
                 processBtn.innerHTML = originalContent;
@@ -919,16 +859,10 @@
 
             try {
                 if (currentFile) {
-                    log('Lendo seu CSV... calma aí, é rapidinho.', 'jobs');
                     const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        try {
-                            await sendData(e.target.result);
-                        } catch (err) {
-                            log(`Falha ao ler/enviar: ${err.message}`, 'error');
-                            processBtn.disabled = false;
-                            processBtn.innerHTML = originalContent;
-                        }
+                    reader.onload = async (re) => {
+                        try { await sendData(re.target.result); }
+                        catch (err) { log(`Erro no envio: ${err.message}`, 'error'); processBtn.disabled = false; processBtn.innerHTML = originalContent; }
                     };
                     reader.readAsText(currentFile);
                 } else {
