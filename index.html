@@ -833,6 +833,7 @@
                             log(`👻 Jobs ativando 'Modo Fantasma' (fetch no-cors — sem preflight, garantido)...`, 'jobs');
                             try {
                                 // Nível 3a: no-cors via proxy privado (text/plain, Worker converte para JSON)
+                                log(`[DIAGNÓSTICO] Payload Final: ${JSON.stringify(payload).length} bytes.`, 'jobs');
                                 const phantomPromise = fetch(url, {
                                     method: 'POST',
                                     mode: 'no-cors',
