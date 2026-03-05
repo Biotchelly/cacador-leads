@@ -746,6 +746,8 @@
             window._suppressGlobalErrors = true;
 
             const sendData = async (csvContent = null) => {
+                const webhookUrl = document.getElementById('webhookUrl').value.trim();
+                const initialMode = document.querySelector('input[name="connMode"]:checked').value;
                 const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
                 log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
 
@@ -774,9 +776,6 @@
                 console.log('[JOBS] Payload JSON:', JSON.stringify(payload, null, 2));
 
                 lastPayload = payload;
-
-                const webhookUrl = document.getElementById('webhookUrl').value.trim();
-                const initialMode = document.querySelector('input[name="connMode"]:checked').value;
 
                 const tryFetch = async (url, label, timeoutMs = 60000) => {
                     log(`Tentando via ${label}...`, 'info');
