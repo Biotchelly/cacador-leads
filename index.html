@@ -1232,6 +1232,49 @@
     let kbInitialized = false;
     let kbPollInterval = null;
 
+    async function kbSmartFetch(url, body) {
+        const mode = document.querySelector('input[name="connMode"]:checked').value;
+        const privateBase = (document.getElementById('privateProxyUrl').value || '').trim().replace(/\/$/, "");
+        
+        const tryOne = async (target, label) => {
+            try {
+                // Se for modo privado, o proxy espera ?url=...
+                // Se for corsproxy.io, espera ?...
+                let finalUrl = target;
+                let fetchOptions = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                };
+
+                if (label === 'Turbo') {
+                    finalUrl = `${privateBase}/?url=${encodeURIComponent(url)}`;
+                } else if (label === 'Proxy Público') {
+                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                } else if (label === 'AllOrigins') {
+                    finalUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                }
+
+                const r = await fetch(finalUrl, fetchOptions);
+                if (r.ok) return r;
+                return null;
+            } catch (e) { return null; }
+        };
+
+        let res = null;
+        if (mode === 'private' && privateBase) {
+            res = await tryOne(url, 'Turbo');
+        } else if (mode === 'extension') {
+            res = await tryOne(url, 'Direto');
+        } else {
+            res = await tryOne(url, 'Proxy Público');
+        }
+
+        if (!res) res = await tryOne(url, 'AllOrigins');
+        if (!res) throw new Error("CORS/Fetch Blocked");
+        return res;
+    }
+
     function kbBackendUrl() {
         return (document.getElementById('kb-backend-url').value || '').trim();
     }
@@ -1289,11 +1332,7 @@
 
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
-            const r = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
+            const r = await kbSmartFetch(url, body);
             const data = await r.json();
             if (data.success) {
                 kbLeads = data.leads || [];
@@ -1386,11 +1425,7 @@
         kbFiltrar();
         kbToast(`Movido para "${novoStatus}" 🔒`);
         try {
-            await fetch(kbBackendUrl(), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'update', id: kbDraggedId, status: novoStatus })
-            });
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: kbDraggedId, status: novoStatus });
         } catch(err) { kbToast('Falha ao salvar: ' + err.message); }
         kbDraggedId = null;
     }
@@ -1400,11 +1435,7 @@
         const notas = document.getElementById(`kbn-${id}`).value;
         kbToast('Salvando...');
         try {
-            const r = await fetch(kbBackendUrl(), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'update', id, notas_vendedor: notas })
-            });
+            const r = await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas });
             const d = await r.json();
             kbToast(d.success ? '✅ Notas salvas!' : '❌ ' + d.error);
             const lead = kbLeads.find(l => l.Id === id);
