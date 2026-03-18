@@ -1232,6 +1232,41 @@
     let kbInitialized = false;
     let kbPollInterval = null;
 
+    async function kbGetFile(id, uri) {
+        const baseUrl = kbBackendUrl().split('/api/v1/')[0];
+        const fileUrl = `${baseUrl}/api/v1/executions/${id}/file?path=${encodeURIComponent(uri)}`;
+        const r = await kbSmartFetch(fileUrl, null, 'GET');
+        return await r.json();
+    }
+
+    async function kbPollExecution(id) {
+        const baseUrl = kbBackendUrl().split('/api/v1/')[0];
+        const execUrl = `${baseUrl}/api/v1/executions/${id}`;
+        let status = 'RUNNING';
+        let retries = 0;
+        
+        while (status !== 'SUCCESS' && status !== 'FAILED' && retries < 20) {
+            await new Promise(r => setTimeout(r, 2000));
+            try {
+                const r = await kbSmartFetch(execUrl, null, 'GET');
+                const data = await r.json();
+                status = data.status;
+                if (status === 'SUCCESS') {
+                    // Busca uri do response.json nas outputs
+                    const outputs = data.outputs || {};
+                    const procOut = outputs.processar_requisicao || {};
+                    const outFiles = procOut.outputFiles || {};
+                    const uri = outFiles['response.json'];
+                    if (uri) return await kbGetFile(id, uri);
+                    throw new Error("Arquivo response.json não encontrado nas saídas");
+                }
+                if (status === 'FAILED' || status === 'KILLED') throw new Error("Execução falhou no Kestra");
+            } catch (e) { console.error("Polling error:", e); }
+            retries++;
+        }
+        throw new Error("Timeout aguardando execução");
+    }
+
     async function kbSmartFetch(url, body, method = 'POST') {
         const mode = document.querySelector('input[name="connMode"]:checked').value;
         const privateBase = (document.getElementById('privateProxyUrl').value || '').trim().replace(/\/$/, "");
@@ -1347,6 +1382,18 @@
                 kbToast('JSON inválido. Veja o console.');
                 document.getElementById('kb-agent-label').textContent = '❌ Resposta inválida';
                 return;
+            }
+
+            // --- Lógica de Polling se vier ID de Execução ---
+            if (data.id && !data.success) {
+                document.getElementById('kb-agent-label').textContent = '⏳ Executando...';
+                try {
+                    data = await kbPollExecution(data.id);
+                } catch (e) {
+                    kbToast('Falha no Polling: ' + e.message);
+                    document.getElementById('kb-agent-label').textContent = '❌ Erro de Execução';
+                    return;
+                }
             }
 
             if (data.success) {
