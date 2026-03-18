@@ -1451,12 +1451,14 @@
 
             // --- Lógica de Polling se vier ID de Execução ---
             if (data.id && !data.success) {
-                document.getElementById('kb-agent-label').textContent = '⏳ Executando...';
+                const execId = data.id;
+                document.getElementById('kb-agent-label').textContent = `⏳ Executando (${execId})...`;
                 try {
-                    data = await kbPollExecution(data.id);
+                    data = await kbPollExecution(execId);
                 } catch (e) {
+                    console.error("[KB] Erro de Polling:", e);
                     kbToast('Falha no Polling: ' + e.message);
-                    document.getElementById('kb-agent-label').textContent = '❌ Erro de Execução';
+                    document.getElementById('kb-agent-label').textContent = '❌ Erro de Polling Kestra';
                     return;
                 }
             }
