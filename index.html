@@ -1186,7 +1186,7 @@
         <div class="kb-config-bar">
             <span>🔗 Backend URL:</span>
             <input class="kb-input-url" id="kb-backend-url"
-                value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhooks/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key"
+                value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key"
                 placeholder="URL do Flow 08 Backend">
             <input class="kb-input-url" id="kb-agent-id" placeholder="Agent ID manual (opcional)" style="max-width:200px;">
             <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
@@ -1206,6 +1206,13 @@
             </select>
             <span class="kb-agent-label" id="kb-agent-label">👤 Aguardando...</span>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
+        </div>
+
+        <!-- Alerta de CORS -->
+        <div id="kb-cors-alert" style="display:none; margin: 10px 20px; padding: 10px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; font-size: 11px; color: #fca5a5;">
+            ⚠️ <b>Erro de Conexão (CORS):</b> O navegador bloqueou o acesso ao Kestra. 
+            <br>💡 <b>Solução:</b> Instale a extensão <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc" target="_blank" style="color:#fff; text-decoration:underline;">CORS Unblock</a>, 
+            ative-a no ícone do quebra-cabeça e mude o Modo para <b>"Modo Direto"</b> no Caçador.
         </div>
 
         <!-- Board -->
@@ -1270,7 +1277,9 @@
     async function kbSmartFetch(url, body, method = 'POST') {
         const mode = document.querySelector('input[name="connMode"]:checked').value;
         const privateBase = (document.getElementById('privateProxyUrl').value || '').trim().replace(/\/$/, "");
-        
+        const alertDiv = document.getElementById('kb-cors-alert');
+        if (alertDiv) alertDiv.style.display = 'none';
+
         const tryOne = async (target, label) => {
             try {
                 let finalUrl = target;
@@ -1279,7 +1288,6 @@
                     headers: { 'Content-Type': 'application/json' }
                 };
 
-                // Se for GET, anexar query string
                 if (method === 'GET' && body) {
                     const qs = new URLSearchParams(body).toString();
                     finalUrl += (finalUrl.includes('?') ? '&' : '?') + qs;
@@ -1287,12 +1295,12 @@
                     fetchOptions.body = JSON.stringify(body);
                 }
 
-                if (label === 'Turbo') {
+                if (label === 'Turbo' && privateBase) {
                     finalUrl = `${privateBase}/?url=${encodeURIComponent(finalUrl)}`;
                 } else if (label === 'Proxy Público') {
                     finalUrl = `https://corsproxy.io/?${encodeURIComponent(finalUrl)}`;
                 } else if (label === 'AllOrigins') {
-                    finalUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(finalUrl)}`;
+                    finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(finalUrl)}`;
                 }
 
                 const r = await fetch(finalUrl, fetchOptions);
@@ -1306,12 +1314,15 @@
             res = await tryOne(url, 'Turbo');
         } else if (mode === 'extension') {
             res = await tryOne(url, 'Direto');
-        } else {
-            res = await tryOne(url, 'Proxy Público');
         }
 
+        if (!res) res = await tryOne(url, 'Proxy Público');
         if (!res) res = await tryOne(url, 'AllOrigins');
-        if (!res) throw new Error("CORS/Fetch Blocked");
+        
+        if (!res) {
+            if (alertDiv) alertDiv.style.display = 'block';
+            throw new Error("CORS/Fetch Blocked");
+        }
         return res;
     }
 
