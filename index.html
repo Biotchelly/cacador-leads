@@ -1333,7 +1333,17 @@
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
             const r = await kbSmartFetch(url, body);
-            const data = await r.json();
+            const text = await r.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error("❌ Erro ao processar JSON:", e, "Resposta:", text);
+                kbToast('JSON inválido. Veja o console.');
+                document.getElementById('kb-agent-label').textContent = '❌ Resposta inválida';
+                return;
+            }
+
             if (data.success) {
                 kbLeads = data.leads || [];
                 const agentName = data.agent_name || (agentId ? `ID ${agentId}` : 'Todos');
