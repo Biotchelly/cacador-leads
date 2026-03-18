@@ -674,6 +674,7 @@
                         <label class="form-label">👤 Vendedor Responsável</label>
                         <input type="text" class="form-input" id="vendedorNome" placeholder="Nome do vendedor"
                             value="Gestão">
+                        <input type="hidden" id="vendedorId" value="">
                     </div>
                     <div class="form-group">
                         <label class="form-label">👥 ID do Time (Chatwoot)</label>
@@ -1163,6 +1164,14 @@
 
             // --- INTELIGÊNCIA DE ABAS ---
             const params = new URLSearchParams(window.location.search);
+            const cwId = params.get('agent_id') || params.get('user_id');
+            if (cwId) {
+                const vid = document.getElementById('vendedorId');
+                const vnm = document.getElementById('vendedorNome');
+                if (vid) vid.value = cwId;
+                const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
+                if (map[cwId] && vnm) vnm.value = map[cwId];
+            }
             if (params.get('tab') === 'kanban' || window.location.hash === '#kanban') {
                 switchTab('kanban');
             }
@@ -1324,6 +1333,12 @@
         const vId = document.getElementById('vendedorId')?.value || '';
         const display = document.getElementById('kb-vendedor-nome');
         if (display) display.textContent = vNome || 'Nenhum (Logue no Chatwoot)';
+        
+        // Se for o Bot (ID 1), por padrão mostramos "Gestão" ou "Bot"
+        if (vId === "1" && vNome === "Gestão") {
+            if (display) display.textContent = "Bot (Gestão)";
+        }
+        
         return { nome: vNome, id: vId };
     }
 
