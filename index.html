@@ -300,10 +300,19 @@
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 0;
             line-height: 1.5;
+        }
+        /* Centraliza apenas o conteudo do Cacador */
+        .cacador-inner {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+            min-height: calc(100vh - 56px);
         }
 
         [data-theme="dark"] body {
@@ -606,6 +615,7 @@
 
     <!-- ═══════════ ABA 1: CAÇADOR ═══════════ -->
     <div id="cacador-panel" class="tab-panel active">
+    <div class="cacador-inner">
     <div class="container">
         <header>
             <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.7.2 Team & Vendor
@@ -854,6 +864,7 @@
 
         </div>
     </div>
+    </div><!-- /cacador-inner -->
     </div><!-- /cacador-panel -->
 
     <script>
@@ -1146,7 +1157,14 @@
         window.addEventListener('load', () => {
             const privateRadio = document.querySelector('input[name="connMode"][value="private"]');
             if (privateRadio && privateRadio.checked) {
-                document.getElementById('privateProxyConfig').style.display = 'block';
+                const cfg = document.getElementById('privateProxyConfig');
+                if (cfg) cfg.style.display = 'block';
+            }
+
+            // --- INTELIGÊNCIA DE ABAS ---
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('tab') === 'kanban' || window.location.hash === '#kanban') {
+                switchTab('kanban');
             }
         });
         // ═══════════ TABS ═══════════
