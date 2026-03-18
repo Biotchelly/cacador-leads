@@ -1340,7 +1340,14 @@
     function kbInit() {
         if (!kbInitialized) {
             kbRenderBoard();
-            kbInitialized = true;
+            // Recupera Agent ID salvo
+        const savedId = localStorage.getItem('kb-last-agent-id');
+        if (savedId) {
+            const input = document.getElementById('kb-agent-id');
+            if (input) input.value = savedId;
+        }
+
+        kbInitialized = true;
         }
         kbCarregar();
         if (kbPollInterval) clearInterval(kbPollInterval);
@@ -1373,6 +1380,8 @@
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
 
         const agentId = kbGetAgentId();
+        if (agentId) localStorage.setItem('kb-last-agent-id', agentId);
+        
         const body = { action: 'list' };
         if (agentId) body.agent_id = parseInt(agentId);
 
