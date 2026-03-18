@@ -1188,7 +1188,6 @@
             <input class="kb-input-url" id="kb-backend-url"
                 value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key"
                 placeholder="URL do Flow 08 Backend">
-            <input class="kb-input-url" id="kb-agent-id" placeholder="Agent ID manual (opcional)" style="max-width:200px;">
             <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
         </div>
 
@@ -1204,15 +1203,14 @@
                 <option value="Convertido">✅ Convertido</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
-            <span class="kb-agent-label" id="kb-agent-label">👤 Aguardando...</span>
+            <span id="kb-vendedor-display" style="color: #94a3b8; font-size: 13px; margin: 0 10px;">👤 Vendedor: <b id="kb-vendedor-nome">...</b></span>
+            <span class="kb-agent-label" id="kb-agent-label">⏳ Aguardando...</span>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
         </div>
 
         <!-- Alerta de CORS -->
         <div id="kb-cors-alert" style="display:none; margin: 10px 20px; padding: 10px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; font-size: 11px; color: #fca5a5;">
-            ⚠️ <b>Erro de Conexão (CORS):</b> O navegador bloqueou o acesso ao Kestra. 
-            <br>💡 <b>Solução:</b> Instale a extensão <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc" target="_blank" style="color:#fff; text-decoration:underline;">CORS Unblock</a>, 
-            ative-a no ícone do quebra-cabeça e mude o Modo para <b>"Modo Direto"</b> no Caçador.
+            ⚠️ <b>Erro de Conexão:</b> O sistema não conseguiu carregar os leads. Verifique o <b>Modo Turbo</b> nas configurações.
         </div>
 
         <!-- Board -->
@@ -1321,13 +1319,16 @@
         return res;
     }
 
-    function kbBackendUrl() {
-        return (document.getElementById('kb-backend-url').value || '').trim();
+    function kbSyncFromCacador() {
+        const vNome = document.getElementById('vendedorNome')?.value || '';
+        const vId = document.getElementById('vendedorId')?.value || '';
+        const display = document.getElementById('kb-vendedor-nome');
+        if (display) display.textContent = vNome || 'Nenhum (Logue no Chatwoot)';
+        return { nome: vNome, id: vId };
     }
 
-    function kbGetAgentId() {
-        const manual = (document.getElementById('kb-agent-id').value || '').trim();
-        return manual || null;
+    function kbBackendUrl() {
+        return (document.getElementById('kb-backend-url').value || '').trim();
     }
 
     function kbToast(msg) {
@@ -1340,13 +1341,7 @@
     function kbInit() {
         if (!kbInitialized) {
             kbRenderBoard();
-            // Recupera Agent ID salvo
-        const savedId = localStorage.getItem('kb-last-agent-id');
-        if (savedId) {
-            const input = document.getElementById('kb-agent-id');
-            if (input) input.value = savedId;
-        }
-
+            kbSyncFromCacador();
         kbInitialized = true;
         }
         kbCarregar();
@@ -1379,11 +1374,10 @@
         const url = kbBackendUrl();
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
 
-        const agentId = kbGetAgentId();
-        if (agentId) localStorage.setItem('kb-last-agent-id', agentId);
-        
+        const { nome, id } = kbSyncFromCacador();
         const body = { action: 'list' };
-        if (agentId) body.agent_id = parseInt(agentId);
+        if (id) body.agent_id = id;
+        if (nome) body.vendedor_nome = nome;
 
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
