@@ -8,6 +8,252 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ═══════════ TABS ═══════════ */
+        .tabs-nav {
+            display: flex;
+            gap: 0;
+            background: var(--card-bg, #1a1d27);
+            border-bottom: 2px solid var(--border-color, #2e3244);
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 1rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary, #8892a4);
+            cursor: pointer;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: -2px;
+        }
+        .tab-btn:hover { color: var(--accent-color, #6366f1); }
+        .tab-btn.active {
+            color: var(--accent-color, #6366f1);
+            border-bottom-color: var(--accent-color, #6366f1);
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ═══════════ KANBAN ═══════════ */
+        #kanban-panel {
+            background: var(--bg-color, #0f1117);
+            min-height: calc(100vh - 60px);
+            display: none;
+            flex-direction: column;
+        }
+        #kanban-panel.active { display: flex; }
+        .kb-toolbar {
+            padding: 10px 20px;
+            background: var(--card-bg, #1a1d27);
+            border-bottom: 1px solid var(--border-color, #2e3244);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .kb-toolbar input, .kb-toolbar select {
+            background: var(--dropzone-bg, #0f172a);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .kb-btn {
+            background: var(--accent-color, #6366f1);
+            color: #fff;
+            border: none;
+            font-size: 12px;
+            padding: 6px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: opacity .2s;
+            margin-left: auto;
+        }
+        .kb-btn:hover { opacity: .8; }
+        .kb-agent-label {
+            font-size: 12px;
+            color: var(--text-secondary, #8892a4);
+            padding: 4px 12px;
+            background: rgba(99,102,241,.1);
+            border-radius: 999px;
+            border: 1px solid rgba(99,102,241,.25);
+        }
+        .kb-board {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            flex: 1;
+            min-height: 0;
+        }
+        .kb-col {
+            min-width: 260px;
+            max-width: 280px;
+            border-radius: 10px;
+            background: var(--card-bg, #1a1d27);
+            border: 1px solid var(--border-color, #2e3244);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .kb-col-header {
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kb-col-count {
+            margin-left: auto;
+            background: rgba(255,255,255,.12);
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 1px 7px;
+        }
+        .kb-col.col-novo    .kb-col-header { background: #374151; }
+        .kb-col.col-pente   .kb-col-header { background: #78350f; }
+        .kb-col.col-aberto  .kb-col-header { background: #14532d; }
+        .kb-col.col-negoc   .kb-col-header { background: #1e3a5f; }
+        .kb-col.col-conv    .kb-col-header { background: #064e3b; }
+        .kb-col.col-perd    .kb-col-header { background: #4a0404; }
+        .kb-zone {
+            padding: 8px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 80px;
+        }
+        .kb-zone.drag-over {
+            background: rgba(99,102,241,.08);
+            border-radius: 6px;
+            outline: 2px dashed rgba(99,102,241,.4);
+        }
+        .kb-card {
+            background: var(--dropzone-bg, #0f172a);
+            border: 1px solid var(--border-color, #2e3244);
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: grab;
+            transition: transform .15s, box-shadow .15s;
+            font-size: 12px;
+        }
+        .kb-card:active { cursor: grabbing; }
+        .kb-card.dragging { opacity: .45; transform: rotate(2deg); box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+        .kb-card-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary, #e2e8f0);
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .kb-row {
+            display: flex;
+            gap: 5px;
+            align-items: flex-start;
+            color: var(--text-secondary, #8892a4);
+            margin-bottom: 2px;
+            line-height: 1.4;
+            font-size: 11px;
+        }
+        .kb-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+        .kb-chip {
+            background: rgba(99,102,241,.12);
+            color: #a5b4fc;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(99,102,241,.25);
+        }
+        .kb-chip.g { background: rgba(16,185,129,.1); color: #6ee7b7; border-color: rgba(16,185,129,.2); }
+        .kb-chip.y { background: rgba(245,158,11,.1); color: #fcd34d; border-color: rgba(245,158,11,.2); }
+        .kb-chip.r { background: rgba(239,68,68,.1);  color: #fca5a5; border-color: rgba(239,68,68,.2); }
+        .kb-notas {
+            width: 100%;
+            margin-top: 7px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 11px;
+            border-radius: 5px;
+            padding: 5px 8px;
+            resize: vertical;
+            font-family: inherit;
+            min-height: 44px;
+        }
+        .kb-actions { margin-top: 6px; display: flex; gap: 6px; align-items: center; }
+        .kb-save {
+            font-size: 11px;
+            background: var(--accent-color, #6366f1);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .kb-link {
+            font-size: 11px;
+            color: #818cf8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+            text-decoration: underline;
+        }
+        .kb-empty { text-align: center; color: var(--text-secondary, #8892a4); padding: 20px; font-size: 11px; opacity: .5; }
+        #kb-toast {
+            position: fixed; bottom: 16px; right: 16px;
+            background: #1e293b; border: 1px solid #2e3244;
+            color: #e2e8f0; font-size: 12px;
+            padding: 10px 16px; border-radius: 8px;
+            opacity: 0; transition: opacity .3s;
+            pointer-events: none; z-index: 9999;
+        }
+        #kb-toast.show { opacity: 1; }
+        .kb-input-url {
+            flex: 1;
+            background: var(--dropzone-bg, #0f172a);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+        .kb-config-bar {
+            padding: 8px 20px;
+            background: rgba(99,102,241,.05);
+            border-bottom: 1px solid var(--border-color, #2e3244);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary, #8892a4);
+            flex-wrap: wrap;
+        }
+
         :root {
             --bg-color: #f8fafc;
             --card-bg: rgba(255, 255, 255, 0.9);
@@ -351,6 +597,15 @@
 
 <body>
 
+    <!-- ═══════════ NAV DE ABAS ═══════════ -->
+    <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('cacador')" id="tab-cacador">🚀 Caçador de Leads</button>
+        <button class="tab-btn" onclick="switchTab('kanban')" id="tab-kanban">🎯 Kanban SDR</button>
+    </nav>
+
+
+    <!-- ═══════════ ABA 1: CAÇADOR ═══════════ -->
+    <div id="cacador-panel" class="tab-panel active">
     <div class="container">
         <header>
             <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.7.2 Team & Vendor
@@ -599,6 +854,7 @@
 
         </div>
     </div>
+    </div><!-- /cacador-panel -->
 
     <script>
         // --- Theme Logic ---
@@ -893,7 +1149,258 @@
                 document.getElementById('privateProxyConfig').style.display = 'block';
             }
         });
+        // ═══════════ TABS ═══════════
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-panel').classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'kanban') {
+                kbInit();
+            }
+        }
     </script>
+
+    <!-- ═══════════ ABA 2: KANBAN SDR ═══════════ -->
+    <div id="kanban-panel" class="tab-panel">
+
+        <!-- Barra de Config da URL backend -->
+        <div class="kb-config-bar">
+            <span>🔗 Backend URL:</span>
+            <input class="kb-input-url" id="kb-backend-url"
+                value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhooks/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key"
+                placeholder="URL do Flow 08 Backend">
+            <input class="kb-input-url" id="kb-agent-id" placeholder="Agent ID manual (opcional)" style="max-width:200px;">
+            <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="kb-toolbar">
+            <input type="text" id="kb-search" placeholder="🔍 Buscar lead..." oninput="kbFiltrar()" style="width:200px;">
+            <select id="kb-filter-status" onchange="kbFiltrar()">
+                <option value="">Todas as colunas</option>
+                <option value="Novo">📦 Reserva</option>
+                <option value="Aguardando Disparo">🎯 Pente</option>
+                <option value="Contactado">📬 Aberto</option>
+                <option value="Negociando">🤝 Negociando</option>
+                <option value="Convertido">✅ Convertido</option>
+                <option value="Perdido">❌ Perdido</option>
+            </select>
+            <span class="kb-agent-label" id="kb-agent-label">👤 Aguardando...</span>
+            <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
+        </div>
+
+        <!-- Board -->
+        <div class="kb-board" id="kb-board"></div>
+
+        <div id="kb-toast"></div>
+    </div><!-- /kanban-panel -->
+
+    <script>
+    // ═══════════════════════════════════════════════
+    // KANBAN SDR — LÓGICA COMPLETA
+    // ═══════════════════════════════════════════════
+    const KB_COLUNAS = [
+        { id: 'Novo',              label: '📦 Reserva',    cls: 'col-novo'  },
+        { id: 'Aguardando Disparo',label: '🎯 Pente',      cls: 'col-pente' },
+        { id: 'Contactado',        label: '📬 Aberto',     cls: 'col-aberto'},
+        { id: 'Negociando',        label: '🤝 Negociando', cls: 'col-negoc' },
+        { id: 'Convertido',        label: '✅ Convertido', cls: 'col-conv'  },
+        { id: 'Perdido',           label: '❌ Perdido',    cls: 'col-perd'  },
+    ];
+
+    let kbLeads = [];
+    let kbDraggedId = null;
+    let kbInitialized = false;
+    let kbPollInterval = null;
+
+    function kbBackendUrl() {
+        return (document.getElementById('kb-backend-url').value || '').trim();
+    }
+
+    function kbGetAgentId() {
+        const manual = (document.getElementById('kb-agent-id').value || '').trim();
+        return manual || null;
+    }
+
+    function kbToast(msg) {
+        const t = document.getElementById('kb-toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function kbInit() {
+        if (!kbInitialized) {
+            kbRenderBoard();
+            kbInitialized = true;
+        }
+        kbCarregar();
+        if (kbPollInterval) clearInterval(kbPollInterval);
+        kbPollInterval = setInterval(kbCarregar, 60000);
+    }
+
+    function kbRenderBoard() {
+        const board = document.getElementById('kb-board');
+        board.innerHTML = '';
+        KB_COLUNAS.forEach(col => {
+            const div = document.createElement('div');
+            div.className = `kb-col ${col.cls}`;
+            div.innerHTML = `
+                <div class="kb-col-header">
+                    ${col.label}
+                    <span class="kb-col-count" id="kbc-${col.id}">0</span>
+                </div>
+                <div class="kb-zone" id="kbz-${col.id}"
+                    ondragover="kbDragOver(event)"
+                    ondragleave="kbDragLeave(event)"
+                    ondrop="kbDrop(event,'${col.id}')">
+                    <div class="kb-empty">Carregando...</div>
+                </div>`;
+            board.appendChild(div);
+        });
+    }
+
+    async function kbCarregar() {
+        const url = kbBackendUrl();
+        if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
+
+        const agentId = kbGetAgentId();
+        const body = { action: 'list' };
+        if (agentId) body.agent_id = parseInt(agentId);
+
+        document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
+        try {
+            const r = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await r.json();
+            if (data.success) {
+                kbLeads = data.leads || [];
+                const agentName = data.agent_name || (agentId ? `ID ${agentId}` : 'Todos');
+                document.getElementById('kb-agent-label').textContent = `👤 ${agentName} (${kbLeads.length} leads)`;
+                kbFiltrar();
+            } else {
+                kbToast('Erro: ' + (data.error || 'Falha ao carregar'));
+                document.getElementById('kb-agent-label').textContent = '❌ Erro';
+            }
+        } catch (err) {
+            kbToast('Falha na conexão: ' + err.message);
+            document.getElementById('kb-agent-label').textContent = '❌ Sem resposta';
+        }
+    }
+
+    function kbFiltrar() {
+        const busca = (document.getElementById('kb-search').value || '').toLowerCase();
+        const statusF = document.getElementById('kb-filter-status').value;
+        const filtrados = kbLeads.filter(l => {
+            const okBusca = !busca ||
+                (l.Nome || '').toLowerCase().includes(busca) ||
+                (l.Telefone || '').includes(busca) ||
+                (l.CNPJ || '').includes(busca);
+            const okStatus = !statusF || l.Status === statusF;
+            return okBusca && okStatus;
+        });
+        kbRenderCards(filtrados);
+    }
+
+    function kbRenderCards(leads) {
+        KB_COLUNAS.forEach(col => {
+            const zone = document.getElementById(`kbz-${col.id}`);
+            if (!zone) return;
+            const sub = leads.filter(l => l.Status === col.id);
+            document.getElementById(`kbc-${col.id}`).textContent = sub.length;
+            zone.innerHTML = sub.length === 0
+                ? `<div class="kb-empty">Vazio</div>`
+                : sub.map(l => kbBuildCard(l)).join('');
+        });
+    }
+
+    function kbBuildCard(l) {
+        const c = v => v || '';
+        const cap = l.Capital_Social ? `R$ ${Number(l.Capital_Social).toLocaleString('pt-BR')}` : '';
+        return `
+        <div class="kb-card" draggable="true"
+            ondragstart="kbDragStart(event,${l.Id})"
+            ondragend="kbDragEnd(event)"
+            id="kbcard-${l.Id}">
+            <div class="kb-card-name" title="${c(l.Nome)}">🏢 ${c(l.Nome)}</div>
+            ${l.Telefone ? `<div class="kb-row"><span>📞</span><a href="tel:${l.Telefone}" style="color:#818cf8">${l.Telefone}</a></div>` : ''}
+            ${l.Email    ? `<div class="kb-row"><span>✉️</span><a href="mailto:${l.Email}" style="color:#818cf8">${l.Email}</a></div>` : ''}
+            ${l.CNPJ     ? `<div class="kb-row"><span>🆔</span><span>${l.CNPJ}</span></div>` : ''}
+            ${l.Site     ? `<div class="kb-row"><span>🌐</span><a href="${l.Site}" target="_blank" style="color:#818cf8">Site</a></div>` : ''}
+            ${l.Atividade_Principal ? `<div class="kb-row"><span>🏭</span><span>${l.Atividade_Principal.substring(0,55)}${l.Atividade_Principal.length>55?'…':''}</span></div>` : ''}
+            ${l.Endereco ? `<div class="kb-row"><span>📍</span><span>${l.Endereco.substring(0,60)}${l.Endereco.length>60?'…':''}</span></div>` : ''}
+            <div class="kb-chips">
+                ${l.Porte ? `<span class="kb-chip">${l.Porte}</span>` : ''}
+                ${cap     ? `<span class="kb-chip g">💰 ${cap}</span>` : ''}
+                ${l.Team_ID ? `<span class="kb-chip y">👥 Time ${l.Team_ID}</span>` : ''}
+                ${l.agendar_tarefa ? `<span class="kb-chip y">📅 ${l.agendar_tarefa}</span>` : ''}
+                ${l.kanban_lock ? `<span class="kb-chip r">🔒 Bloqueado</span>` : ''}
+            </div>
+            ${l.Resumo_IA ? `<div class="kb-row" style="margin-top:7px;background:rgba(0,0,0,.2);padding:5px 7px;border-radius:5px"><span>🤖</span><span style="color:#94a3b8;font-size:10px">${l.Resumo_IA.substring(0,130)}${l.Resumo_IA.length>130?'…':''}</span></div>` : ''}
+            <textarea class="kb-notas" placeholder="📝 Notas do vendedor..." id="kbn-${l.Id}">${c(l.Notas_Vendedor)}</textarea>
+            <div class="kb-actions">
+                <button class="kb-save" onclick="kbSalvarNotas(${l.Id})">💾 Salvar</button>
+                ${l.Conversation_ID ? `<button class="kb-link" onclick="kbAbrirConversa(${l.Conversation_ID})">🔗 Conversa</button>` : ''}
+            </div>
+        </div>`;
+    }
+
+    // ─── DRAG & DROP ────────────────────────────────
+    function kbDragStart(e, id) {
+        kbDraggedId = id;
+        setTimeout(() => { const el = document.getElementById(`kbcard-${id}`); if (el) el.classList.add('dragging'); }, 0);
+    }
+    function kbDragEnd() {
+        if (kbDraggedId) { const el = document.getElementById(`kbcard-${kbDraggedId}`); if (el) el.classList.remove('dragging'); }
+    }
+    function kbDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function kbDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+    async function kbDrop(e, novoStatus) {
+        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+        if (!kbDraggedId) return;
+        const lead = kbLeads.find(l => l.Id === kbDraggedId);
+        if (!lead || lead.Status === novoStatus) return;
+        lead.Status = novoStatus;
+        kbFiltrar();
+        kbToast(`Movido para "${novoStatus}" 🔒`);
+        try {
+            await fetch(kbBackendUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update', id: kbDraggedId, status: novoStatus })
+            });
+        } catch(err) { kbToast('Falha ao salvar: ' + err.message); }
+        kbDraggedId = null;
+    }
+
+    // ─── NOTAS ──────────────────────────────────────
+    async function kbSalvarNotas(id) {
+        const notas = document.getElementById(`kbn-${id}`).value;
+        kbToast('Salvando...');
+        try {
+            const r = await fetch(kbBackendUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update', id, notas_vendedor: notas })
+            });
+            const d = await r.json();
+            kbToast(d.success ? '✅ Notas salvas!' : '❌ ' + d.error);
+            const lead = kbLeads.find(l => l.Id === id);
+            if (lead) lead.Notas_Vendedor = notas;
+        } catch(err) { kbToast('Falha: ' + err.message); }
+    }
+
+    // ─── ABRIR CONVERSA ─────────────────────────────
+    function kbAbrirConversa(convId) {
+        const url = `https://app.chatwoot.com/conversations/${convId}`;
+        window.open(url, '_blank');
+    }
+    </script>
+
 </body>
 
 </html>
