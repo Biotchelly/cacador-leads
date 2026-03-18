@@ -1034,7 +1034,7 @@
                     table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
                     vendedor_nome: document.getElementById('vendedorNome').value || "Gestão",
                     chatwoot_team_id: document.getElementById('chatwootTeamId').value || "",
-                    agent_id: document.getElementById('vendedorId')?.value || ""
+                    agent_id: parseInt(document.getElementById('vendedorId')?.value) || null
                 };
 
                 console.log('[JOBS] Payload:', payload);
@@ -1319,9 +1319,6 @@
         const modeIn = document.querySelector('input[name="connMode"]:checked');
         const mode = modeIn ? modeIn.value : 'private';
         const pProxy = (document.getElementById('privateProxyUrl')?.value || 'https://falling-term-7c4e.maxyadm.workers.dev').trim().replace(/\/$/, "");
-        const alertDiv = document.getElementById('kb-cors-alert');
-        if (alertDiv) alertDiv.style.display = 'none';
-
         const retryFetch = async (target, label) => {
             try {
                 let final = target;
@@ -1333,8 +1330,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: body ? JSON.stringify(body) : (method === 'POST' ? '{}' : null)
                 });
-                return r.ok ? r : null;
-            } catch (e) { return null; }
+                if (r.ok) return r;
+                console.warn(`[KB] Falha ${label}: ${r.status}`);
+                return null;
+            } catch (e) { 
+                console.error(`[KB] Erro ${label}:`, e.message);
+                return null; 
+            }
         };
 
         let res = await retryFetch(url, mode === 'private' ? 'Turbo' : 'Direto');
@@ -1342,7 +1344,10 @@
         if (!res) res = await retryFetch(url, 'Proxy');
         
         if (!res) {
-            if (alertDiv) alertDiv.style.display = 'block';
+            if (alertDiv) {
+                alertDiv.style.display = 'block';
+                alertDiv.innerHTML = `⚠️ <b>Bloqueio de Rede:</b> Não foi possível conectar ao backend. Verifique o <b>Modo Turbo</b> ou tente o <b>Proxy Público</b>. Se o erro persistir, abra o console do navegador (F12) para detalhes.`;
+            }
             throw new Error("CORS Block");
         }
         return res;
