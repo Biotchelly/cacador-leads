@@ -687,6 +687,14 @@
                             conversa.</small>
                     </div>
 
+                    <div class="switch-container" style="margin-top: 1rem;">
+                        <label class="switch">
+                            <input type="checkbox" id="updateExisting">
+                            <span class="slider"></span>
+                        </label>
+                        <span>🔄 Atualizar leads se já existirem?</span>
+                    </div>
+
                 </div>
 
                 <div class="config-card">
@@ -1026,6 +1034,7 @@
                     csv_content: csvContent || null,
                     filename: currentFile ? currentFile.name : 'não enviado',
                     reload_enabled: reloadEnabled,
+                    update_existing: document.getElementById('updateExisting').checked,
                     sniper_enabled: sniperEnabled,
                     reload_count: parseInt(document.getElementById('reloadCountMain').value) || 5,
                     max_disparos_ciclo: parseInt(document.getElementById('maxShots').value) || 10,
