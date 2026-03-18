@@ -1232,27 +1232,32 @@
     let kbInitialized = false;
     let kbPollInterval = null;
 
-    async function kbSmartFetch(url, body) {
+    async function kbSmartFetch(url, body, method = 'POST') {
         const mode = document.querySelector('input[name="connMode"]:checked').value;
         const privateBase = (document.getElementById('privateProxyUrl').value || '').trim().replace(/\/$/, "");
         
         const tryOne = async (target, label) => {
             try {
-                // Se for modo privado, o proxy espera ?url=...
-                // Se for corsproxy.io, espera ?...
                 let finalUrl = target;
                 let fetchOptions = {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }
                 };
 
+                // Se for GET, anexar query string
+                if (method === 'GET' && body) {
+                    const qs = new URLSearchParams(body).toString();
+                    finalUrl += (finalUrl.includes('?') ? '&' : '?') + qs;
+                } else if (body) {
+                    fetchOptions.body = JSON.stringify(body);
+                }
+
                 if (label === 'Turbo') {
-                    finalUrl = `${privateBase}/?url=${encodeURIComponent(url)}`;
+                    finalUrl = `${privateBase}/?url=${encodeURIComponent(finalUrl)}`;
                 } else if (label === 'Proxy Público') {
-                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(finalUrl)}`;
                 } else if (label === 'AllOrigins') {
-                    finalUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    finalUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(finalUrl)}`;
                 }
 
                 const r = await fetch(finalUrl, fetchOptions);
@@ -1332,7 +1337,7 @@
 
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
-            const r = await kbSmartFetch(url, body);
+            const r = await kbSmartFetch(url, body, 'GET');
             const text = await r.text();
             let data;
             try {
