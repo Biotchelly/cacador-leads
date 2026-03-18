@@ -1163,16 +1163,44 @@
                 if (cfg) cfg.style.display = 'block';
             }
 
-            // --- INTELIGÊNCIA DE ABAS ---
-            const params = new URLSearchParams(window.location.search);
-            const cwId = params.get('agent_id') || params.get('user_id');
-            if (cwId) {
+            // --- PERSISTÊNCIA MANUAL (BACKUP) ---
+            const savedNome = localStorage.getItem('vendedorNome');
+            const savedId = localStorage.getItem('vendedorId');
+            if (savedNome) document.getElementById('vendedorNome').value = savedNome;
+            if (savedId) document.getElementById('vendedorId').value = savedId;
+
+            // --- DETECÇÃO AUTOMÁTICA DE VENDEDOR (CHATWOOT) ---
+            function updateAgent(id, name) {
+                if (!id) return;
                 const vid = document.getElementById('vendedorId');
                 const vnm = document.getElementById('vendedorNome');
-                if (vid) vid.value = cwId;
+                if (vid) vid.value = id;
+                
                 const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
-                if (map[cwId] && vnm) vnm.value = map[cwId];
+                const finalName = map[id] || name || "Gestão";
+                if (vnm) vnm.value = finalName;
+                
+                localStorage.setItem('vendedorId', id);
+                localStorage.setItem('vendedorNome', finalName);
+                if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
             }
+
+            // 1. Tenta via URL
+            const params = new URLSearchParams(window.location.search);
+            const cwId = params.get('agent_id') || params.get('user_id');
+            if (cwId) updateAgent(cwId);
+
+            // 2. Escuta Evento do Chatwoot (postMessage)
+            window.addEventListener('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.agent && data.agent.id) {
+                        updateAgent(data.agent.id, data.agent.name);
+                    }
+                } catch(e) {}
+            });
+
+            // --- INTELIGÊNCIA DE ABAS ---
             if (params.get('tab') === 'kanban' || window.location.hash === '#kanban') {
                 switchTab('kanban');
             }
@@ -1283,48 +1311,34 @@
     }
 
     async function kbSmartFetch(url, body, method = 'POST') {
-        const mode = document.querySelector('input[name="connMode"]:checked').value;
-        const privateBase = (document.getElementById('privateProxyUrl').value || '').trim().replace(/\/$/, "");
+        const modeIn = document.querySelector('input[name="connMode"]:checked');
+        const mode = modeIn ? modeIn.value : 'private';
+        const pProxy = (document.getElementById('privateProxyUrl')?.value || 'https://falling-term-7c4e.maxyadm.workers.dev').trim().replace(/\/$/, "");
         const alertDiv = document.getElementById('kb-cors-alert');
         if (alertDiv) alertDiv.style.display = 'none';
 
-        const tryOne = async (target, label) => {
+        const retryFetch = async (target, label) => {
             try {
-                let finalUrl = target;
-                let fetchOptions = {
+                let final = target;
+                if (label === 'Turbo' && pProxy) final = `${pProxy}/?url=${encodeURIComponent(target)}`;
+                else if (label === 'Proxy') final = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+                
+                const r = await fetch(final, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: body ? JSON.stringify(body) : null
-                };
-
-                if (label === 'Turbo' && privateBase) {
-                    finalUrl = `${privateBase}/?url=${encodeURIComponent(target)}`;
-                } else if (label === 'Proxy Público') {
-                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
-                } else if (label === 'AllOrigins') {
-                    finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
-                }
-
-                const r = await fetch(finalUrl, fetchOptions);
-                if (r.ok) return r;
-                return null;
+                    body: body ? JSON.stringify(body) : (method === 'POST' ? '{}' : null)
+                });
+                return r.ok ? r : null;
             } catch (e) { return null; }
         };
 
-        let res = null;
-        if (mode === 'private' && privateBase) {
-            res = await tryOne(url, 'Turbo');
-        } else if (mode === 'extension') {
-            res = await tryOne(url, 'Direto');
-        }
-
-        if (!res) res = await tryOne(url, 'Proxy Público');
-        // AllOrigins só funciona bem com GET, mas vamos mantê-lo como último recurso
-        if (!res) res = await tryOne(url, 'AllOrigins');
+        let res = await retryFetch(url, mode === 'private' ? 'Turbo' : 'Direto');
+        if (!res) res = await retryFetch(url, 'Turbo');
+        if (!res) res = await retryFetch(url, 'Proxy');
         
         if (!res) {
             if (alertDiv) alertDiv.style.display = 'block';
-            throw new Error("CORS/Fetch Blocked");
+            throw new Error("CORS Block");
         }
         return res;
     }
