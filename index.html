@@ -1197,6 +1197,7 @@
                 localStorage.setItem('vendedorId', id);
                 localStorage.setItem('vendedorNome', finalName);
                 if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
+                if (typeof kbCarregar === 'function') kbCarregar();
             }
 
             // 1. Tenta via URL
@@ -1424,10 +1425,15 @@
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
 
         const { nome, id } = kbSyncFromCacador();
-        const body = { action: 'list' };
-        if (id) body.agent_id = id;
-        if (nome) body.vendedor_nome = nome;
+        
+        // Bloqueio de segurança: Não buscar sem ID de Agente (evita erro no Kestra)
+        if (!id || id === "") {
+            console.warn('[KB] Aguardando ID do Agente para carregar...');
+            document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...';
+            return;
+        }
 
+        const body = { action: 'list', agent_id: id, vendedor_nome: nome };
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
             const method = 'POST';
