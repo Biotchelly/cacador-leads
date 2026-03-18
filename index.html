@@ -670,11 +670,15 @@
                         <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão:
                             moqw8l0lnh76bvm</small>
                     </div>
-                    <div class="form-group" style="margin-top: 1rem;">
-                        <label class="form-label">👤 Vendedor Responsável</label>
-                        <input type="text" class="form-input" id="vendedorNome" placeholder="Nome do vendedor"
-                            value="Gestão">
-                        <input type="hidden" id="vendedorId" value="">
+                    <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                        <div class="form-group" style="flex: 2;">
+                            <label class="form-label">👤 Vendedor Responsável</label>
+                            <input type="text" class="form-input" id="vendedorNome" placeholder="Nome" value="Gestão" onchange="localStorage.setItem('vendedorNome', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">🆔 ID Agente</label>
+                            <input type="number" class="form-input" id="vendedorId" placeholder="ID" value="" onchange="localStorage.setItem('vendedorId', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">👥 ID do Time (Chatwoot)</label>
@@ -1168,6 +1172,7 @@
             const savedId = localStorage.getItem('vendedorId');
             if (savedNome) document.getElementById('vendedorNome').value = savedNome;
             if (savedId) document.getElementById('vendedorId').value = savedId;
+            kbSyncFromCacador();
 
             // --- DETECÇÃO AUTOMÁTICA DE VENDEDOR (CHATWOOT) ---
             function updateAgent(id, name) {
