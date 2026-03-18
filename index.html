@@ -1285,22 +1285,16 @@
                 let finalUrl = target;
                 let fetchOptions = {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body ? JSON.stringify(body) : null
                 };
 
-                if (method === 'GET' && body) {
-                    const qs = new URLSearchParams(body).toString();
-                    finalUrl += (finalUrl.includes('?') ? '&' : '?') + qs;
-                } else if (body) {
-                    fetchOptions.body = JSON.stringify(body);
-                }
-
                 if (label === 'Turbo' && privateBase) {
-                    finalUrl = `${privateBase}/?url=${encodeURIComponent(finalUrl)}`;
+                    finalUrl = `${privateBase}/?url=${encodeURIComponent(target)}`;
                 } else if (label === 'Proxy Público') {
-                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(finalUrl)}`;
+                    finalUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
                 } else if (label === 'AllOrigins') {
-                    finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(finalUrl)}`;
+                    finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
                 }
 
                 const r = await fetch(finalUrl, fetchOptions);
@@ -1317,6 +1311,7 @@
         }
 
         if (!res) res = await tryOne(url, 'Proxy Público');
+        // AllOrigins só funciona bem com GET, mas vamos mantê-lo como último recurso
         if (!res) res = await tryOne(url, 'AllOrigins');
         
         if (!res) {
@@ -1383,7 +1378,8 @@
 
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
-            const r = await kbSmartFetch(url, body, 'GET');
+            const method = 'POST';
+            const r = await kbSmartFetch(url, body, method);
             const text = await r.text();
             let data;
             try {
