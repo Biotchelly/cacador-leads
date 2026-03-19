@@ -1309,7 +1309,8 @@
             try {
                 const r = await kbSmartFetch(execUrl, null, 'GET');
                 const data = await r.json();
-                status = data.status;
+                status = data.status; // 👈 VITAL: Atualiza o status
+                
                 if (status === 'SUCCESS') {
                     const outputs = data.outputs || {};
                     const procOut = outputs.processar_requisicao || {};
@@ -1318,13 +1319,27 @@
                     if (uri) return await kbGetFile(id, uri);
                     throw new Error("Arquivo response.json não encontrado nas saídas");
                 }
-                if (status === 'FAILED' || status === 'KILLED') throw new Error("A execução no KESTRA falhou. Verifique os logs lá.");
-            } catch (e) { console.error("Polling error:", e); }
+                
+                if (status === 'FAILED' || status === 'KILLED') {
+                    const error = new Error("A execução no KESTRA falhou.");
+                    error.execId = id;
+                    throw error;
+                }
+            } catch (e) { 
+                if (e.execId) throw e; // Repassa erros reais do Kestra
+                console.error("Polling error:", e); 
+            }
             const elapsed = Date.now() - start;
-            if (elapsed > 120000) throw new Error("Parado por tempo excessivo (+2min)");
+            if (elapsed > 120000) {
+                const error = new Error("Parado por tempo excessivo (+2min)");
+                error.execId = id;
+                throw error;
+            }
             retries++;
         }
-        throw new Error("Timeout: Máximo de tentativas (2min) atingido.");
+        const error = new Error("Timeout: Máximo de tentativas (2min) atingido.");
+        error.execId = id;
+        throw error;
     }
 
     async function kbSmartFetch(url, body, method = 'POST') {
@@ -1472,8 +1487,9 @@
             }
         } catch (err) {
             console.error("[KB] Erro de Carregamento:", err);
+            const execMsg = err.execId ? ` (Exec: ${err.execId})` : "";
             kbToast('Falha na conexão: ' + err.message);
-            document.getElementById('kb-agent-label').textContent = '❌ Erro: ' + err.message;
+            document.getElementById('kb-agent-label').textContent = '❌ ' + err.message + execMsg;
         }
     }
 
