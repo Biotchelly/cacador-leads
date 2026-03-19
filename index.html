@@ -1471,7 +1471,7 @@
         } catch (err) {
             console.error("[KB] Erro de Carregamento:", err);
             kbToast('Falha na conexão: ' + err.message);
-            document.getElementById('kb-agent-label').textContent = '❌ Sem resposta';
+            document.getElementById('kb-agent-label').textContent = '❌ Erro: ' + err.message;
         }
     }
 
