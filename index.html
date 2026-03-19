@@ -1302,6 +1302,7 @@
         const execUrl = `${baseUrl}/api/v1/executions/${id}`;
         let status = 'RUNNING';
         let retries = 0;
+        const start = Date.now();
         
         while (status !== 'SUCCESS' && status !== 'FAILED' && retries < 20) {
             await new Promise(r => setTimeout(r, 2000));
@@ -1320,6 +1321,8 @@
                 }
                 if (status === 'FAILED' || status === 'KILLED') throw new Error("Execução falhou no Kestra");
             } catch (e) { console.error("Polling error:", e); }
+            const elapsed = Date.now() - start;
+            if (elapsed > 60000) throw new Error("Timeout: O Kestra demorou mais de 1 min.");
             retries++;
         }
         throw new Error("Timeout aguardando execução");
