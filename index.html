@@ -1429,36 +1429,38 @@
             return;
         }
 
-        const params = new URLSearchParams({ 
-            action: 'list', 
-            agent_id: id, 
-            vendedor_nome: nome, 
-            table_id: document.getElementById('nocodbTableId')?.value || '',
-            wait: 'true' // 🚀 MODO SÍNCRONO: Kestra espera o script terminar
-        });
-        const finalUrl = `${url}?${params.toString()}`;
-
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
-            const r = await kbSmartFetch(finalUrl, null, 'GET');
+            const bodyData = { 
+                action: 'list', 
+                agent_id: id, 
+                vendedor_nome: nome, 
+                table_id: document.getElementById('nocodbTableId')?.value || '',
+                wait: 'true' 
+            };
+            
+            const r = await kbSmartFetch(url, bodyData, 'POST');
             const data = await r.json();
-            console.log("[KB] Debug Resposta Kestra:", data);
+            console.log("[KB] Resposta Kestra:", data);
 
-            // --- Se o Kestra devolver outputs diretamente (Modo Síncrono) ---
+            // 🚀 MODO SÍNCRONO: Se já vier com os leads no corpo (depende da config do trigger)
+            if (data.success && data.leads) {
+                kbMostrarLeads(data);
+                return;
+            }
+
+            // 🚀 MODO SEMI-SÍNCRONO: Kestra terminou mas retornou o ID e os outputs (porque deu wait=true)
             if (data.outputs && data.outputs.processar_requisicao) {
                 const procOut = data.outputs.processar_requisicao;
-                // Se o modo síncrono devolver o conteúdo do arquivo
                 if (procOut.outputFiles && procOut.outputFiles['response.json']) {
-                    // Nota: em modo síncrono com wait=true, o Kestra pode devolver a URI.
-                    // Se devolver a URI, ainda precisamos do kbGetFile, mas o status já é SUCCESS.
                     const finalData = await kbGetFile(data.id, procOut.outputFiles['response.json']);
                     kbMostrarLeads(finalData);
                     return;
                 }
             }
 
-            // --- Fallback de Polling se necessário ---
-            if (data.id && !data.success) {
+            // 🚀 MODO ASSÍNCRONO: Fallback se o wait=true falhar no servidor
+            if (data.id) {
                 const execId = data.id;
                 document.getElementById('kb-agent-label').textContent = `⏳ Executando (${execId})...`;
                 const finalData = await kbPollExecution(execId);
