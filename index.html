@@ -1304,14 +1304,13 @@
         let retries = 0;
         const start = Date.now();
         
-        while (status !== 'SUCCESS' && status !== 'FAILED' && retries < 20) {
+        while (status !== 'SUCCESS' && status !== 'FAILED' && retries < 60) {
             await new Promise(r => setTimeout(r, 2000));
             try {
                 const r = await kbSmartFetch(execUrl, null, 'GET');
                 const data = await r.json();
                 status = data.status;
                 if (status === 'SUCCESS') {
-                    // Busca uri do response.json nas outputs
                     const outputs = data.outputs || {};
                     const procOut = outputs.processar_requisicao || {};
                     const outFiles = procOut.outputFiles || {};
@@ -1319,13 +1318,13 @@
                     if (uri) return await kbGetFile(id, uri);
                     throw new Error("Arquivo response.json não encontrado nas saídas");
                 }
-                if (status === 'FAILED' || status === 'KILLED') throw new Error("Execução falhou no Kestra");
+                if (status === 'FAILED' || status === 'KILLED') throw new Error("A execução no KESTRA falhou. Verifique os logs lá.");
             } catch (e) { console.error("Polling error:", e); }
             const elapsed = Date.now() - start;
-            if (elapsed > 60000) throw new Error("Timeout: O Kestra demorou mais de 1 min.");
+            if (elapsed > 120000) throw new Error("Parado por tempo excessivo (+2min)");
             retries++;
         }
-        throw new Error("Timeout aguardando execução");
+        throw new Error("Timeout: Máximo de tentativas (2min) atingido.");
     }
 
     async function kbSmartFetch(url, body, method = 'POST') {
