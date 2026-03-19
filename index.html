@@ -1433,11 +1433,14 @@
             return;
         }
 
-        const body = { action: 'list', agent_id: id, vendedor_nome: nome };
+        const { tableId } = kbSyncFromCacador(); // redundante mas seguro
+        const params = new URLSearchParams({ action: 'list', agent_id: id, vendedor_nome: nome, table_id: document.getElementById('nocodbTableId')?.value || '' });
+        const finalUrl = `${url}?${params.toString()}`;
+
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
-            const method = 'POST';
-            const r = await kbSmartFetch(url, body, method);
+            const method = 'GET';
+            const r = await kbSmartFetch(finalUrl, null, method);
             const text = await r.text();
             let data;
             try {
