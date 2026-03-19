@@ -1460,18 +1460,18 @@
             const data = await r.json();
             console.log("[KB] Resposta Kestra:", data);
 
-            // 🚀 MODO SÍNCRONO: Se já vier com os leads no corpo (depende da config do trigger)
-            if (data.success && data.leads) {
-                kbMostrarLeads(data);
+            // 🚀 MODO ULTRA-FAST (Nativo V5): Se os leads já vierem no corpo do Webhook
+            if (data.leads || (data.response && data.response.leads)) {
+                const finalLeads = data.leads || data.response.leads;
+                kbMostrarLeads({ success: true, leads: finalLeads });
                 return;
             }
 
-            // 🚀 MODO SEMI-SÍNCRONO: Kestra terminou mas retornou o ID e os outputs (porque deu wait=true)
-            if (data.outputs && data.outputs.processar_requisicao) {
-                const procOut = data.outputs.processar_requisicao;
-                if (procOut.outputFiles && procOut.outputFiles['response.json']) {
-                    const finalData = await kbGetFile(data.id, procOut.outputFiles['response.json']);
-                    kbMostrarLeads(finalData);
+            // 🚀 MODO SÍNCRONO (Kestra v1): Se vier nos outputs (padrão antigo)
+            if (data.outputs && data.outputs.response) {
+                const res = typeof data.outputs.response === 'string' ? JSON.parse(data.outputs.response) : data.outputs.response;
+                if (res.leads) {
+                    kbMostrarLeads(res);
                     return;
                 }
             }
