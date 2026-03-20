@@ -1413,7 +1413,11 @@
         }
         kbCarregar();
         if (kbPollInterval) clearInterval(kbPollInterval);
-        kbPollInterval = setInterval(kbCarregar, 60000);
+        // Auto-Refresh a cada 20 segundos para sincronia quase em tempo real ⚡
+        kbPollInterval = setInterval(() => {
+            if (document.hidden) return; // Não gasta recursos se a aba estiver em segundo plano
+            kbCarregar();
+        }, 20000);
     }
 
     function kbRenderBoard() {
