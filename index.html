@@ -1309,7 +1309,7 @@
             try {
                 const r = await kbSmartFetch(execUrl, null, 'GET');
                 const data = await r.json();
-                status = data.status; // 👈 VITAL: Atualiza o status
+                status = data.state ? data.state.current : undefined; // 👈 VITAL: Kestra API usa state.current
                 
                 if (status === 'SUCCESS') {
                     const outputs = data.outputs || {};
