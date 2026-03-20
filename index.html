@@ -1464,15 +1464,18 @@
 
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
+            // Garante que a flag wait=true está na URL para que o Kestra aguarde o fim da execução (Sync Mode)
+            const baseUrl = url.split("?")[0];
+            const finalUrl = baseUrl + "?wait=true";
+            
             const bodyData = { 
                 action: 'list', 
                 agent_id: id, 
                 vendedor_nome: nome, 
-                table_id: document.getElementById('nocodbTableId')?.value || '',
-                wait: 'true' 
+                table_id: document.getElementById('nocodbTableId')?.value || ''
             };
             
-            const r = await kbSmartFetch(url, bodyData, 'POST');
+            const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
             const data = await r.json();
             console.log("[KB] Resposta Kestra:", data);
 
