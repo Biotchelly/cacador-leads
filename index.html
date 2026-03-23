@@ -20,6 +20,7 @@
             z-index: 100;
             backdrop-filter: blur(12px);
         }
+
         .tab-btn {
             background: none;
             border: none;
@@ -36,13 +37,23 @@
             gap: 0.5rem;
             margin-bottom: -2px;
         }
-        .tab-btn:hover { color: var(--accent-color, #6366f1); }
+
+        .tab-btn:hover {
+            color: var(--accent-color, #6366f1);
+        }
+
         .tab-btn.active {
             color: var(--accent-color, #6366f1);
             border-bottom-color: var(--accent-color, #6366f1);
         }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
 
         /* ═══════════ KANBAN ═══════════ */
         #kanban-panel {
@@ -51,7 +62,11 @@
             display: none;
             flex-direction: column;
         }
-        #kanban-panel.active { display: flex; }
+
+        #kanban-panel.active {
+            display: flex;
+        }
+
         .kb-toolbar {
             padding: 10px 20px;
             background: var(--card-bg, #1a1d27);
@@ -61,7 +76,9 @@
             align-items: center;
             flex-shrink: 0;
         }
-        .kb-toolbar input, .kb-toolbar select {
+
+        .kb-toolbar input,
+        .kb-toolbar select {
             background: var(--dropzone-bg, #0f172a);
             border: 1px solid var(--border-color, #2e3244);
             color: var(--text-primary, #e2e8f0);
@@ -70,6 +87,7 @@
             border-radius: 8px;
             font-family: inherit;
         }
+
         .kb-btn {
             background: var(--accent-color, #6366f1);
             color: #fff;
@@ -83,15 +101,20 @@
             transition: opacity .2s;
             margin-left: auto;
         }
-        .kb-btn:hover { opacity: .8; }
+
+        .kb-btn:hover {
+            opacity: .8;
+        }
+
         .kb-agent-label {
             font-size: 12px;
             color: var(--text-secondary, #8892a4);
             padding: 4px 12px;
-            background: rgba(99,102,241,.1);
+            background: rgba(99, 102, 241, .1);
             border-radius: 999px;
-            border: 1px solid rgba(99,102,241,.25);
+            border: 1px solid rgba(99, 102, 241, .25);
         }
+
         .kb-board {
             display: flex;
             gap: 12px;
@@ -100,6 +123,7 @@
             flex: 1;
             min-height: 0;
         }
+
         .kb-col {
             min-width: 260px;
             max-width: 280px;
@@ -110,6 +134,7 @@
             flex-direction: column;
             flex-shrink: 0;
         }
+
         .kb-col-header {
             padding: 10px 14px;
             font-size: 12px;
@@ -119,19 +144,39 @@
             align-items: center;
             gap: 8px;
         }
+
         .kb-col-count {
             margin-left: auto;
-            background: rgba(255,255,255,.12);
+            background: rgba(255, 255, 255, .12);
             border-radius: 999px;
             font-size: 11px;
             padding: 1px 7px;
         }
-        .kb-col.col-novo    .kb-col-header { background: #374151; }
-        .kb-col.col-pente   .kb-col-header { background: #78350f; }
-        .kb-col.col-aberto  .kb-col-header { background: #14532d; }
-        .kb-col.col-negoc   .kb-col-header { background: #1e3a5f; }
-        .kb-col.col-conv    .kb-col-header { background: #064e3b; }
-        .kb-col.col-perd    .kb-col-header { background: #4a0404; }
+
+        .kb-col.col-novo .kb-col-header {
+            background: #374151;
+        }
+
+        .kb-col.col-pente .kb-col-header {
+            background: #78350f;
+        }
+
+        .kb-col.col-aberto .kb-col-header {
+            background: #14532d;
+        }
+
+        .kb-col.col-negoc .kb-col-header {
+            background: #1e3a5f;
+        }
+
+        .kb-col.col-conv .kb-col-header {
+            background: #064e3b;
+        }
+
+        .kb-col.col-perd .kb-col-header {
+            background: #4a0404;
+        }
+
         .kb-zone {
             padding: 8px;
             overflow-y: auto;
@@ -141,11 +186,13 @@
             gap: 8px;
             min-height: 80px;
         }
+
         .kb-zone.drag-over {
-            background: rgba(99,102,241,.08);
+            background: rgba(99, 102, 241, .08);
             border-radius: 6px;
-            outline: 2px dashed rgba(99,102,241,.4);
+            outline: 2px dashed rgba(99, 102, 241, .4);
         }
+
         .kb-card {
             background: var(--dropzone-bg, #0f172a);
             border: 1px solid var(--border-color, #2e3244);
@@ -155,8 +202,17 @@
             transition: transform .15s, box-shadow .15s;
             font-size: 12px;
         }
-        .kb-card:active { cursor: grabbing; }
-        .kb-card.dragging { opacity: .45; transform: rotate(2deg); box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+
+        .kb-card:active {
+            cursor: grabbing;
+        }
+
+        .kb-card.dragging {
+            opacity: .45;
+            transform: rotate(2deg);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+        }
+
         .kb-card-name {
             font-size: 13px;
             font-weight: 700;
@@ -166,6 +222,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .kb-row {
             display: flex;
             gap: 5px;
@@ -175,22 +232,45 @@
             line-height: 1.4;
             font-size: 11px;
         }
-        .kb-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+
+        .kb-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 5px;
+        }
+
         .kb-chip {
-            background: rgba(99,102,241,.12);
+            background: rgba(99, 102, 241, .12);
             color: #a5b4fc;
             font-size: 10px;
             padding: 2px 7px;
             border-radius: 999px;
-            border: 1px solid rgba(99,102,241,.25);
+            border: 1px solid rgba(99, 102, 241, .25);
         }
-        .kb-chip.g { background: rgba(16,185,129,.1); color: #6ee7b7; border-color: rgba(16,185,129,.2); }
-        .kb-chip.y { background: rgba(245,158,11,.1); color: #fcd34d; border-color: rgba(245,158,11,.2); }
-        .kb-chip.r { background: rgba(239,68,68,.1);  color: #fca5a5; border-color: rgba(239,68,68,.2); }
+
+        .kb-chip.g {
+            background: rgba(16, 185, 129, .1);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, .2);
+        }
+
+        .kb-chip.y {
+            background: rgba(245, 158, 11, .1);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, .2);
+        }
+
+        .kb-chip.r {
+            background: rgba(239, 68, 68, .1);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, .2);
+        }
+
         .kb-notas {
             width: 100%;
             margin-top: 7px;
-            background: rgba(255,255,255,.04);
+            background: rgba(255, 255, 255, .04);
             border: 1px solid var(--border-color, #2e3244);
             color: var(--text-primary, #e2e8f0);
             font-size: 11px;
@@ -200,7 +280,14 @@
             font-family: inherit;
             min-height: 44px;
         }
-        .kb-actions { margin-top: 6px; display: flex; gap: 6px; align-items: center; }
+
+        .kb-actions {
+            margin-top: 6px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
         .kb-save {
             font-size: 11px;
             background: var(--accent-color, #6366f1);
@@ -212,6 +299,7 @@
             font-family: inherit;
             font-weight: 600;
         }
+
         .kb-link {
             font-size: 11px;
             color: #818cf8;
@@ -222,16 +310,35 @@
             font-family: inherit;
             text-decoration: underline;
         }
-        .kb-empty { text-align: center; color: var(--text-secondary, #8892a4); padding: 20px; font-size: 11px; opacity: .5; }
-        #kb-toast {
-            position: fixed; bottom: 16px; right: 16px;
-            background: #1e293b; border: 1px solid #2e3244;
-            color: #e2e8f0; font-size: 12px;
-            padding: 10px 16px; border-radius: 8px;
-            opacity: 0; transition: opacity .3s;
-            pointer-events: none; z-index: 9999;
+
+        .kb-empty {
+            text-align: center;
+            color: var(--text-secondary, #8892a4);
+            padding: 20px;
+            font-size: 11px;
+            opacity: .5;
         }
-        #kb-toast.show { opacity: 1; }
+
+        #kb-toast {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: #1e293b;
+            border: 1px solid #2e3244;
+            color: #e2e8f0;
+            font-size: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #kb-toast.show {
+            opacity: 1;
+        }
+
         .kb-input-url {
             flex: 1;
             background: var(--dropzone-bg, #0f172a);
@@ -242,9 +349,10 @@
             border-radius: 6px;
             font-family: monospace;
         }
+
         .kb-config-bar {
             padding: 8px 20px;
-            background: rgba(99,102,241,.05);
+            background: rgba(99, 102, 241, .05);
             border-bottom: 1px solid var(--border-color, #2e3244);
             display: flex;
             gap: 10px;
@@ -306,6 +414,7 @@
             padding: 0;
             line-height: 1.5;
         }
+
         /* Centraliza apenas o conteudo do Cacador */
         .cacador-inner {
             display: flex;
@@ -615,269 +724,287 @@
 
     <!-- ═══════════ ABA 1: CAÇADOR ═══════════ -->
     <div id="cacador-panel" class="tab-panel active">
-    <div class="cacador-inner">
-    <div class="container">
-        <header>
-            <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.7.2 Team & Vendor
-                    Edition</span></h1>
-            <div class="theme-toggle">
-                <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
-                        class="fa-solid fa-sun"></i></button>
-                <button class="theme-btn" onclick="setTheme('system')" title="Sistema"><i
-                        class="fa-solid fa-desktop"></i></button>
-                <button class="theme-btn" onclick="setTheme('dark')" title="Escuro"><i
-                        class="fa-solid fa-moon"></i></button>
-            </div>
-        </header>
+        <div class="cacador-inner">
+            <div class="container">
+                <header>
+                    <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.7.2 Team &
+                            Vendor
+                            Edition</span></h1>
+                    <div class="theme-toggle">
+                        <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
+                                class="fa-solid fa-sun"></i></button>
+                        <button class="theme-btn" onclick="setTheme('system')" title="Sistema"><i
+                                class="fa-solid fa-desktop"></i></button>
+                        <button class="theme-btn" onclick="setTheme('dark')" title="Escuro"><i
+                                class="fa-solid fa-moon"></i></button>
+                    </div>
+                </header>
 
-        <div class="content">
+                <div class="content">
 
-            <!-- Dica do Jobs -->
-            <div
-                style="background: rgba(99, 102, 241, 0.05); padding: 1rem; border-radius: 1rem; border-left: 4px solid var(--accent-color); margin-bottom: 2rem; font-size: 0.9rem;">
-                <strong>📚 Dica do Jobs:</strong> Use o <strong>Modo Turbo</strong> para ignorar bloqueios do Chrome. Se
-                for subir arquivos gigantes, melhor usar o upload direto no Painel do Kestra!
-            </div>
+                    <!-- Dica do Jobs -->
+                    <div
+                        style="background: rgba(99, 102, 241, 0.05); padding: 1rem; border-radius: 1rem; border-left: 4px solid var(--accent-color); margin-bottom: 2rem; font-size: 0.9rem;">
+                        <strong>📚 Dica do Jobs:</strong> Use o <strong>Modo Turbo</strong> para ignorar bloqueios do
+                        Chrome. Se
+                        for subir arquivos gigantes, melhor usar o upload direto no Painel do Kestra!
+                    </div>
 
-            <!-- Painel de Controle Superior -->
-            <div class="config-grid">
-                <div class="config-card">
-                    <div class="config-header">
-                        <i class="fa-solid fa-gear"></i> Configurações do Ciclo
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">IDs das Inboxes (Chatwoot)</label>
-                        <input type="text" class="form-input" id="inboxIds" placeholder="Ex: 1, 2, 5" value="1">
-                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para rodízio
-                            (anti-ban).</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
-                        <input type="number" class="form-input" id="reloadCountMain" value="5">
-                        <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos leads
-                            'Novos' ativar para disparo por vez.</small>
-                    </div>
-                </div>
-
-                <div class="config-card">
-                    <div class="config-header">
-                        <i class="fa-solid fa-database"></i> CRM NocoDB
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">ID da Tabela (Destino)</label>
-                        <input type="text" class="form-input" id="tableId" placeholder="ID da tabela no NocoDB"
-                            value="moqw8l0lnh76bvm">
-                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão:
-                            moqw8l0lnh76bvm</small>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                        <div class="form-group" style="flex: 2;">
-                            <label class="form-label">👤 Vendedor Responsável</label>
-                            <input type="text" class="form-input" id="vendedorNome" placeholder="Nome" value="Gestão" onchange="localStorage.setItem('vendedorNome', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                    <!-- Painel de Controle Superior -->
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-gear"></i> Configurações do Ciclo
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IDs das Inboxes (Chatwoot)</label>
+                                <input type="text" class="form-input" id="inboxIds" placeholder="Ex: 1, 2, 5" value="1">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para
+                                    rodízio
+                                    (anti-ban).</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
+                                <input type="number" class="form-input" id="reloadCountMain" value="5">
+                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos
+                                    leads
+                                    'Novos' ativar para disparo por vez.</small>
+                            </div>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label class="form-label">🆔 ID Agente</label>
-                            <input type="number" class="form-input" id="vendedorId" placeholder="ID" value="" onchange="localStorage.setItem('vendedorId', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-database"></i> CRM NocoDB
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ID da Tabela (Destino)</label>
+                                <input type="text" class="form-input" id="tableId" placeholder="ID da tabela no NocoDB"
+                                    value="moqw8l0lnh76bvm">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão:
+                                    moqw8l0lnh76bvm</small>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                                <div class="form-group" style="flex: 2;">
+                                    <label class="form-label">👤 Vendedor Responsável</label>
+                                    <input type="text" class="form-input" id="vendedorNome" placeholder="Nome"
+                                        value="Gestão"
+                                        onchange="localStorage.setItem('vendedorNome', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label">🆔 ID Agente</label>
+                                    <input type="number" class="form-input" id="vendedorId" placeholder="ID" value=""
+                                        onchange="localStorage.setItem('vendedorId', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">👥 ID do Time (Chatwoot)</label>
+                                <input type="number" class="form-input" id="chatwootTeamId" placeholder="Ex: 2"
+                                    value="">
+                                <small style="color: var(--text-secondary); font-size: 0.7rem;">ID para vinculação
+                                    direta da
+                                    conversa.</small>
+                            </div>
+
+                            <div class="switch-container" style="margin-top: 1rem;">
+                                <label class="switch">
+                                    <input type="checkbox" id="updateExisting">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>🔄 Atualizar leads se já existirem?</span>
+                            </div>
+
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">👥 ID do Time (Chatwoot)</label>
-                        <input type="number" class="form-input" id="chatwootTeamId" placeholder="Ex: 2" value="">
-                        <small style="color: var(--text-secondary); font-size: 0.7rem;">ID para vinculação direta da
-                            conversa.</small>
-                    </div>
 
-                    <div class="switch-container" style="margin-top: 1rem;">
-                        <label class="switch">
-                            <input type="checkbox" id="updateExisting">
-                            <span class="slider"></span>
-                        </label>
-                        <span>🔄 Atualizar leads se já existirem?</span>
-                    </div>
-
-                </div>
-
-                <div class="config-card">
-                    <div class="config-header">
-                        <i class="fa-solid fa-clock"></i> Horário e Cadência
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Cadência Sniper (Minutos)</label>
-                        <input type="number" class="form-input" id="sniperCadence" value="5" min="1">
-                        <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre cada
-                            disparo.</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Max. Disparos por Ciclo</label>
-                        <input type="number" class="form-input" id="maxShots" value="10">
-                    </div>
-                </div>
-            </div>
-
-            <!-- File Upload -->
-            <div class="dropzone-container">
-                <div class="dropzone" id="dropzone">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <h3>Arraste seu CSV aqui</h3>
-                    <p>ou clique para selecionar</p>
-                    <input type="file" id="fileInput" accept=".csv">
-                </div>
-                <!-- Hidden UI for Ultimate Fallback -->
-                <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
-                    enctype="application/x-www-form-urlencoded">
-                    <input type="hidden" name="payload" id="ultimatePayload">
-                </form>
-                <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
-                <div class="file-info" id="fileInfo">
-                    <i class="fa-solid fa-file-csv"></i>
-                    <div>
-                        <strong id="fileName">arquivo.csv</strong>
-                        <div style="font-size: 0.8rem; opacity: 0.7;" id="fileSize">0 KB</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Toggles de Operação -->
-            <div class="config-card" style="margin-bottom: 2rem;">
-                <div class="config-header">
-                    <i class="fa-solid fa-rocket"></i> Ações do Operador
-                </div>
-                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-                    <div class="form-group">
-                        <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
-                            <input type="checkbox" class="toggle-checkbox" id="reloadEnabled" checked>
-                            <div class="toggle-input"></div>
-                            <span>Executar Recarga</span>
-                        </label>
-                        <div style="margin-left: 3rem; margin-top: 5px;">
-                            <label style="font-size: 0.75rem;">Qtd. Leads: </label>
-                            <input type="number" id="reloadCount" value="5" min="1"
-                                style="width: 50px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 2px 5px;">
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-clock"></i> Horário e Cadência
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cadência Sniper (Minutos)</label>
+                                <input type="number" class="form-input" id="sniperCadence" value="5" min="1">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre
+                                    cada
+                                    disparo.</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Max. Disparos por Ciclo</label>
+                                <input type="number" class="form-input" id="maxShots" value="10">
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
-                            <input type="checkbox" class="toggle-checkbox" id="sniperEnabled" checked>
-                            <div class="toggle-input"></div>
-                            <span>Ligar Sniper 🔫</span>
-                        </label>
-                        <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Faz o disparo
-                            real.</small>
+
+                    <!-- File Upload -->
+                    <div class="dropzone-container">
+                        <div class="dropzone" id="dropzone">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <h3>Arraste seu CSV aqui</h3>
+                            <p>ou clique para selecionar</p>
+                            <input type="file" id="fileInput" accept=".csv">
+                        </div>
+                        <!-- Hidden UI for Ultimate Fallback -->
+                        <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
+                            enctype="application/x-www-form-urlencoded">
+                            <input type="hidden" name="payload" id="ultimatePayload">
+                        </form>
+                        <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
+                        <div class="file-info" id="fileInfo">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <div>
+                                <strong id="fileName">arquivo.csv</strong>
+                                <div style="font-size: 0.8rem; opacity: 0.7;" id="fileSize">0 KB</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="config-card"
-                    style="margin-top: 1rem; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
-                    <div class="config-header" style="color: #f59e0b;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Modo de Conexão
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="radio" name="connMode" value="extension"
-                                style="width: 1.1rem; height: 1.1rem;">
-                            <span style="font-size: 0.85rem; font-weight: 600;">Modo Estável (Com Extensão)</span>
-                        </label>
-                        <small
-                            style="margin-left: 1.6rem; color: #10b981; font-size: 0.7rem; display: block; margin-top: -4px;">
-                            <i class="fa-solid fa-check-double"></i> Recomendado. Requer extensão "Allow CORS" ativada.
-                        </small>
+                    <!-- Toggles de Operação -->
+                    <div class="config-card" style="margin-bottom: 2rem;">
+                        <div class="config-header">
+                            <i class="fa-solid fa-rocket"></i> Ações do Operador
+                        </div>
+                        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                            <div class="form-group">
+                                <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
+                                    <input type="checkbox" class="toggle-checkbox" id="reloadEnabled" checked>
+                                    <div class="toggle-input"></div>
+                                    <span>Executar Recarga</span>
+                                </label>
+                                <div style="margin-left: 3rem; margin-top: 5px;">
+                                    <label style="font-size: 0.75rem;">Qtd. Leads: </label>
+                                    <input type="number" id="reloadCount" value="5" min="1"
+                                        style="width: 50px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 2px 5px;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
+                                    <input type="checkbox" class="toggle-checkbox" id="sniperEnabled" checked>
+                                    <div class="toggle-input"></div>
+                                    <span>Ligar Sniper 🔫</span>
+                                </label>
+                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Faz o
+                                    disparo
+                                    real.</small>
+                            </div>
+                        </div>
 
-                        <label
-                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 4px;">
-                            <input type="radio" name="connMode" value="proxy" style="width: 1.1rem; height: 1.1rem;">
-                            <span style="font-size: 0.85rem;">Modo Proxy (Lento/Instável)</span>
-                        </label>
-                        <small
-                            style="margin-left: 1.6rem; color: var(--text-secondary); font-size: 0.7rem; display: block; margin-top: -4px;">
-                            Tenta túneis públicos. Pode falhar com arquivos grandes (>50KB).
-                        </small>
+                        <div class="config-card"
+                            style="margin-top: 1rem; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
+                            <div class="config-header" style="color: #f59e0b;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Modo de Conexão
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="connMode" value="extension"
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Modo Estável (Com
+                                        Extensão)</span>
+                                </label>
+                                <small
+                                    style="margin-left: 1.6rem; color: #10b981; font-size: 0.7rem; display: block; margin-top: -4px;">
+                                    <i class="fa-solid fa-check-double"></i> Recomendado. Requer extensão "Allow CORS"
+                                    ativada.
+                                </small>
 
-                        <label
-                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 8px;">
-                            <input type="radio" name="connMode" value="private" checked
-                                style="width: 1.1rem; height: 1.1rem;">
-                            <span style="font-size: 0.85rem; font-weight: 700; color: #8b5cf6;">🚀 Modo Turbo (Proxy
-                                Privado)</span>
-                        </label>
-                        <div id="privateProxyConfig" style="margin-left: 1.6rem; margin-top: 4px; display: block;">
-                            <div style="display: flex; gap: 5px;">
-                                <input type="text" class="form-input" id="privateProxyUrl"
-                                    value="https://falling-term-7c4e.maxyadm.workers.dev"
-                                    placeholder="https://seu-worker.workers.dev"
-                                    style="padding: 4px 8px; font-size: 0.8rem; flex: 1;">
-                                <button onclick="testProxy()"
-                                    style="background: #8b5cf6; color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;">
-                                    Testar
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 4px;">
+                                    <input type="radio" name="connMode" value="proxy"
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem;">Modo Proxy (Lento/Instável)</span>
+                                </label>
+                                <small
+                                    style="margin-left: 1.6rem; color: var(--text-secondary); font-size: 0.7rem; display: block; margin-top: -4px;">
+                                    Tenta túneis públicos. Pode falhar com arquivos grandes (>50KB).
+                                </small>
+
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 8px;">
+                                    <input type="radio" name="connMode" value="private" checked
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem; font-weight: 700; color: #8b5cf6;">🚀 Modo Turbo
+                                        (Proxy
+                                        Privado)</span>
+                                </label>
+                                <div id="privateProxyConfig"
+                                    style="margin-left: 1.6rem; margin-top: 4px; display: block;">
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" class="form-input" id="privateProxyUrl"
+                                            value="https://falling-term-7c4e.maxyadm.workers.dev"
+                                            placeholder="https://seu-worker.workers.dev"
+                                            style="padding: 4px 8px; font-size: 0.8rem; flex: 1;">
+                                        <button onclick="testProxy()"
+                                            style="background: #8b5cf6; color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;">
+                                            Testar
+                                        </button>
+                                    </div>
+                                    <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
+                                        <i class="fa-solid fa-bolt"></i> Recomendado para uso definitivo no navegador.
+                                        <a href="https://falling-term-7c4e.maxyadm.workers.dev" target="_blank"
+                                            style="color: #3b82f6; text-decoration: underline; margin-left: 5px;">Testar
+                                            no
+                                            Navegador 🔗</a>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div id="proxyHelper"
+                                style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
+                                <span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-link-slash"></i>
+                                    Links
+                                    Atualizados (2026):</span>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <a href="https://chromewebstore.google.com/detail/moesif-origin-cors-change/digfbfapnobgndndbneagpbhpccmhlba"
+                                        target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                        1. Moesif CORS (Recomendado)
+                                    </a>
+                                    <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc"
+                                        target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                        2. CORS Unblock (Alternativa)
+                                    </a>
+                                </div>
+                                <button onclick="copyCurl()" id="copyCurlBtn"
+                                    style="display:none; background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 5px; font-weight: bold; width: fit-content; align-self: center;">
+                                    <i class="fa-solid fa-terminal"></i> COPIAR COMANDO CURL (SOLUÇÃO 100%)
+                                </button>
+                                <div id="psFallback"
+                                    style="display:none; text-align: center; margin-top: 5px; padding: 8px; background: rgba(37, 99, 235, 0.1); border: 1px dashed var(--accent-color); border-radius: 6px;">
+                                    <span
+                                        style="font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 4px;">🚀
+                                        <b>Opção Ninja:</b> Use o script que criei na pasta:</span>
+                                    <code
+                                        style="font-size: 0.75rem; background: var(--console-bg); color: var(--console-text); padding: 2px 4px; border-radius: 4px;">Upload_Leads_Garantido.ps1</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
+                                <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
+                                    style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fa-solid fa-plug"></i> Testar URL
                                 </button>
                             </div>
-                            <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
-                                <i class="fa-solid fa-bolt"></i> Recomendado para uso definitivo no navegador.
-                                <a href="https://falling-term-7c4e.maxyadm.workers.dev" target="_blank"
-                                    style="color: #3b82f6; text-decoration: underline; margin-left: 5px;">Testar no
-                                    Navegador 🔗</a>
-                            </small>
+                            <input type="text" class="form-input" id="webhookUrl"
+                                value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
                         </div>
                     </div>
 
-                    <div id="proxyHelper"
-                        style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
-                        <span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-link-slash"></i> Links
-                            Atualizados (2026):</span>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <a href="https://chromewebstore.google.com/detail/moesif-origin-cors-change/digfbfapnobgndndbneagpbhpccmhlba"
-                                target="_blank" style="color: #3b82f6; text-decoration: underline;">
-                                1. Moesif CORS (Recomendado)
-                            </a>
-                            <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc"
-                                target="_blank" style="color: #3b82f6; text-decoration: underline;">
-                                2. CORS Unblock (Alternativa)
-                            </a>
-                        </div>
-                        <button onclick="copyCurl()" id="copyCurlBtn"
-                            style="display:none; background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 5px; font-weight: bold; width: fit-content; align-self: center;">
-                            <i class="fa-solid fa-terminal"></i> COPIAR COMANDO CURL (SOLUÇÃO 100%)
-                        </button>
-                        <div id="psFallback"
-                            style="display:none; text-align: center; margin-top: 5px; padding: 8px; background: rgba(37, 99, 235, 0.1); border: 1px dashed var(--accent-color); border-radius: 6px;">
-                            <span
-                                style="font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 4px;">🚀
-                                <b>Opção Ninja:</b> Use o script que criei na pasta:</span>
-                            <code
-                                style="font-size: 0.75rem; background: var(--console-bg); color: var(--console-text); padding: 2px 4px; border-radius: 4px;">Upload_Leads_Garantido.ps1</code>
-                        </div>
-                    </div>
-                </div>
+                    <!-- Actions -->
+                    <button class="action-btn" id="processBtn">
+                        <i class="fa-solid fa-play"></i> Executar Operação
+                    </button>
 
-                <div class="form-group" style="margin-top: 1rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
-                        <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
-                            style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
-                            <i class="fa-solid fa-plug"></i> Testar URL
-                        </button>
+                    <!-- Console -->
+                    <div class="console" id="console">
+                        <div class="console-line">
+                            <span class="console-timestamp">[00:00:00]</span>
+                            <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
+                        </div>
                     </div>
-                    <input type="text" class="form-input" id="webhookUrl"
-                        value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
+
                 </div>
             </div>
-
-            <!-- Actions -->
-            <button class="action-btn" id="processBtn">
-                <i class="fa-solid fa-play"></i> Executar Operação
-            </button>
-
-            <!-- Console -->
-            <div class="console" id="console">
-                <div class="console-line">
-                    <span class="console-timestamp">[00:00:00]</span>
-                    <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
-                </div>
-            </div>
-
-        </div>
-    </div>
-    </div><!-- /cacador-inner -->
+        </div><!-- /cacador-inner -->
     </div><!-- /cacador-panel -->
 
     <script>
@@ -1189,11 +1316,11 @@
                 const vid = document.getElementById('vendedorId');
                 const vnm = document.getElementById('vendedorNome');
                 if (vid) vid.value = id;
-                
+
                 const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
                 const finalName = map[id] || name || "Gestão";
                 if (vnm) vnm.value = finalName;
-                
+
                 localStorage.setItem('vendedorId', id);
                 localStorage.setItem('vendedorNome', finalName);
                 if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
@@ -1206,13 +1333,13 @@
             if (cwId) updateAgent(cwId);
 
             // 2. Escuta Evento do Chatwoot (postMessage)
-            window.addEventListener('message', function(event) {
+            window.addEventListener('message', function (event) {
                 try {
                     const data = JSON.parse(event.data);
                     if (data.agent && data.agent.id) {
                         updateAgent(data.agent.id, data.agent.name);
                     }
-                } catch(e) {}
+                } catch (e) { }
             });
 
             // --- INTELIGÊNCIA DE ABAS ---
@@ -1246,7 +1373,8 @@
 
         <!-- Toolbar -->
         <div class="kb-toolbar">
-            <input type="text" id="kb-search" placeholder="🔍 Buscar lead..." oninput="kbFiltrar()" style="width:200px;">
+            <input type="text" id="kb-search" placeholder="🔍 Buscar lead..." oninput="kbFiltrar()"
+                style="width:200px;">
             <select id="kb-filter-status" onchange="kbFiltrar()">
                 <option value="">Todas as colunas</option>
                 <option value="Novo">📦 Reserva</option>
@@ -1256,14 +1384,17 @@
                 <option value="Convertido">✅ Convertido</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
-            <span id="kb-vendedor-display" style="color: #94a3b8; font-size: 13px; margin: 0 10px;">👤 Vendedor: <b id="kb-vendedor-nome">...</b></span>
+            <span id="kb-vendedor-display" style="color: #94a3b8; font-size: 13px; margin: 0 10px;">👤 Vendedor: <b
+                    id="kb-vendedor-nome">...</b></span>
             <span class="kb-agent-label" id="kb-agent-label">⏳ Aguardando...</span>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
         </div>
 
         <!-- Alerta de CORS -->
-        <div id="kb-cors-alert" style="display:none; margin: 10px 20px; padding: 10px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; font-size: 11px; color: #fca5a5;">
-            ⚠️ <b>Erro de Conexão:</b> O sistema não conseguiu carregar os leads. Verifique o <b>Modo Turbo</b> nas configurações.
+        <div id="kb-cors-alert"
+            style="display:none; margin: 10px 20px; padding: 10px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; font-size: 11px; color: #fca5a5;">
+            ⚠️ <b>Erro de Conexão:</b> O sistema não conseguiu carregar os leads. Verifique o <b>Modo Turbo</b> nas
+            configurações.
         </div>
 
         <!-- Board -->
@@ -1273,182 +1404,180 @@
     </div><!-- /kanban-panel -->
 
     <script>
-    // ═══════════════════════════════════════════════
-    // KANBAN SDR — LÓGICA COMPLETA
-    // ═══════════════════════════════════════════════
-    const KB_COLUNAS = [
-        { id: 'Novo',              label: '📦 Reserva',    cls: 'col-novo'  },
-        { id: 'Aguardando Disparo',label: '🎯 Pente',      cls: 'col-pente' },
-        { id: 'Contactado',        label: '📬 Aberto',     cls: 'col-aberto'},
-        { id: 'Negociando',        label: '🤝 Negociando', cls: 'col-negoc' },
-        { id: 'Convertido',        label: '✅ Convertido', cls: 'col-conv'  },
-        { id: 'Perdido',           label: '❌ Perdido',    cls: 'col-perd'  },
-    ];
+        // ═══════════════════════════════════════════════
+        // KANBAN SDR — LÓGICA COMPLETA
+        // ═══════════════════════════════════════════════
+        const KB_COLUNAS = [
+            { id: 'Novo', label: '📦 Reserva', cls: 'col-novo' },
+            { id: 'Aguardando Disparo', label: '🎯 Pente', cls: 'col-pente' },
+            { id: 'Contactado', label: '📬 Aberto', cls: 'col-aberto' },
+            { id: 'Negociando', label: '🤝 Negociando', cls: 'col-negoc' },
+            { id: 'Convertido', label: '✅ Convertido', cls: 'col-conv' },
+            { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
+        ];
 
-    let kbLeads = [];
-    let kbDraggedId = null;
-    let kbInitialized = false;
-    let kbPollInterval = null;
+        let kbLeads = [];
+        let kbDraggedId = null;
+        let kbInitialized = false;
+        let kbPollInterval = null;
 
-    async function kbGetFile(id, uri) {
-        const baseUrl = kbBackendUrl().split('/api/v1/')[0];
-        const fileUrl = `${baseUrl}/api/v1/executions/${id}/file?path=${encodeURIComponent(uri)}`;
-        const r = await kbSmartFetch(fileUrl, null, 'GET');
-        return await r.json();
-    }
+        async function kbGetFile(id, uri) {
+            const baseUrl = kbBackendUrl().split('/api/v1/')[0];
+            const fileUrl = `${baseUrl}/api/v1/executions/${id}/file?path=${encodeURIComponent(uri)}`;
+            const r = await kbSmartFetch(fileUrl, null, 'GET');
+            return await r.json();
+        }
 
-            async function kbPollExecution(id) {
-        const baseUrl = kbBackendUrl().split('/api/v1/')[0];
-        const execUrl = `${baseUrl}/api/v1/executions/${id}`;
-        const label = document.getElementById('kb-agent-label');
-        let status = 'RUNNING';
-        let retries = 0;
-        const start = Date.now();
-        
-        while (status !== 'SUCCESS' && status !== 'FAILED' && status !== 'KILLED' && retries < 60) {
-            await new Promise(r => setTimeout(r, 2000));
-            try {
-                const r = await kbSmartFetch(execUrl, null, 'GET');
+        async function kbPollExecution(id) {
+            const baseUrl = kbBackendUrl().split('/api/v1/')[0];
+            const label = document.getElementById('kb-agent-label');
+            let status = 'RUNNING';
+            let retries = 0;
+            const start = Date.now();
+
+            const fetchExec = async (execId) => {
+                const r = await kbSmartFetch(`${baseUrl}/api/v1/executions/${execId}`, null, 'GET');
+                return await r.json();
+            };
+
+            const tryFindLatest = async () => {
+                console.log('[KB] Tentando buscar última execução do fluxo...');
+                const r = await kbSmartFetch(`${baseUrl}/api/v1/executions?namespace=biotchellymcp&flowId=08_kanban_backend_api&size=1`, null, 'GET');
                 const data = await r.json();
-                
-                // Detecção robusta de status (Kestra v0.15+)
-                status = (data.state && typeof data.state === 'object') ? data.state.current : data.state;
-                if (!status) status = 'UNKNOWN';
-                
-                label.textContent = `⏳ ${status} (${id.substring(0,8)})... `;
-                
-                if (status === 'SUCCESS') {
-                    KB_LOG('✅ Sucesso Kestra', data);
-                    const outs = data.outputs || {};
-                    
-                    const _get = (obj) => {
-                        if (!obj) return null;
-                        if (obj.leads && Array.isArray(obj.leads)) return obj;
-                        // Aceita List ou list
-                        const leadsList = obj.list || obj.List;
-                        if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
-                        if (typeof obj === 'string') {
-                            try { return _get(JSON.parse(obj)); } catch(e) { 
-                                if (obj.includes('[object Object]')) { console.error('Erro de serialização!'); }
-                                return null; 
-                            }
-                        }
-                        if (obj.body) return _get(obj.body);
-                        // Busca recursiva profunda
-                        for (let key in obj) {
-                            if (typeof obj[key] === 'object' && obj[key] !== null) {
-                                const internal = _get(obj[key]);
-                                if (internal) return internal;
-                            }
-                        }
-                        return null;
-                    };
-                    
-                    // Tenta em todas as frentes: Task 'buscar_leads_noco', Output global 'response', ou no objeto data inteiro
-                    const res = _get(outs.buscar_leads_noco) || _get(outs.response) || _get(data);
-                    
-                    if (res && res.leads) {
-                        return res;
-                    }
-                    throw new Error("Dados não encontrados nos outputs.");
-                }
-                if (status === 'FAILED' || status === 'KILLED') throw new Error(`A execução falhou com status: ${status}`);
-            } catch (e) { 
-                console.error("Polling error:", e); 
-                if (status === 'SUCCESS' || status === 'FAILED') throw e; 
-            }
-            if (Date.now() - start > 180000) throw new Error("Timeout de 3min.");
-            retries++;
-        }
-        throw new Error("Limite de tentativas atingido.");
-    }
-
-    async function kbSmartFetch(url, body, method = 'POST') {
-        const modeIn = document.querySelector('input[name="connMode"]:checked');
-        const mode = modeIn ? modeIn.value : 'private';
-        const pProxy = (document.getElementById('privateProxyUrl')?.value || 'https://falling-term-7c4e.maxyadm.workers.dev').trim().replace(/\/$/, "");
-        const retryFetch = async (target, label) => {
-            try {
-                let final = target;
-                if (label === 'Turbo' && pProxy) final = `${pProxy}/?url=${encodeURIComponent(target)}`;
-                else if (label === 'Proxy') final = `https://corsproxy.io/?${encodeURIComponent(target)}`;
-                
-                const r = await fetch(final, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: body ? JSON.stringify(body) : (method === 'POST' ? '{}' : null)
-                });
-                if (r.ok) return r;
-                console.warn(`[KB] Falha ${label}: ${r.status}`);
+                if (data.results && data.results[0]) return data.results[0];
                 return null;
-            } catch (e) { 
-                console.error(`[KB] Erro ${label}:`, e.message);
-                return null; 
+            };
+
+            while (retries < 60) {
+                await new Promise(r => setTimeout(r, 2000));
+                try {
+                    let data = await fetchExec(id);
+                    status = (data.state && typeof data.state === 'object') ? data.state.current : data.state;
+
+                    // Se o ID do webhook não progride ou parece morto, tenta pegar a última do fluxo
+                    if (retries > 5 && (status === 'RUNNING' || !status)) {
+                        const latest = await tryFindLatest();
+                        if (latest && latest.id !== id && (latest.state.current === 'SUCCESS' || latest.state.current === 'RUNNING')) {
+                            console.log('[KB] Migrando polling para ID real:', latest.id);
+                            id = latest.id;
+                            data = latest;
+                            status = latest.state.current;
+                        }
+                    }
+
+                    label.textContent = `⏳ ${status || 'WAIT'} (${id.substring(0, 8)})... `;
+
+                    if (status === 'SUCCESS') {
+                        const _get = (obj) => {
+                            if (!obj) return null;
+                            const leadsList = obj.leads || obj.list || obj.List;
+                            if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
+                            if (obj.body) return _get(obj.body);
+                            if (obj.outputs) return _get(obj.outputs);
+                            for (let k in obj) { if (typeof obj[k] === 'object' && obj[k] !== null) { const res = _get(obj[k]); if (res) return res; } }
+                            return null;
+                        };
+                        const res = _get(data.outputs) || _get(data);
+                        if (res && res.leads) return res;
+
+                        // Se SUCCESS mas sem leads, pode ser que a execução real seja outra
+                        const latestFix = await tryFindLatest();
+                        if (latestFix && latestFix.id !== id) return await kbPollExecution(latestFix.id);
+                    }
+                    if (status === 'FAILED' || status === 'KILLED') throw new Error(`Falha: ${status}`);
+                } catch (e) { console.error("Poll err:", e); }
+                if (Date.now() - start > 180000) break;
+                retries++;
             }
-        };
+            throw new Error("Timeout ou dados não encontrados.");
+        }
 
-        const alertDiv = document.getElementById('kb-cors-alert');
-        let res = await retryFetch(url, mode === 'private' ? 'Turbo' : 'Direto');
-        if (!res) res = await retryFetch(url, 'Turbo');
-        if (!res) res = await retryFetch(url, 'Proxy');
-        
-        if (!res) {
-            if (alertDiv) {
-                alertDiv.style.display = 'block';
-                alertDiv.innerHTML = `⚠️ <b>Bloqueio de Rede:</b> Não foi possível conectar ao backend. Verifique o <b>Modo Turbo</b> ou tente o <b>Proxy Público</b>. Se o erro persistir, abra o console do navegador (F12) para detalhes.`;
+        async function kbSmartFetch(url, body, method = 'POST') {
+            const modeIn = document.querySelector('input[name="connMode"]:checked');
+            const mode = modeIn ? modeIn.value : 'private';
+            const pProxy = (document.getElementById('privateProxyUrl')?.value || 'https://falling-term-7c4e.maxyadm.workers.dev').trim().replace(/\/$/, "");
+            const retryFetch = async (target, label) => {
+                try {
+                    let final = target;
+                    if (label === 'Turbo' && pProxy) final = `${pProxy}/?url=${encodeURIComponent(target)}`;
+                    else if (label === 'Proxy') final = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+
+                    const r = await fetch(final, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: body ? JSON.stringify(body) : (method === 'POST' ? '{}' : null)
+                    });
+                    if (r.ok) return r;
+                    console.warn(`[KB] Falha ${label}: ${r.status}`);
+                    return null;
+                } catch (e) {
+                    console.error(`[KB] Erro ${label}:`, e.message);
+                    return null;
+                }
+            };
+
+            const alertDiv = document.getElementById('kb-cors-alert');
+            let res = await retryFetch(url, mode === 'private' ? 'Turbo' : 'Direto');
+            if (!res) res = await retryFetch(url, 'Turbo');
+            if (!res) res = await retryFetch(url, 'Proxy');
+
+            if (!res) {
+                if (alertDiv) {
+                    alertDiv.style.display = 'block';
+                    alertDiv.innerHTML = `⚠️ <b>Bloqueio de Rede:</b> Não foi possível conectar ao backend. Verifique o <b>Modo Turbo</b> ou tente o <b>Proxy Público</b>. Se o erro persistir, abra o console do navegador (F12) para detalhes.`;
+                }
+                throw new Error("CORS Block");
             }
-            throw new Error("CORS Block");
+            return res;
         }
-        return res;
-    }
 
-    function kbSyncFromCacador() {
-        const vNome = document.getElementById('vendedorNome')?.value || '';
-        const vId = document.getElementById('vendedorId')?.value || '';
-        const display = document.getElementById('kb-vendedor-nome');
-        if (display) display.textContent = vNome || 'Nenhum (Logue no Chatwoot)';
-        
-        // Se for o Bot (ID 1), por padrão mostramos "Gestão" ou "Bot"
-        if (vId === "1" && vNome === "Gestão") {
-            if (display) display.textContent = "Bot (Gestão)";
+        function kbSyncFromCacador() {
+            const vNome = document.getElementById('vendedorNome')?.value || '';
+            const vId = document.getElementById('vendedorId')?.value || '';
+            const display = document.getElementById('kb-vendedor-nome');
+            if (display) display.textContent = vNome || 'Nenhum (Logue no Chatwoot)';
+
+            // Se for o Bot (ID 1), por padrão mostramos "Gestão" ou "Bot"
+            if (vId === "1" && vNome === "Gestão") {
+                if (display) display.textContent = "Bot (Gestão)";
+            }
+
+            return { nome: vNome, id: vId };
         }
-        
-        return { nome: vNome, id: vId };
-    }
 
-    function kbBackendUrl() {
-        return (document.getElementById('kb-backend-url').value || '').trim();
-    }
-
-    function kbToast(msg) {
-        const t = document.getElementById('kb-toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    function kbInit() {
-        if (!kbInitialized) {
-            kbRenderBoard();
-            kbSyncFromCacador();
-        kbInitialized = true;
+        function kbBackendUrl() {
+            return (document.getElementById('kb-backend-url').value || '').trim();
         }
-        kbCarregar();
-        if (kbPollInterval) clearInterval(kbPollInterval);
-        // Auto-Refresh a cada 20 segundos para sincronia quase em tempo real ⚡
-        kbPollInterval = setInterval(() => {
-            if (document.hidden) return; // Não gasta recursos se a aba estiver em segundo plano
+
+        function kbToast(msg) {
+            const t = document.getElementById('kb-toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function kbInit() {
+            if (!kbInitialized) {
+                kbRenderBoard();
+                kbSyncFromCacador();
+                kbInitialized = true;
+            }
             kbCarregar();
-        }, 20000);
-    }
+            if (kbPollInterval) clearInterval(kbPollInterval);
+            // Auto-Refresh a cada 20 segundos para sincronia quase em tempo real ⚡
+            kbPollInterval = setInterval(() => {
+                if (document.hidden) return; // Não gasta recursos se a aba estiver em segundo plano
+                kbCarregar();
+            }, 20000);
+        }
 
-    function kbRenderBoard() {
-        const board = document.getElementById('kb-board');
-        board.innerHTML = '';
-        KB_COLUNAS.forEach(col => {
-            const div = document.createElement('div');
-            div.className = `kb-col ${col.cls}`;
-            div.innerHTML = `
+        function kbRenderBoard() {
+            const board = document.getElementById('kb-board');
+            board.innerHTML = '';
+            KB_COLUNAS.forEach(col => {
+                const div = document.createElement('div');
+                div.className = `kb-col ${col.cls}`;
+                div.innerHTML = `
                 <div class="kb-col-header">
                     ${col.label}
                     <span class="kb-col-count" id="kbc-${col.id}">0</span>
@@ -1459,189 +1588,189 @@
                     ondrop="kbDrop(event,'${col.id}')">
                     <div class="kb-empty">Carregando...</div>
                 </div>`;
-            board.appendChild(div);
-        });
-    }
-
-    // ─── DEBUG LOGGER ────────────────────────────────────────────────────────
-    const KB_LOG = (label, value) => {
-        const str = (typeof value === 'object') ? JSON.stringify(value, null, 2) : String(value);
-        console.log(`%c[KB DEBUG] ${label}`, 'color:#818cf8;font-weight:bold', value);
-        // Mostra resumo na label do agente para diagnóstico visual
-        if (label.startsWith('❌')) {
-            document.getElementById('kb-agent-label').textContent = label + ': ' + str.substring(0, 80);
+                board.appendChild(div);
+            });
         }
-    };
 
-                        async function kbCarregar() {
-        const url = kbBackendUrl();
-        if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
-        const { nome, id } = kbSyncFromCacador();
-        if (!id) { document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...'; return; }
-        const label = document.getElementById('kb-agent-label');
-        label.textContent = '⏳ Carregando Leads...';
-        try {
-            const baseUrl = url.split("?")[0];
-            const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=true";
-            const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
-            
-            const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
-            const data = await r.json();
-            KB_LOG('Resposta Kestra', data);
-            
-            const _getLeads = (obj) => {
-                if (!obj) return null;
-                const leadsList = obj.leads || obj.list || obj.List;
-                if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
-                if (obj.body) return _getLeads(obj.body);
-                if (obj.outputs) return _getLeads(obj.outputs);
-                if (obj.response) return _getLeads(obj.response);
-                if (obj.buscar_leads_noco) return _getLeads(obj.buscar_leads_noco);
-                return null;
-            };
-
-            const leadsFound = _getLeads(data);
-            if (leadsFound && leadsFound.leads) {
-                label.textContent = `👤 Vendedor: ${nome} (${leadsFound.leads.length} leads)`;
-                kbMostrarLeads(leadsFound);
-                return;
+        // ─── DEBUG LOGGER ────────────────────────────────────────────────────────
+        const KB_LOG = (label, value) => {
+            const str = (typeof value === 'object') ? JSON.stringify(value, null, 2) : String(value);
+            console.log(`%c[KB DEBUG] ${label}`, 'color:#818cf8;font-weight:bold', value);
+            // Mostra resumo na label do agente para diagnóstico visual
+            if (label.startsWith('❌')) {
+                document.getElementById('kb-agent-label').textContent = label + ': ' + str.substring(0, 80);
             }
+        };
 
-            // V30: Prioriza execution.id (ID real do fluxo) sobre data.id (ID do webhook/proxy)
-            const execId = (data.execution && data.execution.id) ? data.execution.id : data.id;
-            
-            if (execId && execId.length < 50) {
-                label.textContent = `⏳ Processando... (${execId.substring(0,8)})`;
-                const finalData = await kbPollExecution(execId);
-                if (finalData && finalData.leads) {
-                    label.textContent = `👤 Vendedor: ${nome} (${finalData.leads.length} leads)`;
-                    kbMostrarLeads(finalData);
+        async function kbCarregar() {
+            const url = kbBackendUrl();
+            if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
+            const { nome, id } = kbSyncFromCacador();
+            if (!id) { document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...'; return; }
+            const label = document.getElementById('kb-agent-label');
+            label.textContent = '⏳ Carregando Leads...';
+            try {
+                const baseUrl = url.split("?")[0];
+                const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=true";
+                const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
+
+                const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
+                const data = await r.json();
+                KB_LOG('Resposta Kestra', data);
+
+                const _getLeads = (obj) => {
+                    if (!obj) return null;
+                    const leadsList = obj.leads || obj.list || obj.List;
+                    if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
+                    if (obj.body) return _getLeads(obj.body);
+                    if (obj.outputs) return _getLeads(obj.outputs);
+                    if (obj.response) return _getLeads(obj.response);
+                    if (obj.buscar_leads_noco) return _getLeads(obj.buscar_leads_noco);
+                    return null;
+                };
+
+                const leadsFound = _getLeads(data);
+                if (leadsFound && leadsFound.leads) {
+                    label.textContent = `👤 Vendedor: ${nome} (${leadsFound.leads.length} leads)`;
+                    kbMostrarLeads(leadsFound);
+                    return;
                 }
-            } else {
-                // Alerta visual de dados inesperados para print do usuário
-                const raw = JSON.stringify(data).substring(0, 200);
-                label.textContent = '❌ Dados Inválidos do Kestra';
-                kbToast('Erro de ID: ' + raw);
-                console.error('Resposta inesperada:', data);
+
+                // V30: Prioriza execution.id (ID real do fluxo) sobre data.id (ID do webhook/proxy)
+                const execId = (data.execution && data.execution.id) ? data.execution.id : data.id;
+
+                if (execId && execId.length < 50) {
+                    label.textContent = `⏳ Processando... (${execId.substring(0, 8)})`;
+                    const finalData = await kbPollExecution(execId);
+                    if (finalData && finalData.leads) {
+                        label.textContent = `👤 Vendedor: ${nome} (${finalData.leads.length} leads)`;
+                        kbMostrarLeads(finalData);
+                    }
+                } else {
+                    // Alerta visual de dados inesperados para print do usuário
+                    const raw = JSON.stringify(data).substring(0, 200);
+                    label.textContent = '❌ Dados Inválidos do Kestra';
+                    kbToast('Erro de ID: ' + raw);
+                    console.error('Resposta inesperada:', data);
+                }
+            } catch (err) {
+                label.textContent = '💥 Erro de Conexão';
+                console.error(err);
+                kbToast('❌ Erro: ' + err.message);
             }
-        } catch (err) { 
-            label.textContent = '💥 Erro de Conexão'; 
-            console.error(err); 
-            kbToast('❌ Erro: ' + err.message);
         }
-    }
 
-    function kbMostrarLeads(data) {
-        if (data && data.success) {
-            kbLeads = data.leads || [];
-            const agentName = data.agent_name || (kbSyncFromCacador().nome || 'Todos');
-            document.getElementById('kb-agent-label').textContent = `👤 ${agentName} (${kbLeads.length} leads)`;
-            kbFiltrar();
-        } else {
-            kbToast('Erro: ' + (data?.error || 'Falha ao carregar'));
-            document.getElementById('kb-agent-label').textContent = '❌ Erro do Servidor';
+        function kbMostrarLeads(data) {
+            if (data && data.success) {
+                kbLeads = data.leads || [];
+                const agentName = data.agent_name || (kbSyncFromCacador().nome || 'Todos');
+                document.getElementById('kb-agent-label').textContent = `👤 ${agentName} (${kbLeads.length} leads)`;
+                kbFiltrar();
+            } else {
+                kbToast('Erro: ' + (data?.error || 'Falha ao carregar'));
+                document.getElementById('kb-agent-label').textContent = '❌ Erro do Servidor';
+            }
         }
-    }
 
-    function kbFiltrar() {
-        const busca = (document.getElementById('kb-search').value || '').toLowerCase();
-        const statusF = document.getElementById('kb-filter-status').value;
-        const filtrados = kbLeads.filter(l => {
-            const okBusca = !busca ||
-                (l.Nome || '').toLowerCase().includes(busca) ||
-                (l.Telefone || '').includes(busca) ||
-                (l.CNPJ || '').includes(busca);
-            const okStatus = !statusF || l.Status === statusF;
-            return okBusca && okStatus;
-        });
-        kbRenderCards(filtrados);
-    }
+        function kbFiltrar() {
+            const busca = (document.getElementById('kb-search').value || '').toLowerCase();
+            const statusF = document.getElementById('kb-filter-status').value;
+            const filtrados = kbLeads.filter(l => {
+                const okBusca = !busca ||
+                    (l.Nome || '').toLowerCase().includes(busca) ||
+                    (l.Telefone || '').includes(busca) ||
+                    (l.CNPJ || '').includes(busca);
+                const okStatus = !statusF || l.Status === statusF;
+                return okBusca && okStatus;
+            });
+            kbRenderCards(filtrados);
+        }
 
-    function kbRenderCards(leads) {
-        KB_COLUNAS.forEach(col => {
-            const zone = document.getElementById(`kbz-${col.id}`);
-            if (!zone) return;
-            const sub = leads.filter(l => l.Status === col.id);
-            document.getElementById(`kbc-${col.id}`).textContent = sub.length;
-            zone.innerHTML = sub.length === 0
-                ? `<div class="kb-empty">Vazio</div>`
-                : sub.map(l => kbBuildCard(l)).join('');
-        });
-    }
+        function kbRenderCards(leads) {
+            KB_COLUNAS.forEach(col => {
+                const zone = document.getElementById(`kbz-${col.id}`);
+                if (!zone) return;
+                const sub = leads.filter(l => l.Status === col.id);
+                document.getElementById(`kbc-${col.id}`).textContent = sub.length;
+                zone.innerHTML = sub.length === 0
+                    ? `<div class="kb-empty">Vazio</div>`
+                    : sub.map(l => kbBuildCard(l)).join('');
+            });
+        }
 
-    function kbBuildCard(l) {
-        const c = v => v || '';
-        const cap = l.Capital_Social ? `R$ ${Number(l.Capital_Social).toLocaleString('pt-BR')}` : '';
-        return `
+        function kbBuildCard(l) {
+            const c = v => v || '';
+            const cap = l.Capital_Social ? `R$ ${Number(l.Capital_Social).toLocaleString('pt-BR')}` : '';
+            return `
         <div class="kb-card" draggable="true"
             ondragstart="kbDragStart(event,${l.Id})"
             ondragend="kbDragEnd(event)"
             id="kbcard-${l.Id}">
             <div class="kb-card-name" title="${c(l.Nome)}">🏢 ${c(l.Nome)}</div>
             ${l.Telefone ? `<div class="kb-row"><span>📞</span><a href="tel:${l.Telefone}" style="color:#818cf8">${l.Telefone}</a></div>` : ''}
-            ${l.Email    ? `<div class="kb-row"><span>✉️</span><a href="mailto:${l.Email}" style="color:#818cf8">${l.Email}</a></div>` : ''}
-            ${l.CNPJ     ? `<div class="kb-row"><span>🆔</span><span>${l.CNPJ}</span></div>` : ''}
-            ${l.Site     ? `<div class="kb-row"><span>🌐</span><a href="${l.Site}" target="_blank" style="color:#818cf8">Site</a></div>` : ''}
-            ${l.Atividade_Principal ? `<div class="kb-row"><span>🏭</span><span>${l.Atividade_Principal.substring(0,55)}${l.Atividade_Principal.length>55?'…':''}</span></div>` : ''}
-            ${l.Endereco ? `<div class="kb-row"><span>📍</span><span>${l.Endereco.substring(0,60)}${l.Endereco.length>60?'…':''}</span></div>` : ''}
+            ${l.Email ? `<div class="kb-row"><span>✉️</span><a href="mailto:${l.Email}" style="color:#818cf8">${l.Email}</a></div>` : ''}
+            ${l.CNPJ ? `<div class="kb-row"><span>🆔</span><span>${l.CNPJ}</span></div>` : ''}
+            ${l.Site ? `<div class="kb-row"><span>🌐</span><a href="${l.Site}" target="_blank" style="color:#818cf8">Site</a></div>` : ''}
+            ${l.Atividade_Principal ? `<div class="kb-row"><span>🏭</span><span>${l.Atividade_Principal.substring(0, 55)}${l.Atividade_Principal.length > 55 ? '…' : ''}</span></div>` : ''}
+            ${l.Endereco ? `<div class="kb-row"><span>📍</span><span>${l.Endereco.substring(0, 60)}${l.Endereco.length > 60 ? '…' : ''}</span></div>` : ''}
             <div class="kb-chips">
                 ${l.Porte ? `<span class="kb-chip">${l.Porte}</span>` : ''}
-                ${cap     ? `<span class="kb-chip g">💰 ${cap}</span>` : ''}
+                ${cap ? `<span class="kb-chip g">💰 ${cap}</span>` : ''}
                 ${l.Team_ID ? `<span class="kb-chip y">👥 Time ${l.Team_ID}</span>` : ''}
                 ${l.agendar_tarefa ? `<span class="kb-chip y">📅 ${l.agendar_tarefa}</span>` : ''}
                 ${l.kanban_lock ? `<span class="kb-chip r">🔒 Bloqueado</span>` : ''}
             </div>
-            ${l.Resumo_IA ? `<div class="kb-row" style="margin-top:7px;background:rgba(0,0,0,.2);padding:5px 7px;border-radius:5px"><span>🤖</span><span style="color:#94a3b8;font-size:10px">${l.Resumo_IA.substring(0,130)}${l.Resumo_IA.length>130?'…':''}</span></div>` : ''}
+            ${l.Resumo_IA ? `<div class="kb-row" style="margin-top:7px;background:rgba(0,0,0,.2);padding:5px 7px;border-radius:5px"><span>🤖</span><span style="color:#94a3b8;font-size:10px">${l.Resumo_IA.substring(0, 130)}${l.Resumo_IA.length > 130 ? '…' : ''}</span></div>` : ''}
             <textarea class="kb-notas" placeholder="📝 Notas do vendedor..." id="kbn-${l.Id}">${c(l.Notas_Vendedor)}</textarea>
             <div class="kb-actions">
                 <button class="kb-save" onclick="kbSalvarNotas(${l.Id})">💾 Salvar</button>
                 ${l.Conversation_ID ? `<button class="kb-link" onclick="kbAbrirConversa(${l.Conversation_ID})">🔗 Conversa</button>` : ''}
             </div>
         </div>`;
-    }
+        }
 
-    // ─── DRAG & DROP ────────────────────────────────
-    function kbDragStart(e, id) {
-        kbDraggedId = id;
-        setTimeout(() => { const el = document.getElementById(`kbcard-${id}`); if (el) el.classList.add('dragging'); }, 0);
-    }
-    function kbDragEnd() {
-        if (kbDraggedId) { const el = document.getElementById(`kbcard-${kbDraggedId}`); if (el) el.classList.remove('dragging'); }
-    }
-    function kbDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
-    function kbDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-    async function kbDrop(e, novoStatus) {
-        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
-        if (!kbDraggedId) return;
-        const lead = kbLeads.find(l => l.Id === kbDraggedId);
-        if (!lead || lead.Status === novoStatus) return;
-        lead.Status = novoStatus;
-        kbFiltrar();
-        kbToast(`Movido para "${novoStatus}" 🔒`);
-        try {
-            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: kbDraggedId, status: novoStatus });
-        } catch(err) { kbToast('Falha ao salvar: ' + err.message); }
-        kbDraggedId = null;
-    }
+        // ─── DRAG & DROP ────────────────────────────────
+        function kbDragStart(e, id) {
+            kbDraggedId = id;
+            setTimeout(() => { const el = document.getElementById(`kbcard-${id}`); if (el) el.classList.add('dragging'); }, 0);
+        }
+        function kbDragEnd() {
+            if (kbDraggedId) { const el = document.getElementById(`kbcard-${kbDraggedId}`); if (el) el.classList.remove('dragging'); }
+        }
+        function kbDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        function kbDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+        async function kbDrop(e, novoStatus) {
+            e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+            if (!kbDraggedId) return;
+            const lead = kbLeads.find(l => l.Id === kbDraggedId);
+            if (!lead || lead.Status === novoStatus) return;
+            lead.Status = novoStatus;
+            kbFiltrar();
+            kbToast(`Movido para "${novoStatus}" 🔒`);
+            try {
+                await kbSmartFetch(kbBackendUrl(), { action: 'update', id: kbDraggedId, status: novoStatus });
+            } catch (err) { kbToast('Falha ao salvar: ' + err.message); }
+            kbDraggedId = null;
+        }
 
-    // ─── NOTAS ──────────────────────────────────────
-    async function kbSalvarNotas(id) {
-        const notas = document.getElementById(`kbn-${id}`).value;
-        kbToast('Salvando...');
-        try {
-            const r = await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas });
-            const d = await r.json();
-            kbToast(d.success ? '✅ Notas salvas!' : '❌ ' + d.error);
-            const lead = kbLeads.find(l => l.Id === id);
-            if (lead) lead.Notas_Vendedor = notas;
-        } catch(err) { kbToast('Falha: ' + err.message); }
-    }
+        // ─── NOTAS ──────────────────────────────────────
+        async function kbSalvarNotas(id) {
+            const notas = document.getElementById(`kbn-${id}`).value;
+            kbToast('Salvando...');
+            try {
+                const r = await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas });
+                const d = await r.json();
+                kbToast(d.success ? '✅ Notas salvas!' : '❌ ' + d.error);
+                const lead = kbLeads.find(l => l.Id === id);
+                if (lead) lead.Notas_Vendedor = notas;
+            } catch (err) { kbToast('Falha: ' + err.message); }
+        }
 
-    // ─── ABRIR CONVERSA ─────────────────────────────
-    function kbAbrirConversa(convId) {
-        const url = `https://app.chatwoot.com/conversations/${convId}`;
-        window.open(url, '_blank');
-    }
+        // ─── ABRIR CONVERSA ─────────────────────────────
+        function kbAbrirConversa(convId) {
+            const url = `https://app.chatwoot.com/conversations/${convId}`;
+            window.open(url, '_blank');
+        }
     </script>
 
 </body>
