@@ -1297,70 +1297,38 @@
         return await r.json();
     }
 
-    async function kbPollExecution(id) {
+        async function kbPollExecution(id) {
         const baseUrl = kbBackendUrl().split('/api/v1/')[0];
         const execUrl = `${baseUrl}/api/v1/executions/${id}`;
         let status = 'RUNNING';
         let retries = 0;
         const start = Date.now();
-        
-        while (status !== 'SUCCESS' && status !== 'FAILED' && retries < 60) {
+        while (status !== 'SUCCESS' && status !== 'FAILED' && status !== 'KILLED' && retries < 60) {
             await new Promise(r => setTimeout(r, 2000));
             try {
                 const r = await kbSmartFetch(execUrl, null, 'GET');
                 const data = await r.json();
-                status = data.state ? data.state.current : undefined; // 👈 VITAL: Kestra API usa state.current
-                
+                status = data.state ? data.state.current : 'UNKNOWN';
                 if (status === 'SUCCESS') {
-                    const outputs = data.outputs || {};
-
-                    // ─── Normaliza qualquer formato em { success, leads } ───
-                    const _norm = (raw) => {
-                        if (!raw) return null;
-                        try { raw = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) { return null; }
-                        if (raw.leads) return raw;
-                        if (raw.list && Array.isArray(raw.list)) return { success: true, leads: raw.list };
-                        if (raw.success) return raw;
+                    const outs = data.outputs || {};
+                    const _get = (obj) => {
+                        if (!obj) return null;
+                        if (obj.leads) return obj;
+                        if (obj.list && Array.isArray(obj.list)) return { success: true, leads: obj.list };
+                        if (typeof obj === 'string') { try { return _get(JSON.parse(obj)); } catch(e) { return null; } }
+                        if (obj.body) return _get(obj.body);
                         return null;
                     };
-
-                    // 🚀 Tentativa 1: Output global 'response' (formato antigo)
-                    const n1 = _norm(outputs.response);
-                    if (n1) return n1;
-
-                    // 🚀 Tentativa 2: Task-level output (V15 — sem outputs no flow)
-                    const taskBody = outputs.buscar_leads_noco?.body || outputs.atualizar_lead_noco?.body;
-                    const n2 = _norm(taskBody);
-                    if (n2) return n2;
-
-                    // 🚀 Tentativa 3: arquivo response.json (Fallback legado)
-                    const procOut = outputs.processar_kanban || outputs.processar_requisicao || {};
-                    const uri = (procOut.outputFiles || {})['response.json'];
-                    if (uri) return await kbGetFile(id, uri);
-
-                    throw new Error("Nenhum dado encontrado nas saídas da execução");
+                    const res = _get(outs.response) || _get(outs.buscar_leads_noco) || _get(data);
+                    if (res && res.leads) return res;
+                    throw new Error("Dados não encontrados nos outputs.");
                 }
-                
-                if (status === 'FAILED' || status === 'KILLED') {
-                    const error = new Error("A execução no KESTRA falhou.");
-                    error.execId = id;
-                    throw error;
-                }
-            } catch (e) { 
-                if (e.execId) throw e; // Repassa erros reais do Kestra
-                console.error("Polling error:", e); 
-            }
-            const elapsed = Date.now() - start;
-            if (elapsed > 120000) {
-                const error = new Error("Parado por tempo excessivo (+2min)");
-                error.execId = id;
-                throw error;
-            }
+                if (status === 'FAILED' || status === 'KILLED') throw new Error("A execução no KESTRA falhou.");
+            } catch (e) { console.error("Polling error:", e); if (status === 'SUCCESS' || status === 'FAILED') throw e; }
+            if (Date.now() - start > 120000) throw new Error("Timeout de 2min.");
             retries++;
         }
-        const error = new Error("Timeout: Máximo de tentativas (2min) atingido.");
-        error.execId = id;
-        throw error;
+        throw new Error("Limite de tentativas atingido.");
     }
 
     async function kbSmartFetch(url, body, method = 'POST') {
@@ -1473,97 +1441,29 @@
         }
     };
 
-    async function kbCarregar() {
+        async function kbCarregar() {
         const url = kbBackendUrl();
-        KB_LOG('🔗 URL backend', url);
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
         const { nome, id } = kbSyncFromCacador();
-        KB_LOG('👤 Agent id/nome', { id, nome });
-        if (!id || id === "") {
-            document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...';
-            return;
-        }
-
-        document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
+        if (!id) { document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...'; return; }
+        const label = document.getElementById('kb-agent-label');
+        label.textContent = '⏳ Carregando Leads...';
         try {
             const baseUrl = url.split("?")[0];
-            const finalUrl = baseUrl + "?wait=true";
-            KB_LOG('🚀 URL final', finalUrl);
-
-            const bodyData = {
-                action: 'list',
-                agent_id: id,
-                vendedor_nome: nome,
-                table_id: document.getElementById('nocodbTableId')?.value || ''
-            };
-            KB_LOG('📦 Payload enviado', bodyData);
-
+            const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=false";
+            const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
             const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
-            KB_LOG('📡 HTTP status', r.status);
             const data = await r.json();
-            KB_LOG('📬 Resposta Kestra (completa)', data);
-            KB_LOG('📋 data.state', data.state);
-            KB_LOG('📋 data.outputs (chaves)', data.outputs ? Object.keys(data.outputs) : 'AUSENTE');
-
-            // Helper: normaliza qualquer formato de resposta em { success, leads }
-            const kbNormalizar = (obj) => {
-                if (!obj) return null;
-                KB_LOG('🔍 kbNormalizar tentando', obj);
-                if (obj.leads) return obj;
-                if (obj.list && Array.isArray(obj.list)) return { success: true, leads: obj.list };
-                return null;
-            };
-
-            // MODO 1: corpo direto do Webhook (formato { list } ou { leads })
-            KB_LOG('🔍 Tentando MODO 1: corpo direto', null);
-            const directNorm = kbNormalizar(data);
-            if (directNorm) {
-                KB_LOG('✅ MODO 1 OK', { count: directNorm.leads.length });
-                kbMostrarLeads(directNorm);
-                return;
-            }
-
-            // MODO 2: execution object com data.outputs
-            if (data.outputs) {
-                const outs = data.outputs;
-                KB_LOG('🔍 Tentando MODO 2: data.outputs', Object.keys(outs));
-
-                // Tenta output global 'response'
-                const normResp = outs.response ? kbNormalizar(
-                    typeof outs.response === 'string' ? JSON.parse(outs.response) : outs.response
-                ) : null;
-                if (normResp) { KB_LOG('✅ MODO 2a OK (response)', { count: normResp.leads.length }); kbMostrarLeads(normResp); return; }
-
-                // Task-level: buscar_leads_noco.body (body é string JSON bruto)
-                KB_LOG('🔍 outs.buscar_leads_noco', outs.buscar_leads_noco);
-                const taskBody = outs.buscar_leads_noco?.body || outs.atualizar_lead_noco?.body;
-                KB_LOG('🔍 taskBody (primeiros 200 chars)', taskBody ? String(taskBody).substring(0, 200) : 'NULO');
-                const normTask = taskBody ? kbNormalizar(
-                    typeof taskBody === 'string' ? JSON.parse(taskBody) : taskBody
-                ) : null;
-                if (normTask) { KB_LOG('✅ MODO 2b OK (taskBody)', { count: normTask.leads.length }); kbMostrarLeads(normTask); return; }
-
-                KB_LOG('❌ MODO 2: outputs existem mas sem dados legíveis', outs);
-            } else {
-                KB_LOG('❌ data.outputs AUSENTE', null);
-            }
-
-            // MODO 3: ASSÍNCRONO — data.id (Kestra retornou execução sem wait)
-            if (data.id) {
-                const execId = data.id;
-                KB_LOG('🔍 Tentando MODO 3: polling async', execId);
-                document.getElementById('kb-agent-label').textContent = `⏳ Executando (${execId})...`;
+            const execId = data.id || (data.execution ? data.execution.id : null);
+            if (execId) {
+                label.textContent = `⏳ Processando (${execId.substring(0,8)})...`;
                 const finalData = await kbPollExecution(execId);
-                kbMostrarLeads(finalData);
-            } else if (data.success) {
-                kbMostrarLeads(data);
+                if (finalData && finalData.leads) {
+                    label.textContent = `👤 Vendedor: ${nome} (${finalData.leads.length} leads)`;
+                    kbMostrarLeads(finalData);
+                }
             }
-        } catch (err) {
-            console.error("[KB] Erro de Carregamento:", err);
-            const execMsg = err.execId ? ` (Exec: ${err.execId})` : "";
-            kbToast('Falha na conexão: ' + err.message);
-            document.getElementById('kb-agent-label').textContent = '❌ ' + err.message + execMsg;
-        }
+        } catch (err) { label.textContent = '💥 Erro de Conexão'; console.error(err); }
     }
 
     function kbMostrarLeads(data) {
