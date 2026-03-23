@@ -1492,16 +1492,19 @@
             throw new Error("Timeout ou dados não encontrados.");
         }
 
-        async function kbSmartFetch(url, body, method = 'POST') {
-            const modeIn = document.querySelector('input[name="connMode"]:checked');
-            const mode = modeIn ? modeIn.value : 'private';
+                async function kbSmartFetch(url, body, method = 'POST') {
+            const alertDiv = document.getElementById('kb-cors-alert');
+            if (alertDiv) alertDiv.style.display = 'none'; // Limpa erro anterior
+
             const pProxy = (document.getElementById('privateProxyUrl')?.value || 'https://falling-term-7c4e.maxyadm.workers.dev').trim().replace(/\/$/, "");
-            const retryFetch = async (target, label) => {
+            
+            const doFetch = async (target, label) => {
                 try {
                     let final = target;
-                    if (label === 'Turbo' && pProxy) final = `${pProxy}/?url=${encodeURIComponent(target)}`;
+                    if (label === 'Turbo') final = `${pProxy}/?url=${encodeURIComponent(target)}`;
                     else if (label === 'Proxy') final = `https://corsproxy.io/?${encodeURIComponent(target)}`;
-
+                    
+                    console.log(`[KB] Tentando ${label}: ${method} ${final}`);
                     const r = await fetch(final, {
                         method: method,
                         headers: { 'Content-Type': 'application/json' },
@@ -1511,22 +1514,19 @@
                     console.warn(`[KB] Falha ${label}: ${r.status}`);
                     return null;
                 } catch (e) {
-                    console.error(`[KB] Erro ${label}:`, e.message);
+                    console.error(`[KB] Erro ${label} (${e.message})`);
                     return null;
                 }
             };
 
-            const alertDiv = document.getElementById('kb-cors-alert');
-            let res = await retryFetch(url, mode === 'private' ? 'Turbo' : 'Direto');
-            if (!res) res = await retryFetch(url, 'Turbo');
-            if (!res) res = await retryFetch(url, 'Proxy');
-
+            // V32: Prioridade total no Modo Turbo (Proxy) para evitar CORS no navegador
+            let res = await doFetch(url, 'Turbo');
+            if (!res) res = await doFetch(url, 'Direto');
+            if (!res) res = await doFetch(url, 'Proxy');
+            
             if (!res) {
-                if (alertDiv) {
-                    alertDiv.style.display = 'block';
-                    alertDiv.innerHTML = `⚠️ <b>Bloqueio de Rede:</b> Não foi possível conectar ao backend. Verifique o <b>Modo Turbo</b> ou tente o <b>Proxy Público</b>. Se o erro persistir, abra o console do navegador (F12) para detalhes.`;
-                }
-                throw new Error("CORS Block");
+                if (alertDiv) alertDiv.style.display = 'block';
+                throw new Error("Erro de Rede (CORS/Bloqueio)");
             }
             return res;
         }
