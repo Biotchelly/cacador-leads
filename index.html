@@ -1473,7 +1473,7 @@
         }
     };
 
-        async function kbCarregar() {
+                async function kbCarregar() {
         const url = kbBackendUrl();
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
         const { nome, id } = kbSyncFromCacador();
@@ -1482,21 +1482,50 @@
         label.textContent = '⏳ Carregando Leads...';
         try {
             const baseUrl = url.split("?")[0];
-            const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=false";
+            // V29: Tenta síncrono por padrão (wait=true ou sem wait)
+            const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=true";
             const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
-                        const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
+            
+            const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
             const data = await r.json();
-            console.log('[KB DEBUG] Resposta Inicial POST:', data);
+            console.log('[KB DEBUG] Resposta Síncrona/Assíncrona:', data);
+            
+            // Helper de extração interna
+            const _getLeads = (obj) => {
+                if (!obj) return null;
+                const leadsList = obj.leads || obj.list || obj.List;
+                if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
+                if (obj.body) return _getLeads(obj.body);
+                if (obj.outputs) return _getLeads(obj.outputs);
+                if (obj.response) return _getLeads(obj.response);
+                if (obj.buscar_leads_noco) return _getLeads(obj.buscar_leads_noco);
+                return null;
+            };
+
+            const leadsFound = _getLeads(data);
+            if (leadsFound && leadsFound.leads) {
+                label.textContent = `👤 Vendedor: ${nome} (${leadsFound.leads.length} leads)`;
+                kbMostrarLeads(leadsFound);
+                return;
+            }
+
+            // Fallback: Se não retornou os leads, polla o execId
             const execId = data.id || (data.execution ? data.execution.id : null);
             if (execId) {
-                label.textContent = `⏳ Processando (${execId.substring(0,8)})...`;
+                label.textContent = `⏳ Processando... (${execId.substring(0,8)})`;
                 const finalData = await kbPollExecution(execId);
                 if (finalData && finalData.leads) {
                     label.textContent = `👤 Vendedor: ${nome} (${finalData.leads.length} leads)`;
                     kbMostrarLeads(finalData);
                 }
+            } else {
+                throw new Error("Não foi possível obter ID da execução (Timeout Kestra).");
             }
-        } catch (err) { label.textContent = '💥 Erro de Conexão'; console.error(err); }
+        } catch (err) { 
+            label.textContent = '💥 Erro de Conexão'; 
+            console.error(err); 
+            kbToast('❌ Erro ao carregar: ' + err.message);
+        }
     }
 
     function kbMostrarLeads(data) {
