@@ -1462,10 +1462,22 @@
         });
     }
 
+    // ─── DEBUG LOGGER ────────────────────────────────────────────────────────
+    const KB_LOG = (label, value) => {
+        const str = (typeof value === 'object') ? JSON.stringify(value, null, 2) : String(value);
+        console.log(`%c[KB DEBUG] ${label}`, 'color:#818cf8;font-weight:bold', value);
+        // Mostra resumo na label do agente para diagnóstico visual
+        if (label.startsWith('❌')) {
+            document.getElementById('kb-agent-label').textContent = label + ': ' + str.substring(0, 80);
+        }
+    };
+
     async function kbCarregar() {
         const url = kbBackendUrl();
+        KB_LOG('🔗 URL backend', url);
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
         const { nome, id } = kbSyncFromCacador();
+        KB_LOG('👤 Agent id/nome', { id, nome });
         if (!id || id === "") {
             document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...';
             return;
@@ -1473,60 +1485,72 @@
 
         document.getElementById('kb-agent-label').textContent = '⏳ Carregando...';
         try {
-            // Garante que a flag wait=true está na URL para que o Kestra aguarde o fim da execução (Sync Mode)
             const baseUrl = url.split("?")[0];
             const finalUrl = baseUrl + "?wait=true";
-            
-            const bodyData = { 
-                action: 'list', 
-                agent_id: id, 
-                vendedor_nome: nome, 
+            KB_LOG('🚀 URL final', finalUrl);
+
+            const bodyData = {
+                action: 'list',
+                agent_id: id,
+                vendedor_nome: nome,
                 table_id: document.getElementById('nocodbTableId')?.value || ''
             };
-            
+            KB_LOG('📦 Payload enviado', bodyData);
+
             const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
+            KB_LOG('📡 HTTP status', r.status);
             const data = await r.json();
-            console.log("[KB] Resposta Kestra:", data);
+            KB_LOG('📬 Resposta Kestra (completa)', data);
+            KB_LOG('📋 data.state', data.state);
+            KB_LOG('📋 data.outputs (chaves)', data.outputs ? Object.keys(data.outputs) : 'AUSENTE');
 
             // Helper: normaliza qualquer formato de resposta em { success, leads }
             const kbNormalizar = (obj) => {
                 if (!obj) return null;
-                // Formato padrão { success, leads }
+                KB_LOG('🔍 kbNormalizar tentando', obj);
                 if (obj.leads) return obj;
-                // Formato NocoDB bruto { list: [...], pageInfo: {...} }
                 if (obj.list && Array.isArray(obj.list)) return { success: true, leads: obj.list };
                 return null;
             };
 
-            // 🚀 MODO ULTRA-FAST (Nativo V5): corpo direto do Webhook
+            // MODO 1: corpo direto do Webhook (formato { list } ou { leads })
+            KB_LOG('🔍 Tentando MODO 1: corpo direto', null);
             const directNorm = kbNormalizar(data);
             if (directNorm) {
+                KB_LOG('✅ MODO 1 OK', { count: directNorm.leads.length });
                 kbMostrarLeads(directNorm);
                 return;
             }
 
-            // 🚀 MODO SÍNCRONO (Kestra wait=true): lê outputs do objeto de execução
+            // MODO 2: execution object com data.outputs
             if (data.outputs) {
                 const outs = data.outputs;
+                KB_LOG('🔍 Tentando MODO 2: data.outputs', Object.keys(outs));
 
-                // Tenta output global 'response' (formato antigo com outputs no flow)
+                // Tenta output global 'response'
                 const normResp = outs.response ? kbNormalizar(
                     typeof outs.response === 'string' ? JSON.parse(outs.response) : outs.response
                 ) : null;
-                if (normResp) { kbMostrarLeads(normResp); return; }
+                if (normResp) { KB_LOG('✅ MODO 2a OK (response)', { count: normResp.leads.length }); kbMostrarLeads(normResp); return; }
 
-                // Tenta task-level output (V15 — sem outputs no flow)
-                // data.outputs.buscar_leads_noco.body = JSON bruto do NocoDB
+                // Task-level: buscar_leads_noco.body (body é string JSON bruto)
+                KB_LOG('🔍 outs.buscar_leads_noco', outs.buscar_leads_noco);
                 const taskBody = outs.buscar_leads_noco?.body || outs.atualizar_lead_noco?.body;
+                KB_LOG('🔍 taskBody (primeiros 200 chars)', taskBody ? String(taskBody).substring(0, 200) : 'NULO');
                 const normTask = taskBody ? kbNormalizar(
                     typeof taskBody === 'string' ? JSON.parse(taskBody) : taskBody
                 ) : null;
-                if (normTask) { kbMostrarLeads(normTask); return; }
+                if (normTask) { KB_LOG('✅ MODO 2b OK (taskBody)', { count: normTask.leads.length }); kbMostrarLeads(normTask); return; }
+
+                KB_LOG('❌ MODO 2: outputs existem mas sem dados legíveis', outs);
+            } else {
+                KB_LOG('❌ data.outputs AUSENTE', null);
             }
 
-            // 🚀 MODO ASSÍNCRONO: Fallback se o wait=true falhar no servidor
+            // MODO 3: ASSÍNCRONO — data.id (Kestra retornou execução sem wait)
             if (data.id) {
                 const execId = data.id;
+                KB_LOG('🔍 Tentando MODO 3: polling async', execId);
                 document.getElementById('kb-agent-label').textContent = `⏳ Executando (${execId})...`;
                 const finalData = await kbPollExecution(execId);
                 kbMostrarLeads(finalData);
