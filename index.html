@@ -1387,6 +1387,7 @@
             }
         };
 
+        const alertDiv = document.getElementById('kb-cors-alert');
         let res = await retryFetch(url, mode === 'private' ? 'Turbo' : 'Direto');
         if (!res) res = await retryFetch(url, 'Turbo');
         if (!res) res = await retryFetch(url, 'Proxy');
