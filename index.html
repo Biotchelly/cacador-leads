@@ -1297,35 +1297,65 @@
         return await r.json();
     }
 
-        async function kbPollExecution(id) {
+            async function kbPollExecution(id) {
         const baseUrl = kbBackendUrl().split('/api/v1/')[0];
         const execUrl = `${baseUrl}/api/v1/executions/${id}`;
+        const label = document.getElementById('kb-agent-label');
         let status = 'RUNNING';
         let retries = 0;
         const start = Date.now();
+        
         while (status !== 'SUCCESS' && status !== 'FAILED' && status !== 'KILLED' && retries < 60) {
             await new Promise(r => setTimeout(r, 2000));
             try {
                 const r = await kbSmartFetch(execUrl, null, 'GET');
                 const data = await r.json();
-                status = data.state ? data.state.current : 'UNKNOWN';
+                
+                // Detecção robusta de status (Kestra v0.15+)
+                status = (data.state && typeof data.state === 'object') ? data.state.current : data.state;
+                if (!status) status = 'UNKNOWN';
+                
+                label.textContent = `⏳ ${status} (${id.substring(0,8)})... `;
+                
                 if (status === 'SUCCESS') {
+                    KB_LOG('✅ Sucesso Kestra', data);
                     const outs = data.outputs || {};
+                    
                     const _get = (obj) => {
                         if (!obj) return null;
-                        if (obj.leads) return obj;
+                        if (obj.leads && Array.isArray(obj.leads)) return obj;
                         if (obj.list && Array.isArray(obj.list)) return { success: true, leads: obj.list };
-                        if (typeof obj === 'string') { try { return _get(JSON.parse(obj)); } catch(e) { return null; } }
+                        if (typeof obj === 'string') {
+                            try { return _get(JSON.parse(obj)); } catch(e) { 
+                                if (obj.includes('[object Object]')) { console.error('Erro de serialização no Backend!'); }
+                                return null; 
+                            }
+                        }
                         if (obj.body) return _get(obj.body);
+                        // Busca recursiva profunda
+                        for (let key in obj) {
+                            if (typeof obj[key] === 'object') {
+                                const internal = _get(obj[key]);
+                                if (internal) return internal;
+                            }
+                        }
                         return null;
                     };
-                    const res = _get(outs.response) || _get(outs.buscar_leads_noco) || _get(data);
-                    if (res && res.leads) return res;
-                    throw new Error("Dados não encontrados nos outputs.");
+                    
+                    // Tenta em todas as frentes: Task 'buscar_leads_noco', Output global 'response', ou no objeto data inteiro
+                    const res = _get(outs.buscar_leads_noco) || _get(outs.response) || _get(data);
+                    
+                    if (res && res.leads) {
+                        return res;
+                    }
+                    throw new Error("Dados não encontrados nos outputs (V27/V28).");
                 }
-                if (status === 'FAILED' || status === 'KILLED') throw new Error("A execução no KESTRA falhou.");
-            } catch (e) { console.error("Polling error:", e); if (status === 'SUCCESS' || status === 'FAILED') throw e; }
-            if (Date.now() - start > 120000) throw new Error("Timeout de 2min.");
+                if (status === 'FAILED' || status === 'KILLED') throw new Error(`A execução falhou com status: ${status}`);
+            } catch (e) { 
+                console.error("Polling error:", e); 
+                if (status === 'SUCCESS' || status === 'FAILED') throw e; 
+            }
+            if (Date.now() - start > 180000) throw new Error("Timeout de 3min.");
             retries++;
         }
         throw new Error("Limite de tentativas atingido.");
