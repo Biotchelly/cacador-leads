@@ -1618,14 +1618,25 @@
                 const data = await r.json();
                 KB_LOG('Resposta Kestra', data);
 
-                const _getLeads = (obj) => {
-                    if (!obj) return null;
-                    const leadsList = obj.leads || obj.list || obj.List;
+                                const _getLeads = (obj) => {
+                    if (!obj || typeof obj !== 'object') return null;
+                    
+                    // Se for array e tiver itens, verifica se o primeiro parece um lead
+                    if (Array.isArray(obj) && obj.length > 0) {
+                        if (obj[0].Id || obj[0].Nome || obj[0].Telefone) return { success: true, leads: obj };
+                    }
+
+                    // Se tiver as chaves conhecidas
+                    const leadsList = obj.leads || obj.list || obj.List || obj.records;
                     if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
-                    if (obj.body) return _getLeads(obj.body);
-                    if (obj.outputs) return _getLeads(obj.outputs);
-                    if (obj.response) return _getLeads(obj.response);
-                    if (obj.buscar_leads_noco) return _getLeads(obj.buscar_leads_noco);
+                    
+                    // Busca recursiva profunda em todas as chaves
+                    for (let k in obj) {
+                        if (obj[k] && typeof obj[k] === 'object') {
+                            const res = _getLeads(obj[k]);
+                            if (res) return res;
+                        }
+                    }
                     return null;
                 };
 
