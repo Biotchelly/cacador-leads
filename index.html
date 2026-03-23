@@ -1324,17 +1324,19 @@
                     const _get = (obj) => {
                         if (!obj) return null;
                         if (obj.leads && Array.isArray(obj.leads)) return obj;
-                        if (obj.list && Array.isArray(obj.list)) return { success: true, leads: obj.list };
+                        // Aceita List ou list
+                        const leadsList = obj.list || obj.List;
+                        if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
                         if (typeof obj === 'string') {
                             try { return _get(JSON.parse(obj)); } catch(e) { 
-                                if (obj.includes('[object Object]')) { console.error('Erro de serialização no Backend!'); }
+                                if (obj.includes('[object Object]')) { console.error('Erro de serialização!'); }
                                 return null; 
                             }
                         }
                         if (obj.body) return _get(obj.body);
                         // Busca recursiva profunda
                         for (let key in obj) {
-                            if (typeof obj[key] === 'object') {
+                            if (typeof obj[key] === 'object' && obj[key] !== null) {
                                 const internal = _get(obj[key]);
                                 if (internal) return internal;
                             }
@@ -1348,7 +1350,7 @@
                     if (res && res.leads) {
                         return res;
                     }
-                    throw new Error("Dados não encontrados nos outputs (V27/V28).");
+                    throw new Error("Dados não encontrados nos outputs.");
                 }
                 if (status === 'FAILED' || status === 'KILLED') throw new Error(`A execução falhou com status: ${status}`);
             } catch (e) { 
@@ -1482,8 +1484,9 @@
             const baseUrl = url.split("?")[0];
             const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=false";
             const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
-            const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
+                        const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
             const data = await r.json();
+            console.log('[KB DEBUG] Resposta Inicial POST:', data);
             const execId = data.id || (data.execution ? data.execution.id : null);
             if (execId) {
                 label.textContent = `⏳ Processando (${execId.substring(0,8)})...`;
