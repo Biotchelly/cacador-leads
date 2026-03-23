@@ -1479,18 +1479,30 @@
             const data = await r.json();
             console.log("[KB] Resposta Kestra:", data);
 
-            // 🚀 MODO ULTRA-FAST (Nativo V5): Se os leads já vierem no corpo do Webhook
-            if (data.leads || (data.response && data.response.leads)) {
-                const finalLeads = data.leads || data.response.leads;
-                kbMostrarLeads({ success: true, leads: finalLeads });
+            // Helper: normaliza qualquer formato de resposta em { success, leads }
+            const kbNormalizar = (obj) => {
+                if (!obj) return null;
+                // Formato padrão { success, leads }
+                if (obj.leads) return obj;
+                // Formato NocoDB bruto { list: [...], pageInfo: {...} }
+                if (obj.list && Array.isArray(obj.list)) return { success: true, leads: obj.list };
+                return null;
+            };
+
+            // 🚀 MODO ULTRA-FAST (Nativo V5): corpo direto do Webhook
+            const directNorm = kbNormalizar(data);
+            if (directNorm) {
+                kbMostrarLeads(directNorm);
                 return;
             }
 
-            // 🚀 MODO SÍNCRONO (Kestra v1): Se vier nos outputs (padrão antigo)
+            // 🚀 MODO SÍNCRONO (Kestra wait=true): dados em data.outputs.response
             if (data.outputs && data.outputs.response) {
-                const res = typeof data.outputs.response === 'string' ? JSON.parse(data.outputs.response) : data.outputs.response;
-                if (res.leads) {
-                    kbMostrarLeads(res);
+                const raw = data.outputs.response;
+                const res = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                const norm = kbNormalizar(res);
+                if (norm) {
+                    kbMostrarLeads(norm);
                     return;
                 }
             }
