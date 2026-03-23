@@ -1473,7 +1473,7 @@
         }
     };
 
-                async function kbCarregar() {
+                        async function kbCarregar() {
         const url = kbBackendUrl();
         if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
         const { nome, id } = kbSyncFromCacador();
@@ -1482,15 +1482,13 @@
         label.textContent = '⏳ Carregando Leads...';
         try {
             const baseUrl = url.split("?")[0];
-            // V29: Tenta síncrono por padrão (wait=true ou sem wait)
             const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=true";
             const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
             
             const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
             const data = await r.json();
-            console.log('[KB DEBUG] Resposta Síncrona/Assíncrona:', data);
+            KB_LOG('Resposta Kestra', data);
             
-            // Helper de extração interna
             const _getLeads = (obj) => {
                 if (!obj) return null;
                 const leadsList = obj.leads || obj.list || obj.List;
@@ -1509,9 +1507,10 @@
                 return;
             }
 
-            // Fallback: Se não retornou os leads, polla o execId
-            const execId = data.id || (data.execution ? data.execution.id : null);
-            if (execId) {
+            // V30: Prioriza execution.id (ID real do fluxo) sobre data.id (ID do webhook/proxy)
+            const execId = (data.execution && data.execution.id) ? data.execution.id : data.id;
+            
+            if (execId && execId.length < 50) {
                 label.textContent = `⏳ Processando... (${execId.substring(0,8)})`;
                 const finalData = await kbPollExecution(execId);
                 if (finalData && finalData.leads) {
@@ -1519,12 +1518,16 @@
                     kbMostrarLeads(finalData);
                 }
             } else {
-                throw new Error("Não foi possível obter ID da execução (Timeout Kestra).");
+                // Alerta visual de dados inesperados para print do usuário
+                const raw = JSON.stringify(data).substring(0, 200);
+                label.textContent = '❌ Dados Inválidos do Kestra';
+                kbToast('Erro de ID: ' + raw);
+                console.error('Resposta inesperada:', data);
             }
         } catch (err) { 
             label.textContent = '💥 Erro de Conexão'; 
             console.error(err); 
-            kbToast('❌ Erro ao carregar: ' + err.message);
+            kbToast('❌ Erro: ' + err.message);
         }
     }
 
