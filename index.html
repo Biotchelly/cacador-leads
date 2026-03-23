@@ -1313,23 +1313,32 @@
                 
                 if (status === 'SUCCESS') {
                     const outputs = data.outputs || {};
-                    
-                    // 🚀 Tentativa 1: Lê o Output Global 'response' (V6.0 Padrão)
-                    if (outputs.response) {
-                        try {
-                            return typeof outputs.response === 'string' ? JSON.parse(outputs.response) : outputs.response;
-                        } catch (e) {
-                            console.error("Falha ao fazer parse do outputs.response", e);
-                        }
-                    }
 
-                    // 🚀 Tentativa 2: Lê o arquivo diretamente (Fallback)
+                    // ─── Normaliza qualquer formato em { success, leads } ───
+                    const _norm = (raw) => {
+                        if (!raw) return null;
+                        try { raw = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) { return null; }
+                        if (raw.leads) return raw;
+                        if (raw.list && Array.isArray(raw.list)) return { success: true, leads: raw.list };
+                        if (raw.success) return raw;
+                        return null;
+                    };
+
+                    // 🚀 Tentativa 1: Output global 'response' (formato antigo)
+                    const n1 = _norm(outputs.response);
+                    if (n1) return n1;
+
+                    // 🚀 Tentativa 2: Task-level output (V15 — sem outputs no flow)
+                    const taskBody = outputs.buscar_leads_noco?.body || outputs.atualizar_lead_noco?.body;
+                    const n2 = _norm(taskBody);
+                    if (n2) return n2;
+
+                    // 🚀 Tentativa 3: arquivo response.json (Fallback legado)
                     const procOut = outputs.processar_kanban || outputs.processar_requisicao || {};
-                    const outFiles = procOut.outputFiles || {};
-                    const uri = outFiles['response.json'];
+                    const uri = (procOut.outputFiles || {})['response.json'];
                     if (uri) return await kbGetFile(id, uri);
-                    
-                    throw new Error("Arquivo response.json nem output response encontrados nas saídas");
+
+                    throw new Error("Nenhum dado encontrado nas saídas da execução");
                 }
                 
                 if (status === 'FAILED' || status === 'KILLED') {
@@ -1496,15 +1505,23 @@
                 return;
             }
 
-            // 🚀 MODO SÍNCRONO (Kestra wait=true): dados em data.outputs.response
-            if (data.outputs && data.outputs.response) {
-                const raw = data.outputs.response;
-                const res = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                const norm = kbNormalizar(res);
-                if (norm) {
-                    kbMostrarLeads(norm);
-                    return;
-                }
+            // 🚀 MODO SÍNCRONO (Kestra wait=true): lê outputs do objeto de execução
+            if (data.outputs) {
+                const outs = data.outputs;
+
+                // Tenta output global 'response' (formato antigo com outputs no flow)
+                const normResp = outs.response ? kbNormalizar(
+                    typeof outs.response === 'string' ? JSON.parse(outs.response) : outs.response
+                ) : null;
+                if (normResp) { kbMostrarLeads(normResp); return; }
+
+                // Tenta task-level output (V15 — sem outputs no flow)
+                // data.outputs.buscar_leads_noco.body = JSON bruto do NocoDB
+                const taskBody = outs.buscar_leads_noco?.body || outs.atualizar_lead_noco?.body;
+                const normTask = taskBody ? kbNormalizar(
+                    typeof taskBody === 'string' ? JSON.parse(taskBody) : taskBody
+                ) : null;
+                if (normTask) { kbMostrarLeads(normTask); return; }
             }
 
             // 🚀 MODO ASSÍNCRONO: Fallback se o wait=true falhar no servidor
