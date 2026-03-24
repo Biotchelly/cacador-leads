@@ -1458,8 +1458,9 @@
 
             const tryFindLatest = async () => {
                 console.log('[KB] Tentando buscar última execução do fluxo...');
-                const r = await kbSmartFetch(`${baseUrl}/api/v1/executions?namespace=biotchellymcp&flowId=08_kanban_backend_api&size=1`, null, 'GET');
-                                const data = await r.json();
+                                const r = await kbSmartFetch(`${baseUrl}/api/v1/executions?namespace=biotchellymcp&flowId=08_kanban_backend_api&size=1`, null, 'GET');
+                let data = {};
+                try { data = await r.json(); } catch(e) { console.warn('[KB] Fallback não é JSON'); }
                 KB_LOG('Resposta Kestra', data);
 
                 const leadsFound = kbExtractLeads(data);
