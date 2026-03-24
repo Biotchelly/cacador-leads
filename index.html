@@ -1425,12 +1425,14 @@
             if (!obj) return null;
             let list = null;
             if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
+            console.log('[KB] Resposta Bruta do Servidor:', obj);
             
             // Busca a lista de registros
             if (Array.isArray(obj)) list = obj;
             else if (obj.list && Array.isArray(obj.list)) list = obj.list;
             else if (obj.records && Array.isArray(obj.records)) list = obj.records;
             else if (obj.data && Array.isArray(obj.data)) list = obj.data;
+            else if (obj.body) return kbExtractLeads(obj.body); // Recursão para Kestra body caps
             
             if (!list) return null;
 
@@ -1521,6 +1523,7 @@
                 }
 
                 let data = {}; try { data = await r.json(); } catch(e){}
+                console.log('[KB] Data do Kestra:', data);
                 
                 const res = kbExtractLeads(data);
                 if (res) { 
