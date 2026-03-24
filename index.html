@@ -1412,7 +1412,7 @@
             let list = null;
             if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
             
-            // Busca a lista de registros (NocoDB costuma devolver em 'list' ou na raiz)
+            // Busca a lista de registros
             if (Array.isArray(obj)) list = obj;
             else if (obj.list && Array.isArray(obj.list)) list = obj.list;
             else if (obj.records && Array.isArray(obj.records)) list = obj.records;
@@ -1420,17 +1420,20 @@
             
             if (!list) return null;
 
-            // --- AUDITORIA DE CAMPOS (V54) ---
+            // --- AUDITORIA DE OBJETOS (V55) ---
             if (list.length > 0) {
-                console.log('[KB] Colunas detectadas:', Object.keys(list[0]).join(', '));
+                console.log('[KB] Primeiro Lead:', list[0]);
             }
 
-            // Filtragem por Vendedor (Case-Insensitive)
+            // Filtragem por Vendedor ou ID (V55)
             if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão") {
-                const search = kbAuthNome.toLowerCase().trim();
+                const searchName = kbAuthNome.toLowerCase().trim();
+                const searchId = String(kbAuthId).trim();
+                
                 list = list.filter(l => {
-                    const v = String(l.Vendedor || l.Agente || l.vendedor_id || l.Responsavel || '').toLowerCase();
-                    return v.includes(search);
+                    const vName = String(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
+                    const vId = String(l.agent_id || l.vendedor_id || '');
+                    return vName.includes(searchName) || vId === searchId;
                 });
             }
             return list;
