@@ -1350,6 +1350,7 @@
         let kbInitialized = false;
         let kbAuthId = "";
         let kbAuthNome = "";
+        let kbAuthTry = 0;
 
         // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
         function updateAgent(id, name) {
@@ -1366,7 +1367,7 @@
                 if (vid) vid.value = finalId;
                 if (vnm) vnm.value = finalName;
                 
-                console.log(`[KB] Autenticado: ${finalName}`);
+                console.log(`[KB] Autenticado (V53): ${finalName}`);
                 const label = document.getElementById('kb-agent-label');
                 if(label) label.textContent = `👤 ${finalName}`;
                 
@@ -1389,6 +1390,22 @@
                 }
             } catch(err){}
         });
+
+        // Monitoramento contínuo (Polling Interno)
+        setInterval(() => {
+            const cid = document.getElementById('vendedorId')?.value;
+            const cnm = document.getElementById('vendedorNome')?.value;
+            if(cid && cid !== "1" && cid !== "" && cid !== kbAuthId) {
+                updateAgent(cid, cnm);
+            }
+            
+            // Timeout de Identidade (V53) - Se após 5s não identificar, assume Gestão
+            if (!kbAuthId && kbAuthTry > 10) {
+                console.warn('[KB] Timeout de identificação. Assumindo Gestão para evitar trava.');
+                updateAgent("1", "Gestão"); 
+            }
+            if (!kbAuthId) kbAuthTry++;
+        }, 500);
 
         function kbExtractLeads(obj) {
             if (!obj) return null;
@@ -1455,24 +1472,31 @@
             const board = document.getElementById('kb-board');
             
             if (!kbAuthId) {
-                if(label) label.textContent = '❌ Não Identificado';
-                if(board) board.innerHTML = '<div style="width:100\%; padding:40px; text-align:center; color:#94a3b8">⚠️ Acesso bloqueado. Por favor, acesse o Kanban através do Chatwoot para validar sua identidade.</div>';
+                if(label) label.textContent = '⏳ Identificando Agente...';
                 return;
             }
             
-            // Se identificou, garante que o board tenha as colunas (em caso de reload/tab swap)
-            if (board && board.innerHTML.includes('Acesso bloqueado')) {
+            // Se identificou, garante que o board tenha as colunas
+            if (board && (board.innerHTML.includes('Acesso bloqueado') || board.innerHTML === "")) {
                 kbInitialized = false; 
                 kbInit(); 
                 return; 
             }
 
-            if(label) label.textContent = `⏳ Buscando leads para ${kbAuthNome}...`;
+            if(label) label.textContent = `⏳ Conectando Kestra (${kbAuthNome})...`;
+            console.log('[KB] Carregando leads para:', kbAuthNome);
             
             try {
                 const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
-                const body = { action: 'list', agent_id: sync.id, vendedor_nome: sync.nome };
+                const body = { action: 'list', agent_id: kbAuthId, vendedor_nome: kbAuthNome };
                 const r = await kbSmartFetch(url, body, 'POST');
+                
+                if (!r || !r.ok) {
+                    const statusText = r ? `Erro ${r.status}` : 'Bloqueio de Rede (CORS/Proxy)';
+                    if(label) label.textContent = `❌ ${statusText}`;
+                    return;
+                }
+
                 let data = {}; try { data = await r.json(); } catch(e){}
                 
                 const res = kbExtractLeads(data);
