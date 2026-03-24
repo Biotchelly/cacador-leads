@@ -1362,15 +1362,26 @@
         let kbInitialized = false;
 
         function kbExtractLeads(obj) {
-            if (!obj || typeof obj !== 'object') return null;
+            if (!obj) return null;
+            // Se for string (Kestra às vezes devolve stringada), tenta parsear
+            if (typeof obj === 'string') {
+                try { obj = JSON.parse(obj); } catch(e) { return null; }
+            }
+            if (typeof obj !== 'object') return null;
+            
             if (Array.isArray(obj) && obj.length > 0) {
                 if (obj[0].Id || obj[0].Nome || obj[0].Telefone || obj[0].Nome_Interessado) return { success: true, leads: obj };
             }
+            
             // Busca chaves comuns de listas
-            const keys = ['leads', 'list', 'List', 'records', 'data', 'body'];
+            const keys = ['leads', 'list', 'List', 'records', 'data', 'body', 'response'];
             for(let key of keys) {
-                if(obj[key] && Array.isArray(obj[key])) return { success: true, leads: obj[key] };
+                if(obj[key]) {
+                    const res = kbExtractLeads(obj[key]);
+                    if (res) return res;
+                }
             }
+            
             // Busca recursiva profunda
             for (let k in obj) { 
                 if (obj[k] && typeof obj[k] === 'object') { 
