@@ -1292,42 +1292,10 @@
             // --- PERSISTÊNCIA MANUAL (BACKUP) ---
             const savedNome = localStorage.getItem('vendedorNome');
 
-            // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
-            function updateAgent(id, name) {
-                if (!id) return;
-                
-                const vid = document.getElementById('vendedorId');
-                const vnm = document.getElementById('vendedorNome');
-                const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
-                const finalId = String(id).replace(/[^0-9]/g, ""); // Normaliza ID numérico
-                const finalName = map[finalId] || name || "Identificando...";
-                
-                if (finalId && map[finalId]) {
-                    if (vid) vid.value = finalId;
-                    if (vnm) vnm.value = finalName;
-                    console.log(`[KB] Agente Autenticado: ${finalName}`);
-                    if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
-                    if (typeof kbCarregar === 'function') kbCarregar();
-                } else {
-                    console.warn(`[KB] ID de Agente Inválido ou Não Autorizado: ${finalId}`);
-                }
-            }
-
+            // Identificação inicial via URL
             const params = new URLSearchParams(window.location.search);
-            // Chatwoot Dashboard Apps costumam passar agent_id ou user_id na URL
             const cwId = params.get('agent_id') || params.get('user_id');
             if (cwId) updateAgent(cwId);
-            
-            window.addEventListener('message', function(e) {
-                try { 
-                    const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                    if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
-                        const aid = (d.agent && d.agent.id) || (d.user && d.user.id) || d.id;
-                        const anm = (d.agent && d.agent.name) || (d.user && d.user.name);
-                        if(aid) updateAgent(aid, anm);
-                    }
-                } catch(err){}
-            });
         });
 
         function switchTab(tab) {
@@ -1376,6 +1344,43 @@
         let kbLeads = [];
         let kbDraggedId = null;
         let kbInitialized = false;
+        let kbAuthId = "";
+        let kbAuthNome = "";
+
+        // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
+        function updateAgent(id, name) {
+            if (!id) return;
+            const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
+            const finalId = String(id).replace(/[^0-9]/g, "");
+            const finalName = map[finalId] || name || "Agente";
+            
+            if (finalId && map[finalId]) {
+                kbAuthId = finalId;
+                kbAuthNome = finalName;
+                const vid = document.getElementById('vendedorId');
+                const vnm = document.getElementById('vendedorNome');
+                if (vid) vid.value = finalId;
+                if (vnm) vnm.value = finalName;
+                
+                console.log(`[KB] Autenticado: ${finalName}`);
+                const label = document.getElementById('kb-agent-label');
+                if(label) label.textContent = `👤 ${finalName}`;
+                
+                // Se já inicializou o board, carrega. Se não, o switcher cuidará.
+                if (kbInitialized) kbCarregar();
+            }
+        }
+
+        window.addEventListener('message', function(e) {
+            try { 
+                const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
+                    const aid = (d.agent && d.agent.id) || (d.user && d.user.id) || d.id;
+                    const anm = (d.agent && d.agent.name) || (d.user && d.user.name);
+                    if(aid) updateAgent(aid, anm);
+                }
+            } catch(err){}
+        });
 
         function kbExtractLeads(obj) {
             if (!obj) return null;
@@ -1429,35 +1434,32 @@
                 </div>
             `).join('');
             kbInitialized = true;
-            kbCarregar();
+            // Tenta carregar se já estiver autenticado
+            if(kbAuthId) kbCarregar();
         }
 
         function kbSyncFromCacador() {
-            const idEl = document.getElementById('vendedorId');
-            const nmEl = document.getElementById('vendedorNome');
-            const res = {
-                id: idEl ? idEl.value : "",
-                nome: nmEl ? nmEl.value : ""
-            };
-            const label = document.getElementById('kb-agent-label');
-            if(label && res.nome) {
-                label.textContent = `👤 ${res.nome}`;
-            }
-            return res;
+            return { id: kbAuthId, nome: kbAuthNome };
         }
 
         async function kbCarregar() {
-            const sync = kbSyncFromCacador();
             const label = document.getElementById('kb-agent-label');
+            const board = document.getElementById('kb-board');
             
-            if (!sync.id) {
-                if(label) label.textContent = '❌ Agente não Identificado';
-                const board = document.getElementById('kb-board');
+            if (!kbAuthId) {
+                if(label) label.textContent = '❌ Não Identificado';
                 if(board) board.innerHTML = '<div style="width:100\%; padding:40px; text-align:center; color:#94a3b8">⚠️ Acesso bloqueado. Por favor, acesse o Kanban através do Chatwoot para validar sua identidade.</div>';
                 return;
             }
+            
+            // Se identificou, garante que o board tenha as colunas (em caso de reload/tab swap)
+            if (board && board.innerHTML.includes('Acesso bloqueado')) {
+                kbInitialized = false; 
+                kbInit(); 
+                return; 
+            }
 
-            if(label) label.textContent = `⏳ Buscando leads para ${sync.nome}...`;
+            if(label) label.textContent = `⏳ Buscando leads para ${kbAuthNome}...`;
             
             try {
                 const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
