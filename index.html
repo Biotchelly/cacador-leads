@@ -1292,17 +1292,12 @@
             // --- PERSISTÊNCIA MANUAL (BACKUP) ---
             const savedNome = localStorage.getItem('vendedorNome');
 
-            // Identificação inicial via URL ou Fallback de Abas
-            const params = new URLSearchParams(window.location.search);
-            const cwId = params.get('agent_id') || params.get('user_id');
-            if (cwId) updateAgent(cwId);
-            
-            // Fallback: Tenta ler do Caçador se ele já tiver sido preenchido
-            setTimeout(() => {
-                if(!kbAuthId) {
-                    const cid = document.getElementById('vendedorId')?.value;
-                    const cnm = document.getElementById('vendedorNome')?.value;
-                    if(cid && cid !== "1" && cid !== "") updateAgent(cid, cnm);
+            // Monitoramento contínuo da identidade (Polling Interno)
+            setInterval(() => {
+                const cid = document.getElementById('vendedorId')?.value;
+                const cnm = document.getElementById('vendedorNome')?.value;
+                if(cid && cid !== "1" && cid !== "" && cid !== kbAuthId) {
+                    updateAgent(cid, cnm);
                 }
             }, 1000);
         });
