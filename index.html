@@ -1504,7 +1504,14 @@
             try {
                 const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
                 const nocoId = document.getElementById('nocoTableId')?.value || "";
-                const body = { action: 'list', agent_id: kbAuthId, vendedor_nome: kbAuthNome, table_id: nocoId };
+                const nocoToken = document.getElementById('nocoToken')?.value || "";
+                const body = { 
+                    action: 'list', 
+                    agent_id: kbAuthId, 
+                    vendedor_nome: kbAuthNome, 
+                    table_id: nocoId,
+                    token: nocoToken
+                };
                 const r = await kbSmartFetch(url, body, 'POST');
                 
                 if (!r || !r.ok) {
