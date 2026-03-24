@@ -1417,9 +1417,8 @@
 
         function kbVal(v) {
             if (v === null || v === undefined) return '';
-            // Se for array (ex: Lookup do NocoDB), pega o primeiro item
             if (Array.isArray(v)) return v.length > 0 ? kbVal(v[0]) : '';
-            if (typeof v === 'object') return String(v.title || v.value || v.id || v.name || JSON.stringify(v));
+            if (typeof v === 'object') return v.title || v.value || v.id || v.name || JSON.stringify(v);
             return String(v).trim();
         }
 
@@ -1427,42 +1426,27 @@
             if (!obj) return null;
             if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
             
-            // 1. Tentar encontrar em 'outputs' (Estrutura padrão de execução Kestra)
+            console.log('[KB] Tentando extrair de:', obj);
+
+            // Se for array direto, achamos!
+            if (Array.isArray(obj)) return obj;
+
+            // Se tiver propriedades comuns de lista
+            const possibleList = obj.list || obj.records || obj.data || (obj.body ? (obj.body.list || obj.body.records || obj.body) : null);
+            if (Array.isArray(possibleList)) return possibleList;
+
+            // Se for execução do Kestra, mergulha nos outputs
             if (obj.outputs) {
-                console.log('[KB] Navegando em outputs...');
                 for (let k in obj.outputs) {
-                    const found = kbExtractLeads(obj.outputs[k]);
-                    if (found) return found;
+                    const res = kbExtractLeads(obj.outputs[k]);
+                    if (res) return res;
                 }
             }
 
-            // 2. Tentar encontrar em 'body' (Estrutura comum de tarefas HTTP)
-            if (obj.body) return kbExtractLeads(obj.body);
+            // Fallback para body recursivo
+            if (obj.body && typeof obj.body === 'object') return kbExtractLeads(obj.body);
 
-            // 3. Tentar encontrar listas diretas
-            let list = null;
-            if (Array.isArray(obj)) list = obj;
-            else if (obj.list && Array.isArray(obj.list)) list = obj.list;
-            else if (obj.records && Array.isArray(obj.records)) list = obj.records;
-            else if (obj.data && Array.isArray(obj.data)) list = obj.data;
-            
-            if (!list) return null;
-
-            console.log('[KB] Leads localizados:', list.length);
-
-            // 4. Filtragem por Vendedor ou ID (V63 - Reforçada)
-            if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão" && !kbGestorOverride) {
-                const searchName = kbAuthNome.toLowerCase().trim();
-                const searchId = String(kbAuthId).trim();
-                
-                list = list.filter(l => {
-                    const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
-                    const vId = kbVal(l.agent_id || l.vendedor_id || '');
-                    // Match por nome contém ou ID exato
-                    return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
-                });
-            }
-            return list;
+            return null;
         }
 
         function kbBackendUrl() { 
