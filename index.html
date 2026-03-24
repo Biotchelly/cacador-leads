@@ -1350,8 +1350,7 @@
                 <option value="Convertido">✅ Convertido</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
-            <span class="kb-agent-label" id="kb-agent-label">👤 Identificando Agente...</span>
-            <button class="kb-btn" style="background:#475569" onclick="kbToggleGestor()">🕶️ Modo Gestor</button>
+            <span class="kb-agent-label" id="kb-agent-label">👤 Identificando...</span>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
         </div>
         <div class="kb-board" id="kb-board"></div>
@@ -1369,16 +1368,17 @@
             { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
         ];
 
-        let kbLeads = [];
+        let kbLeads = JSON.parse(localStorage.getItem('kbLeads') || '[]');
         let kbDraggedId = null;
         let kbInitialized = false;
-        let kbAuthId = "";
-        let kbAuthNome = "";
+        let kbAuthId = localStorage.getItem('kbAuthId') || "";
+        let kbAuthNome = localStorage.getItem('kbAuthNome') || "";
         let kbAuthTry = 0;
-        let kbGestorOverride = false;
+        let kbGestorOverride = localStorage.getItem('kbGestorOverride') === 'true';
 
         function kbToggleGestor() {
             kbGestorOverride = !kbGestorOverride;
+            localStorage.setItem('kbGestorOverride', kbGestorOverride);
             kbToast(kbGestorOverride ? '🕶️ Modo Gestor ATIVO' : '👥 Modo SDR Ativo');
             kbCarregar();
         }
@@ -1393,6 +1393,9 @@
             if (finalId && map[finalId]) {
                 kbAuthId = finalId;
                 kbAuthNome = finalName;
+                localStorage.setItem('kbAuthId', finalId);
+                localStorage.setItem('kbAuthNome', finalName);
+                
                 const vid = document.getElementById('vendedorId');
                 const vnm = document.getElementById('vendedorNome');
                 if (vid) vid.value = finalId;
@@ -1437,16 +1440,23 @@
 
         // Monitoramento contínuo (Polling Interno)
         setInterval(() => {
-            const cid = document.getElementById('vendedorId')?.value;
-            const cnm = document.getElementById('vendedorNome')?.value;
+            const vid = document.getElementById('vendedorId');
+            const vnm = document.getElementById('vendedorNome');
+            
+            // Tenta recuperar do cache se o campo estiver vazio
+            if (vid && !vid.value && kbAuthId) vid.value = kbAuthId;
+            if (vnm && !vnm.value && kbAuthNome) vnm.value = kbAuthNome;
+
+            const cid = vid?.value;
+            const cnm = vnm?.value;
+            
             if(cid && cid !== "1" && cid !== "" && cid !== kbAuthId) {
                 updateAgent(cid, cnm);
             }
             
-            // Timeout de Identidade (V63) - Aumentado para 15s (30x500ms) para dar tempo ao Chatwoot
+            // Timeout de Identidade (V63)
             if (!kbAuthId && kbAuthTry > 30) {
-                console.warn('[KB] Timeout de identificação. Verifique a conexão com o Chatwoot.');
-                if (!kbGestorOverride) updateAgent("1", "Gestão"); 
+                kbLog('⚠️ Aguardando Handshake Chatwoot...');
             }
             if (!kbAuthId) kbAuthTry++;
         }, 500);
@@ -1524,6 +1534,13 @@
                 </div>
             `).join('');
             kbInitialized = true;
+            
+            // --- MEMÓRIA DO JOBS (V68) ---
+            if(kbLeads.length > 0) {
+                kbLog(`📦 Restaurando ${kbLeads.length} leads do cache...`);
+                kbMostrarLeads(kbLeads, kbAuthNome || 'Agente');
+            }
+
             // Tenta carregar se já estiver autenticado
             if(kbAuthId) kbCarregar();
         }
@@ -1620,6 +1637,12 @@
             // Se data já é o array de registros vindo do kbExtractLeads, usa direto.
             kbLeads = Array.isArray(data) ? data : (data.leads || []);
             
+            // Salva no cache para evitar reset no Chatwoot
+            localStorage.setItem('kbLeads', JSON.stringify(kbLeads));
+
+            const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
+            kbLog(`📊 Status em cache: ${statusEncontrados.join(', ')}`);
+
             // Normaliza status de todos os leads recebidos
             kbLeads.forEach(l => {
                 if (l.Status && typeof l.Status === 'object') l.Status = l.Status.title || l.Status.value || l.Status.id;
