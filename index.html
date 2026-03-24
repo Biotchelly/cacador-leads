@@ -1293,29 +1293,30 @@
             const savedNome = localStorage.getItem('vendedorNome');
 
             // --- DETECÇÃO AUTOMÁTICA E MANUAL DE VENDEDOR ---
-            function updateAgent(id, name) {
-                if (!id) return;
+            function updateAgent(id, name, isManual = false) {
+                if (!id && !isManual) return;
+                
                 const vid = document.getElementById('vendedorId');
                 const vnm = document.getElementById('vendedorNome');
                 const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
-                const finalId = String(id).replace(/[^0-9]/g, ""); // Normaliza ID numérico
-                const finalName = map[finalId] || name || "Gestão";
+                const finalId = id ? String(id).replace(/[^0-9]/g, "") : localStorage.getItem('vendedorId');
+                const finalName = map[finalId] || name || localStorage.getItem('vendedorNome') || "Gestão";
                 
-                if (vid) vid.value = finalId;
-                if (vnm) vnm.value = finalName;
-                
-                localStorage.setItem('vendedorId', finalId);
-                localStorage.setItem('vendedorNome', finalName);
-                
-                console.log(`[KB] Agente Dashboard: ${finalName} (ID: ${finalId})`);
-                if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
+                // Se for manual, salva com prioridade. Se for automático, só atualiza se for diferente.
+                if (isManual || (finalId !== localStorage.getItem('vendedorId'))) {
+                    if (vid) vid.value = finalId || "";
+                    if (vnm) vnm.value = finalName;
+                    localStorage.setItem('vendedorId', finalId || "");
+                    localStorage.setItem('vendedorNome', finalName);
+                    console.log(`[KB] Agente Atualizado (${isManual?'Manual':'Auto'}): ${finalName}`);
+                    if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
+                    if (isManual && typeof kbCarregar === 'function') kbCarregar();
+                }
             }
 
-            // Seletor manual de contingência
             window.kbSetAgentManual = function(id) {
                 const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot", "null": "Gestão" };
-                updateAgent(id, map[id]);
-                if (typeof kbCarregar === 'function') kbCarregar();
+                updateAgent(id, map[id], true);
             };
 
             const params = new URLSearchParams(window.location.search);
@@ -1463,8 +1464,15 @@
         async function kbCarregar() {
             const sync = kbSyncFromCacador();
             const label = document.getElementById('kb-agent-label');
+            
+            if (sync.nome === "Gestão") {
+                if(label) label.textContent = '👤 Nenhum Agente Selecionado';
+                const board = document.getElementById('kb-board');
+                if(board) board.innerHTML = '<div style="width:100\%; padding:40px; text-align:center; color:#94a3b8">⚠️ Por favor, selecione seu nome no seletor "👤 Trocar..." acima para ver seus leads.</div>';
+                return;
+            }
+
             if(label) label.textContent = `⏳ Buscando leads para ${sync.nome}...`;
-            console.log('[KB] Iniciando carga para:', sync);
             
             try {
                 const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
@@ -1555,10 +1563,12 @@
 
         function kbBuildCard(l) {
             const notas = l.Resumo_IA || l.Notas_Vendedor || '';
+            const statusBruto = String(l.Status || '').trim();
             return `
                 <div class="kb-card" draggable="true" ondragstart="kbDragStart(event,${l.Id})" ondragend="kbDragEnd(event)" id="kbcard-${l.Id}">
                     <div class="kb-card-name">🏢 ${l.Nome || 'Sem Nome'}</div>
                     <div class="kb-row"><span>📞</span><a href="tel:${l.Telefone}" style="color:#818cf8">${l.Telefone || '-'}</a></div>
+                    <div style="font-size:9px; color:#6366f1; margin:5px 0;">🏷️ Status: ${statusBruto}</div>
                     <textarea class="kb-notas" placeholder="Resumo IA..." id="kbn-${l.Id}">${notas}</textarea>
                     <div class="kb-actions"><button class="kb-save" onclick="kbSalvarNotas(${l.Id})">💾 Salvar</button></div>
                 </div>`;
