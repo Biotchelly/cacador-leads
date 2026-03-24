@@ -1407,6 +1407,12 @@
             if (!kbAuthId) kbAuthTry++;
         }, 500);
 
+        function kbVal(v) {
+            if (v === null || v === undefined) return '';
+            if (typeof v === 'object') return String(v.title || v.value || v.id || v.name || JSON.stringify(v));
+            return String(v).trim();
+        }
+
         function kbExtractLeads(obj) {
             if (!obj) return null;
             let list = null;
@@ -1425,14 +1431,14 @@
                 console.log('[KB] Primeiro Lead:', list[0]);
             }
 
-            // Filtragem por Vendedor ou ID (V55)
+            // Filtragem por Vendedor ou ID (V56)
             if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão") {
                 const searchName = kbAuthNome.toLowerCase().trim();
                 const searchId = String(kbAuthId).trim();
                 
                 list = list.filter(l => {
-                    const vName = String(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
-                    const vId = String(l.agent_id || l.vendedor_id || '');
+                    const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
+                    const vId = kbVal(l.agent_id || l.vendedor_id || '');
                     return vName.includes(searchName) || vId === searchId;
                 });
             }
