@@ -1317,6 +1317,8 @@
                 if (vnm) vnm.value = finalName;
                 localStorage.setItem('vendedorId', id);
                 localStorage.setItem('vendedorNome', finalName);
+                if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
+                if (typeof kbCarregar === 'function') kbCarregar();
             }
             const params = new URLSearchParams(window.location.search);
             const cwId = params.get('agent_id') || params.get('user_id');
@@ -1376,11 +1378,20 @@
         function kbExtractLeads(obj) {
             if (!obj || typeof obj !== 'object') return null;
             if (Array.isArray(obj) && obj.length > 0) {
-                if (obj[0].Id || obj[0].Nome || obj[0].Telefone) return { success: true, leads: obj };
+                if (obj[0].Id || obj[0].Nome || obj[0].Telefone || obj[0].Nome_Interessado) return { success: true, leads: obj };
             }
-            const list = obj.leads || obj.list || obj.records || (obj.data ? obj.data.records : null);
-            if (list && Array.isArray(list)) return { success: true, leads: list };
-            for (let k in obj) { if (obj[k] && typeof obj[k] === 'object') { const res = kbExtractLeads(obj[k]); if (res) return res; } }
+            // Busca chaves comuns de listas
+            const keys = ['leads', 'list', 'List', 'records', 'data', 'body'];
+            for(let key of keys) {
+                if(obj[key] && Array.isArray(obj[key])) return { success: true, leads: obj[key] };
+            }
+            // Busca recursiva profunda
+            for (let k in obj) { 
+                if (obj[k] && typeof obj[k] === 'object') { 
+                    const res = kbExtractLeads(obj[k]); 
+                    if (res) return res; 
+                } 
+            }
             return null;
         }
 
@@ -1408,20 +1419,26 @@
             kbCarregar();
         }
 
-                function kbSyncFromCacador() {
+        function kbSyncFromCacador() {
             const idEl = document.getElementById('vendedorId');
             const nmEl = document.getElementById('vendedorNome');
-            return {
+            const res = {
                 id: idEl ? idEl.value : (localStorage.getItem('vendedorId') || "16"),
                 nome: nmEl ? nmEl.value : (localStorage.getItem('vendedorNome') || "Gestor")
             };
+            const label = document.getElementById('kb-agent-label');
+            if(label && res.nome && res.nome !== "Gestor") {
+                label.textContent = `👤 ${res.nome} (Sincronizado)`;
+                label.style.color = '#818cf8';
+            }
+            return res;
         }
 
-                async function kbCarregar() {
+        async function kbCarregar() {
             const sync = kbSyncFromCacador();
             const label = document.getElementById('kb-agent-label');
-            if(label) label.textContent = '⏳ Conectando...';
-            console.log('[KB] Carregando leads para:', sync);
+            if(label) label.textContent = `⏳ Buscando leads para ${sync.nome}...`;
+            console.log('[KB] Iniciando carga para:', sync);
             
             try {
                 const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
@@ -1447,7 +1464,6 @@
                 if(label) label.textContent = '💥 Erro de Rede';
                 console.error('[KB] Falha na requisição:', err);
             }
-        }
         }
 
         async function kbPollExecution(execId, nome) {
