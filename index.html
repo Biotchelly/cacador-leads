@@ -1329,6 +1329,7 @@
                 <option value="Perdido">❌ Perdido</option>
             </select>
             <span class="kb-agent-label" id="kb-agent-label">👤 Identificando Agente...</span>
+            <button class="kb-btn" style="background:#475569" onclick="kbToggleGestor()">🕶️ Modo Gestor</button>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
         </div>
         <div class="kb-board" id="kb-board"></div>
@@ -1351,6 +1352,13 @@
         let kbAuthId = "";
         let kbAuthNome = "";
         let kbAuthTry = 0;
+        let kbGestorOverride = false;
+
+        function kbToggleGestor() {
+            kbGestorOverride = !kbGestorOverride;
+            kbToast(kbGestorOverride ? '🕶️ Modo Gestor ATIVO' : '👥 Modo SDR Ativo');
+            kbCarregar();
+        }
 
         // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
         function updateAgent(id, name) {
@@ -1432,7 +1440,7 @@
             }
 
             // Filtragem por Vendedor ou ID (V56)
-            if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão") {
+            if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão" && !kbGestorOverride) {
                 const searchName = kbAuthNome.toLowerCase().trim();
                 const searchId = String(kbAuthId).trim();
                 
