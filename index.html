@@ -1487,9 +1487,14 @@
 
         function kbMostrarLeads(data, nome) {
             kbLeads = data.leads || [];
+            // Normaliza status de todos os leads recebidos
+            kbLeads.forEach(l => {
+                if (l.Status && typeof l.Status === 'object') l.Status = l.Status.title || l.Status.value || l.Status.id;
+                l.Status = String(l.Status || '').trim();
+            });
             const label = document.getElementById('kb-agent-label');
             const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
-            console.log('[KB] Status brutos recebidos:', statusEncontrados);
+            console.log('[KB] Status normalizados recebidos:', statusEncontrados);
             if(label) label.textContent = `👤 ${nome} (${kbLeads.length} leads)`;
             kbFiltrar();
         }
@@ -1497,14 +1502,17 @@
         function kbFiltrar() {
             const busca = (document.getElementById('kb-search').value || '').toLowerCase();
             const statusF = document.getElementById('kb-filter-status').value;
+            
             const filtrados = kbLeads.filter(l => {
+                const s = String(l.Status || '').trim();
                 const okBusca = !busca || (l.Nome || '').toLowerCase().includes(busca) || (l.Telefone || '').includes(busca);
-                const okStatus = !statusF || l.Status === statusF;
+                const okStatus = !statusF || s === statusF;
                 return okBusca && okStatus;
             });
+            
             KB_COLUNAS.forEach(col => {
                 const zone = document.getElementById(`kbz-${col.id}`);
-                const sub = filtrados.filter(l => l.Status === col.id);
+                const sub = filtrados.filter(l => String(l.Status || '').trim() === col.id);
                 document.getElementById(`kbc-${col.id}`).textContent = sub.length;
                 zone.innerHTML = sub.length === 0 ? '<div class="kb-empty">Vazio</div>' : sub.map(l => kbBuildCard(l)).join('');
             });
