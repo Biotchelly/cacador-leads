@@ -1292,41 +1292,35 @@
             // --- PERSISTÊNCIA MANUAL (BACKUP) ---
             const savedNome = localStorage.getItem('vendedorNome');
 
-            // --- DETECÇÃO AUTOMÁTICA E MANUAL DE VENDEDOR ---
-            function updateAgent(id, name, isManual = false) {
-                if (!id && !isManual) return;
+            // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
+            function updateAgent(id, name) {
+                if (!id) return;
                 
                 const vid = document.getElementById('vendedorId');
                 const vnm = document.getElementById('vendedorNome');
                 const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
-                const finalId = id ? String(id).replace(/[^0-9]/g, "") : localStorage.getItem('vendedorId');
-                const finalName = map[finalId] || name || localStorage.getItem('vendedorNome') || "Gestão";
+                const finalId = String(id).replace(/[^0-9]/g, ""); // Normaliza ID numérico
+                const finalName = map[finalId] || name || "Identificando...";
                 
-                // Se for manual, salva com prioridade. Se for automático, só atualiza se for diferente.
-                if (isManual || (finalId !== localStorage.getItem('vendedorId'))) {
-                    if (vid) vid.value = finalId || "";
+                if (finalId && map[finalId]) {
+                    if (vid) vid.value = finalId;
                     if (vnm) vnm.value = finalName;
-                    localStorage.setItem('vendedorId', finalId || "");
-                    localStorage.setItem('vendedorNome', finalName);
-                    console.log(`[KB] Agente Atualizado (${isManual?'Manual':'Auto'}): ${finalName}`);
+                    console.log(`[KB] Agente Autenticado: ${finalName}`);
                     if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
-                    if (isManual && typeof kbCarregar === 'function') kbCarregar();
+                    if (typeof kbCarregar === 'function') kbCarregar();
+                } else {
+                    console.warn(`[KB] ID de Agente Inválido ou Não Autorizado: ${finalId}`);
                 }
             }
 
-            window.kbSetAgentManual = function(id) {
-                const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot", "null": "Gestão" };
-                updateAgent(id, map[id], true);
-            };
-
             const params = new URLSearchParams(window.location.search);
+            // Chatwoot Dashboard Apps costumam passar agent_id ou user_id na URL
             const cwId = params.get('agent_id') || params.get('user_id');
             if (cwId) updateAgent(cwId);
             
             window.addEventListener('message', function(e) {
                 try { 
                     const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                    // Escuta eventos padrão do Chatwoot Dashboard App
                     if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
                         const aid = (d.agent && d.agent.id) || (d.user && d.user.id) || d.id;
                         const anm = (d.agent && d.agent.name) || (d.user && d.user.name);
@@ -1352,8 +1346,8 @@
             <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
         </div>
         <div class="kb-toolbar">
-            <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:120px;">
-            <select id="kb-filter-status" onchange="kbFiltrar()" style="width:100px;">
+            <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:150px;">
+            <select id="kb-filter-status" onchange="kbFiltrar()">
                 <option value="">Status...</option>
                 <option value="Novo">📦 Reserva</option>
                 <option value="Aguardando Disparo">🎯 Pente</option>
@@ -1362,15 +1356,7 @@
                 <option value="Convertido">✅ Convertido</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
-            <div class="kb-agent-selector">
-                <span class="kb-agent-label" id="kb-agent-label">⏳...</span>
-                <select id="kb-manual-agent" onchange="kbSetAgentManual(this.value)" style="background:#1e293b; border:none; color:#818cf8; font-size:11px; cursor:pointer;">
-                    <option value="null">👤 Trocar...</option>
-                    <option value="16">Joveson</option>
-                    <option value="17">Giovanna</option>
-                    <option value="null">Gestão</option>
-                </select>
-            </div>
+            <span class="kb-agent-label" id="kb-agent-label">👤 Identificando Agente...</span>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
         </div>
         <div class="kb-board" id="kb-board"></div>
@@ -1450,13 +1436,12 @@
             const idEl = document.getElementById('vendedorId');
             const nmEl = document.getElementById('vendedorNome');
             const res = {
-                id: idEl ? idEl.value : (localStorage.getItem('vendedorId') || "16"),
-                nome: nmEl ? nmEl.value : (localStorage.getItem('vendedorNome') || "Gestor")
+                id: idEl ? idEl.value : "",
+                nome: nmEl ? nmEl.value : ""
             };
             const label = document.getElementById('kb-agent-label');
-            if(label && res.nome && res.nome !== "Gestor") {
-                label.textContent = `👤 ${res.nome} (Sincronizado)`;
-                label.style.color = '#818cf8';
+            if(label && res.nome) {
+                label.textContent = `👤 ${res.nome}`;
             }
             return res;
         }
@@ -1465,10 +1450,10 @@
             const sync = kbSyncFromCacador();
             const label = document.getElementById('kb-agent-label');
             
-            if (sync.nome === "Gestão") {
-                if(label) label.textContent = '👤 Nenhum Agente Selecionado';
+            if (!sync.id) {
+                if(label) label.textContent = '❌ Agente não Identificado';
                 const board = document.getElementById('kb-board');
-                if(board) board.innerHTML = '<div style="width:100\%; padding:40px; text-align:center; color:#94a3b8">⚠️ Por favor, selecione seu nome no seletor "👤 Trocar..." acima para ver seus leads.</div>';
+                if(board) board.innerHTML = '<div style="width:100\%; padding:40px; text-align:center; color:#94a3b8">⚠️ Acesso bloqueado. Por favor, acesse o Kanban através do Chatwoot para validar sua identidade.</div>';
                 return;
             }
 
