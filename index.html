@@ -1008,6 +1008,51 @@
     </div><!-- /cacador-panel -->
 
     <script>
+
+        async function kbSmartFetch(url, body, method = 'POST') {
+            const mode = document.querySelector('input[name="connMode"]:checked')?.value || 'private';
+            const privateBase = document.getElementById('privateProxyUrl')?.value.trim().replace(/\/$/, "") || "";
+            
+            const tryFetch = async (target, label) => {
+                console.log(`[SmartFetch] Tentando ${label} -> ${target}`);
+                try {
+                    const options = {
+                        method: method,
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    if (body) options.body = JSON.stringify(body);
+                    
+                    let r = await fetch(target, options).catch(() => null);
+                    if (r && r.ok) return r;
+
+                    // Fallback Bypass
+                    if (method === 'POST') {
+                        options.headers['Content-Type'] = 'text/plain';
+                        r = await fetch(target, options).catch(() => null);
+                        if (r && r.ok) return r;
+                    }
+                    return r;
+                } catch(e) { return null; }
+            };
+
+            let res = null;
+            if (mode === 'private' && privateBase) {
+                res = await tryFetch(`${privateBase}/?url=${encodeURIComponent(url)}`, "Modo Turbo");
+            } else if (mode === 'extension') {
+                res = await tryFetch(url, "Modo Direto");
+            } else {
+                res = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, "Proxy Público");
+            }
+
+            // Fallback Geral
+            if (!res || !res.ok) {
+                if (privateBase && mode !== 'private') res = await tryFetch(`${privateBase}/?url=${encodeURIComponent(url)}`, "Fallback Turbo");
+                if (!res || !res.ok) res = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, "Fallback AllOrigins");
+            }
+            return res;
+        }
+
         // --- Theme Logic ---
         function setTheme(theme) {
             const root = document.documentElement;
@@ -1176,78 +1221,19 @@
                 console.log('[JOBS] Payload:', payload);
                 lastPayload = payload;
 
-                const tryFetch = async (targetUrl, label) => {
-                    log(`Tentando via ${label}...`, 'info');
-                    const startTime = performance.now();
-
-                    try {
-                        // 1. TENTATIVA PADRÃO (JSON + CORS)
-                        const res = await fetch(targetUrl, {
-                            method: 'POST',
-                            mode: 'cors',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        }).catch(() => null);
-
-                        if (res && res.ok) {
-                            const duration = ((performance.now() - startTime) / 1000).toFixed(1);
-                            log(`Sucesso via ${label} em ${duration}s!`, 'success');
-                            return res;
-                        }
-
-                        // 🚀 2. BYPASS (TEXT/PLAIN)
-                        log(`⚠️ Bloqueio CORS em ${label}. Tentando Bypass 'Simple Request'...`, 'warning');
-                        const resBypass = await fetch(targetUrl, {
-                            method: 'POST',
-                            mode: 'cors',
-                            headers: { 'Content-Type': 'text/plain' },
-                            body: JSON.stringify(payload)
-                        }).catch(() => null);
-
-                        if (resBypass && resBypass.ok) {
-                            log(`🎯 BYPASS SUCESSO via ${label}!`, 'success');
-                            return resBypass;
-                        }
-
-                        // 🚀 3. MODO FANTASMA (NO-CORS/SNIPER)
-                        // IMPORTANTE: Aqui o targetUrl já contém o ?url= que o Worker v4.6.1 precisa!
-                        log(`👻 Ativando 'Modo Fantasma' (no-cors Sniper v4.6.1)...`, 'jobs');
-                        await fetch(targetUrl, {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            headers: { 'Content-Type': 'text/plain' },
-                            body: JSON.stringify(payload)
-                        }).catch(() => { });
-
-                        log(`🏁 DISPARO FANTASMA REALIZADO! (Via ${label})`, 'warning');
-                        log(`Jobs garante: O pacote foi entregue ao servidor. Verifique o Kestra!`, 'jobs');
-                        return { ok: true, _isBerserker: true };
-
-                    } catch (err) {
-                        log(`Erro inesperado em ${label}: ${err.message}`, 'error');
-                        return null;
-                    }
-                };
-
                 let response = null;
                 const privateBase = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
 
-                if (initialMode === 'private') {
-                    response = await tryFetch(`${privateBase}/?url=${encodeURIComponent(webhookUrl)}`, "Modo Turbo");
-                } else if (initialMode === 'extension') {
-                    response = await tryFetch(webhookUrl, "Modo Direto");
-                } else {
-                    response = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(webhookUrl)}`, "Proxy Público");
-                }
+                response = await kbSmartFetch(webhookUrl, payload);
 
                 // Fallbacks
                 if (!response || !response.ok) {
                     log("Caminho principal falhou. Iniciando Fallbacks...", 'jobs');
                     if (initialMode !== 'private' && privateBase) {
-                        response = await tryFetch(`${privateBase}/?url=${encodeURIComponent(webhookUrl)}`, "Fallback Turbo");
+                        response = await kbSmartFetch(webhookUrl, payload);
                     }
                     if (!response || !response.ok) {
-                        response = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(webhookUrl)}`, "Fallback AllOrigins");
+                        response = await kbSmartFetch(webhookUrl, payload);
                     }
                 }
 
