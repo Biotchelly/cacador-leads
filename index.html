@@ -1407,41 +1407,50 @@
                 updateAgent(cid, cnm);
             }
             
-            // Timeout de Identidade (V53) - Se após 5s não identificar, assume Gestão
-            if (!kbAuthId && kbAuthTry > 10) {
-                console.warn('[KB] Timeout de identificação. Assumindo Gestão para evitar trava.');
-                updateAgent("1", "Gestão"); 
+            // Timeout de Identidade (V63) - Aumentado para 15s (30x500ms) para dar tempo ao Chatwoot
+            if (!kbAuthId && kbAuthTry > 30) {
+                console.warn('[KB] Timeout de identificação. Verifique a conexão com o Chatwoot.');
+                if (!kbGestorOverride) updateAgent("1", "Gestão"); 
             }
             if (!kbAuthId) kbAuthTry++;
         }, 500);
 
         function kbVal(v) {
             if (v === null || v === undefined) return '';
+            // Se for array (ex: Lookup do NocoDB), pega o primeiro item
+            if (Array.isArray(v)) return v.length > 0 ? kbVal(v[0]) : '';
             if (typeof v === 'object') return String(v.title || v.value || v.id || v.name || JSON.stringify(v));
             return String(v).trim();
         }
 
         function kbExtractLeads(obj) {
             if (!obj) return null;
-            let list = null;
             if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
-            console.log('[KB] Resposta Bruta do Servidor:', obj);
             
-            // Busca a lista de registros
+            // 1. Tentar encontrar em 'outputs' (Estrutura padrão de execução Kestra)
+            if (obj.outputs) {
+                console.log('[KB] Navegando em outputs...');
+                for (let k in obj.outputs) {
+                    const found = kbExtractLeads(obj.outputs[k]);
+                    if (found) return found;
+                }
+            }
+
+            // 2. Tentar encontrar em 'body' (Estrutura comum de tarefas HTTP)
+            if (obj.body) return kbExtractLeads(obj.body);
+
+            // 3. Tentar encontrar listas diretas
+            let list = null;
             if (Array.isArray(obj)) list = obj;
             else if (obj.list && Array.isArray(obj.list)) list = obj.list;
             else if (obj.records && Array.isArray(obj.records)) list = obj.records;
             else if (obj.data && Array.isArray(obj.data)) list = obj.data;
-            else if (obj.body) return kbExtractLeads(obj.body); // Recursão para Kestra body caps
             
             if (!list) return null;
 
-            // --- AUDITORIA DE OBJETOS (V55) ---
-            if (list.length > 0) {
-                console.log('[KB] Primeiro Lead:', list[0]);
-            }
+            console.log('[KB] Leads localizados:', list.length);
 
-            // Filtragem por Vendedor ou ID (V56)
+            // 4. Filtragem por Vendedor ou ID (V63 - Reforçada)
             if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão" && !kbGestorOverride) {
                 const searchName = kbAuthNome.toLowerCase().trim();
                 const searchId = String(kbAuthId).trim();
@@ -1449,7 +1458,8 @@
                 list = list.filter(l => {
                     const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
                     const vId = kbVal(l.agent_id || l.vendedor_id || '');
-                    return vName.includes(searchName) || vId === searchId;
+                    // Match por nome contém ou ID exato
+                    return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
                 });
             }
             return list;
