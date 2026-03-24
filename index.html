@@ -1310,18 +1310,6 @@
                 const cfg = document.getElementById('privateProxyConfig');
                 if (cfg) cfg.style.display = 'block';
             }
-
-            // --- PERSISTÊNCIA MANUAL (BACKUP) ---
-            const savedNome = localStorage.getItem('vendedorNome');
-
-            // Monitoramento contínuo da identidade (Polling Interno)
-            setInterval(() => {
-                const cid = document.getElementById('vendedorId')?.value;
-                const cnm = document.getElementById('vendedorNome')?.value;
-                if(cid && cid !== "1" && cid !== "" && cid !== kbAuthId) {
-                    updateAgent(cid, cnm);
-                }
-            }, 1000);
         });
 
         function switchTab(tab) {
@@ -1425,6 +1413,7 @@
         // Handshake Chatwoot
         window.parent.postMessage({ event: 'dashboardApp:ready' }, '*');
         console.log('[KB] Enviado Handshake Chatwoot...');
+        kbLog('🚀 Script Kanban V71 Pronto!');
 
         window.addEventListener('message', function(e) {
             try { 
@@ -1640,9 +1629,6 @@
             // Salva no cache para evitar reset no Chatwoot
             localStorage.setItem('kbLeads', JSON.stringify(kbLeads));
 
-            const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
-            kbLog(`📊 Status em cache: ${statusEncontrados.join(', ')}`);
-
             // Normaliza status de todos os leads recebidos
             kbLeads.forEach(l => {
                 if (l.Status && typeof l.Status === 'object') l.Status = l.Status.title || l.Status.value || l.Status.id;
@@ -1650,6 +1636,7 @@
             });
             const label = document.getElementById('kb-agent-label');
             const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
+            kbLog(`📊 Status em cache: ${statusEncontrados.join(', ')}`);
             console.log('[KB] Status normalizados recebidos:', statusEncontrados);
             if(label) label.textContent = `👤 ${nome} (${kbLeads.length} leads)`;
             kbFiltrar();
