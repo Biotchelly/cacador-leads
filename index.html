@@ -339,6 +339,28 @@
             opacity: 1;
         }
 
+        /* Console Visual para Debug (Jobs Style) */
+        .kb-debug-console {
+            position: fixed;
+            bottom: 60px;
+            right: 16px;
+            width: 300px;
+            max-height: 200px;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow-y: auto;
+            z-index: 10000;
+            display: none;
+            opacity: 0.8;
+        }
+        .kb-debug-line { border-bottom: 1px solid #222; margin-bottom: 2px; }
+        .kb-debug-time { color: #888; margin-right: 5px; }
+
         .kb-input-url {
             flex: 1;
             background: var(--dropzone-bg, #0f172a);
@@ -1334,6 +1356,7 @@
         </div>
         <div class="kb-board" id="kb-board"></div>
         <div id="kb-toast"></div>
+        <div class="kb-debug-console" id="kb-debug-console"></div>
     </div>
 
     <script>
@@ -1376,11 +1399,24 @@
                 if (vnm) vnm.value = finalName;
                 
                 console.log(`[KB] Autenticado (V53): ${finalName}`);
+                kbLog(`👤 Agente: ${finalName} (ID: ${finalId})`);
                 const label = document.getElementById('kb-agent-label');
                 if(label) label.textContent = `👤 ${finalName}`;
                 
                 if (kbInitialized) kbCarregar();
             }
+        }
+
+        function kbLog(msg) {
+            const con = document.getElementById('kb-debug-console');
+            if(!con) return;
+            // Se a msg contiver "DUMP", mostra o console
+            if(msg.includes('DUMP')) con.style.display = 'block';
+            const line = document.createElement('div');
+            line.className = 'kb-debug-line';
+            const time = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="kb-debug-time">[${time}]</span> ${msg}`;
+            con.prepend(line);
         }
 
         // Handshake Chatwoot
@@ -1423,20 +1459,21 @@
         }
 
         function kbExtractLeads(obj) {
-            if (!obj) return null;
-            if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
+            if (!obj) { kbLog('❌ Objeto vazio p/ extração'); return null; }
+            if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){ kbLog('❌ Erro parse JSON'); }
             
-            console.log('[KB] Tentando extrair de:', obj);
+            kbLog(`🔍 Analisando tipo: ${Array.isArray(obj) ? 'Array' : typeof obj}`);
 
             // Se for array direto, achamos!
-            if (Array.isArray(obj)) return obj;
+            if (Array.isArray(obj)) { kbLog(`✅ Array localizado (${obj.length} leads)`); return obj; }
 
             // Se tiver propriedades comuns de lista
             const possibleList = obj.list || obj.records || obj.data || (obj.body ? (obj.body.list || obj.body.records || obj.body) : null);
-            if (Array.isArray(possibleList)) return possibleList;
+            if (Array.isArray(possibleList)) { kbLog(`✅ Lista encontrada em prop (${possibleList.length} leads)`); return possibleList; }
 
             // Se for execução do Kestra, mergulha nos outputs
             if (obj.outputs) {
+                kbLog('📥 Mergulhando em outputs...');
                 for (let k in obj.outputs) {
                     const res = kbExtractLeads(obj.outputs[k]);
                     if (res) return res;
@@ -1444,8 +1481,12 @@
             }
 
             // Fallback para body recursivo
-            if (obj.body && typeof obj.body === 'object') return kbExtractLeads(obj.body);
+            if (obj.body && typeof obj.body === 'object') {
+                kbLog('📦 Abrindo body...');
+                return kbExtractLeads(obj.body);
+            }
 
+            kbLog('DUMP: Não localizou leads. Verifique console.');
             return null;
         }
 
