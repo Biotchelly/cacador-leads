@@ -1458,35 +1458,36 @@
             return String(v).trim();
         }
 
-        function kbExtractLeads(obj) {
-            if (!obj) { kbLog('❌ Objeto vazio p/ extração'); return null; }
-            if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){ kbLog('❌ Erro parse JSON'); }
+        function kbExtractLeads(obj, depth = 0) {
+            if (!obj || depth > 5) return null;
+            if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
             
-            kbLog(`🔍 Analisando tipo: ${Array.isArray(obj) ? 'Array' : typeof obj}`);
+            // Se for array direto, BINGO!
+            if (Array.isArray(obj)) { 
+                kbLog(`✅ Array localizado (${obj.length} leads)`); 
+                return obj; 
+            }
 
-            // Se for array direto, achamos!
-            if (Array.isArray(obj)) { kbLog(`✅ Array localizado (${obj.length} leads)`); return obj; }
+            if (typeof obj !== 'object') return null;
 
-            // Se tiver propriedades comuns de lista
-            const possibleList = obj.list || obj.records || obj.data || (obj.body ? (obj.body.list || obj.body.records || obj.body) : null);
-            if (Array.isArray(possibleList)) { kbLog(`✅ Lista encontrada em prop (${possibleList.length} leads)`); return possibleList; }
+            // 1. Tenta propriedades conhecidas na raiz
+            const fast = obj.list || obj.records || obj.data || (obj.body && (obj.body.list || obj.body.records || obj.body));
+            if (Array.isArray(fast)) {
+                kbLog(`✅ Lista encontrada em prop (${fast.length} leads)`);
+                return fast;
+            }
 
-            // Se for execução do Kestra, mergulha nos outputs
-            if (obj.outputs) {
-                kbLog('📥 Mergulhando em outputs...');
-                for (let k in obj.outputs) {
-                    const res = kbExtractLeads(obj.outputs[k]);
-                    if (res) return res;
+            // 2. BUSCA EXAUSTIVA: Varre todas as chaves do objeto (Recursão Profunda)
+            kbLog(`🔍 Vasculhando chaves de ${depth}...`);
+            for (let k in obj) {
+                // Pula propriedades circulares ou pesadas se necessário, mas aqui o JSON é simples
+                if (typeof obj[k] === 'object' && obj[k] !== null) {
+                    const found = kbExtractLeads(obj[k], depth + 1);
+                    if (found && Array.isArray(found)) return found;
                 }
             }
 
-            // Fallback para body recursivo
-            if (obj.body && typeof obj.body === 'object') {
-                kbLog('📦 Abrindo body...');
-                return kbExtractLeads(obj.body);
-            }
-
-            kbLog('DUMP: Não localizou leads. Verifique console.');
+            if (depth === 0) kbLog('DUMP: Nenhum array de leads encontrado no JSON.');
             return null;
         }
 
