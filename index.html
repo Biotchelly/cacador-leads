@@ -1292,14 +1292,14 @@
             // --- PERSISTÊNCIA MANUAL (BACKUP) ---
             const savedNome = localStorage.getItem('vendedorNome');
 
-            // --- DETECÇÃO AUTOMÁTICA DE VENDEDOR ---
+            // --- DETECÇÃO AUTOMÁTICA E MANUAL DE VENDEDOR ---
             function updateAgent(id, name) {
                 if (!id) return;
                 const vid = document.getElementById('vendedorId');
                 const vnm = document.getElementById('vendedorNome');
-                const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot", "agent_16": "Joveson", "user_16": "Joveson" };
+                const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
                 const finalId = String(id).replace(/[^0-9]/g, ""); // Normaliza ID numérico
-                const finalName = map[finalId] || map[id] || name || "Gestão";
+                const finalName = map[finalId] || name || "Gestão";
                 
                 if (vid) vid.value = finalId;
                 if (vnm) vnm.value = finalName;
@@ -1307,11 +1307,17 @@
                 localStorage.setItem('vendedorId', finalId);
                 localStorage.setItem('vendedorNome', finalName);
                 
-                console.log(`[KB] Agente Detectado: ${finalName} (ID: ${finalId})`);
+                console.log(`[KB] Agente Dashboard: ${finalName} (ID: ${finalId})`);
                 if (typeof kbSyncFromCacador === 'function') kbSyncFromCacador();
-                if (typeof kbCarregar === 'function') kbCarregar();
             }
-            
+
+            // Seletor manual de contingência
+            window.kbSetAgentManual = function(id) {
+                const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot", "null": "Gestão" };
+                updateAgent(id, map[id]);
+                if (typeof kbCarregar === 'function') kbCarregar();
+            };
+
             const params = new URLSearchParams(window.location.search);
             const cwId = params.get('agent_id') || params.get('user_id');
             if (cwId) updateAgent(cwId);
@@ -1319,9 +1325,10 @@
             window.addEventListener('message', function(e) {
                 try { 
                     const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                    if(d.event === 'appContext' || d.agent || d.user) {
+                    // Escuta eventos padrão do Chatwoot Dashboard App
+                    if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
                         const aid = (d.agent && d.agent.id) || (d.user && d.user.id) || d.id;
-                        const anm = (d.agent && d.agent.id) || (d.user && d.user.name);
+                        const anm = (d.agent && d.agent.name) || (d.user && d.user.name);
                         if(aid) updateAgent(aid, anm);
                     }
                 } catch(err){}
@@ -1344,8 +1351,8 @@
             <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
         </div>
         <div class="kb-toolbar">
-            <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:150px;">
-            <select id="kb-filter-status" onchange="kbFiltrar()">
+            <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:120px;">
+            <select id="kb-filter-status" onchange="kbFiltrar()" style="width:100px;">
                 <option value="">Status...</option>
                 <option value="Novo">📦 Reserva</option>
                 <option value="Aguardando Disparo">🎯 Pente</option>
@@ -1354,7 +1361,15 @@
                 <option value="Convertido">✅ Convertido</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
-            <span class="kb-agent-label" id="kb-agent-label">⏳ Aguardando...</span>
+            <div class="kb-agent-selector">
+                <span class="kb-agent-label" id="kb-agent-label">⏳...</span>
+                <select id="kb-manual-agent" onchange="kbSetAgentManual(this.value)" style="background:#1e293b; border:none; color:#818cf8; font-size:11px; cursor:pointer;">
+                    <option value="null">👤 Trocar...</option>
+                    <option value="16">Joveson</option>
+                    <option value="17">Giovanna</option>
+                    <option value="null">Gestão</option>
+                </select>
+            </div>
             <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
         </div>
         <div class="kb-board" id="kb-board"></div>
@@ -1515,28 +1530,24 @@
 
         function kbFiltrar() {
             const busca = (document.getElementById('kb-search').value || '').toLowerCase();
-            const statusF = document.getElementById('kb-filter-status').value;
+            const statusF = (document.getElementById('kb-filter-status').value || '').toLowerCase();
             
+            const norm = (s) => {
+                s = String(s || '').trim().toLowerCase();
+                const map = { 'aberto': 'contactado', 'disparo': 'aguardando disparo', 'aguardando': 'aguardando disparo' };
+                return map[s] || s;
+            };
+
             const filtrados = kbLeads.filter(l => {
-                const s = String(l.Status || '').trim();
+                const s = norm(l.Status);
                 const okBusca = !busca || (l.Nome || '').toLowerCase().includes(busca) || (l.Telefone || '').includes(busca);
-                const okStatus = !statusF || s === statusF;
+                const okStatus = !statusF || s === statusF.toLowerCase();
                 return okBusca && okStatus;
             });
             
             KB_COLUNAS.forEach(col => {
                 const zone = document.getElementById(`kbz-${col.id}`);
-                const sub = filtrados.filter(l => {
-                    const s = String(l.Status || '').trim();
-                    // Mapa de sinônimos de status para garantir funil
-                    const map = {
-                        'Aguardando': 'Aguardando Disparo',
-                        'Disparo': 'Aguardando Disparo',
-                        'Aberto': 'Contactado'
-                    };
-                    const sNorm = map[s] || s;
-                    return sNorm === col.id;
-                });
+                const sub = filtrados.filter(l => norm(l.Status) === col.id.toLowerCase());
                 document.getElementById(`kbc-${col.id}`).textContent = sub.length;
                 zone.innerHTML = sub.length === 0 ? '<div class="kb-empty">Vazio</div>' : sub.map(l => kbBuildCard(l)).join('');
             });
