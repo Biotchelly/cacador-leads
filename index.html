@@ -1477,6 +1477,8 @@
         function kbMostrarLeads(data, nome) {
             kbLeads = data.leads || [];
             const label = document.getElementById('kb-agent-label');
+            const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
+            console.log('[KB] Status brutos recebidos:', statusEncontrados);
             if(label) label.textContent = `👤 ${nome} (${kbLeads.length} leads)`;
             kbFiltrar();
         }
@@ -1498,11 +1500,12 @@
         }
 
         function kbBuildCard(l) {
+            const notas = l.Resumo_IA || l.Notas_Vendedor || '';
             return `
                 <div class="kb-card" draggable="true" ondragstart="kbDragStart(event,${l.Id})" ondragend="kbDragEnd(event)" id="kbcard-${l.Id}">
                     <div class="kb-card-name">🏢 ${l.Nome || 'Sem Nome'}</div>
                     <div class="kb-row"><span>📞</span><a href="tel:${l.Telefone}" style="color:#818cf8">${l.Telefone || '-'}</a></div>
-                    <textarea class="kb-notas" placeholder="Notas..." id="kbn-${l.Id}">${l.Notas_Vendedor || ''}</textarea>
+                    <textarea class="kb-notas" placeholder="Resumo IA..." id="kbn-${l.Id}">${notas}</textarea>
                     <div class="kb-actions"><button class="kb-save" onclick="kbSalvarNotas(${l.Id})">💾 Salvar</button></div>
                 </div>`;
         }
@@ -1520,7 +1523,7 @@
         async function kbSalvarNotas(id) {
             const notas = document.getElementById(`kbn-${id}`).value;
             kbToast('Salvando...');
-            await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas });
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas, resumo_ia: notas });
             kbToast('✅ Salvo!');
         }
     </script>
