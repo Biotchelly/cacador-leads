@@ -1569,7 +1569,9 @@
         }
 
         function kbMostrarLeads(data, nome) {
-            kbLeads = data.leads || [];
+            // Se data já é o array de registros vindo do kbExtractLeads, usa direto.
+            kbLeads = Array.isArray(data) ? data : (data.leads || []);
+            
             // Normaliza status de todos os leads recebidos
             kbLeads.forEach(l => {
                 if (l.Status && typeof l.Status === 'object') l.Status = l.Status.title || l.Status.value || l.Status.id;
