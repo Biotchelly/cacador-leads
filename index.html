@@ -1428,6 +1428,22 @@
             return await r.json();
         }
 
+                function kbExtractLeads(obj) {
+            if (!obj || typeof obj !== 'object') return null;
+            if (Array.isArray(obj) && obj.length > 0) {
+                if (obj[0].Id || obj[0].Nome || obj[0].Telefone) return { success: true, leads: obj };
+            }
+            const list = obj.leads || obj.list || obj.List || obj.records;
+            if (list && Array.isArray(list)) return { success: true, leads: list };
+            for (let k in obj) {
+                if (obj[k] && typeof obj[k] === 'object') {
+                    const res = kbExtractLeads(obj[k]);
+                    if (res) return res;
+                }
+            }
+            return null;
+        }
+
         async function kbPollExecution(id) {
             const baseUrl = kbBackendUrl().split('/api/v1/')[0];
             const label = document.getElementById('kb-agent-label');
@@ -1443,204 +1459,10 @@
             const tryFindLatest = async () => {
                 console.log('[KB] Tentando buscar última execução do fluxo...');
                 const r = await kbSmartFetch(`${baseUrl}/api/v1/executions?namespace=biotchellymcp&flowId=08_kanban_backend_api&size=1`, null, 'GET');
-                const data = await r.json();
-                if (data.results && data.results[0]) return data.results[0];
-                return null;
-            };
-
-            while (retries < 60) {
-                await new Promise(r => setTimeout(r, 2000));
-                try {
-                    let data = await fetchExec(id);
-                    status = (data.state && typeof data.state === 'object') ? data.state.current : data.state;
-
-                    // Se o ID do webhook não progride ou parece morto, tenta pegar a última do fluxo
-                    if (retries > 5 && (status === 'RUNNING' || !status)) {
-                        const latest = await tryFindLatest();
-                        if (latest && latest.id !== id && (latest.state.current === 'SUCCESS' || latest.state.current === 'RUNNING')) {
-                            console.log('[KB] Migrando polling para ID real:', latest.id);
-                            id = latest.id;
-                            data = latest;
-                            status = latest.state.current;
-                        }
-                    }
-
-                    label.textContent = `⏳ ${status || 'WAIT'} (${id.substring(0, 8)})... `;
-
-                    if (status === 'SUCCESS') {
-                        const _get = (obj) => {
-                            if (!obj) return null;
-                            const leadsList = obj.leads || obj.list || obj.List;
-                            if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
-                            if (obj.body) return _get(obj.body);
-                            if (obj.outputs) return _get(obj.outputs);
-                            for (let k in obj) { if (typeof obj[k] === 'object' && obj[k] !== null) { const res = _get(obj[k]); if (res) return res; } }
-                            return null;
-                        };
-                        const res = _get(data.outputs) || _get(data);
-                        if (res && res.leads) return res;
-
-                        // Se SUCCESS mas sem leads, pode ser que a execução real seja outra
-                        const latestFix = await tryFindLatest();
-                        if (latestFix && latestFix.id !== id) return await kbPollExecution(latestFix.id);
-                    }
-                    if (status === 'FAILED' || status === 'KILLED') throw new Error(`Falha: ${status}`);
-                } catch (e) { console.error("Poll err:", e); }
-                if (Date.now() - start > 180000) break;
-                retries++;
-            }
-            throw new Error("Timeout ou dados não encontrados.");
-        }
-
-                async function kbSmartFetch(url, body, method = 'POST') {
-            const alertDiv = document.getElementById('kb-cors-alert');
-            if (alertDiv) alertDiv.style.display = 'none'; // Limpa erro anterior
-
-            const pProxy = (document.getElementById('privateProxyUrl')?.value || 'https://falling-term-7c4e.maxyadm.workers.dev').trim().replace(/\/$/, "");
-            
-            const doFetch = async (target, label) => {
-                try {
-                    let final = target;
-                    if (label === 'Turbo') final = `${pProxy}/?url=${encodeURIComponent(target)}`;
-                    else if (label === 'Proxy') final = `https://corsproxy.io/?${encodeURIComponent(target)}`;
-                    
-                    console.log(`[KB] Tentando ${label}: ${method} ${final}`);
-                    const r = await fetch(final, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: body ? JSON.stringify(body) : (method === 'POST' ? '{}' : null)
-                    });
-                    if (r.ok) return r;
-                    console.warn(`[KB] Falha ${label}: ${r.status}`);
-                    return null;
-                } catch (e) {
-                    console.error(`[KB] Erro ${label} (${e.message})`);
-                    return null;
-                }
-            };
-
-            // V32: Prioridade total no Modo Turbo (Proxy) para evitar CORS no navegador
-            let res = await doFetch(url, 'Turbo');
-            if (!res) res = await doFetch(url, 'Direto');
-            if (!res) res = await doFetch(url, 'Proxy');
-            
-            if (!res) {
-                if (alertDiv) alertDiv.style.display = 'block';
-                throw new Error("Erro de Rede (CORS/Bloqueio)");
-            }
-            return res;
-        }
-
-        function kbSyncFromCacador() {
-            const vNome = document.getElementById('vendedorNome')?.value || '';
-            const vId = document.getElementById('vendedorId')?.value || '';
-            const display = document.getElementById('kb-vendedor-nome');
-            if (display) display.textContent = vNome || 'Nenhum (Logue no Chatwoot)';
-
-            // Se for o Bot (ID 1), por padrão mostramos "Gestão" ou "Bot"
-            if (vId === "1" && vNome === "Gestão") {
-                if (display) display.textContent = "Bot (Gestão)";
-            }
-
-            return { nome: vNome, id: vId };
-        }
-
-        function kbBackendUrl() {
-            return (document.getElementById('kb-backend-url').value || '').trim();
-        }
-
-        function kbToast(msg) {
-            const t = document.getElementById('kb-toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        function kbInit() {
-            if (!kbInitialized) {
-                kbRenderBoard();
-                kbSyncFromCacador();
-                kbInitialized = true;
-            }
-            kbCarregar();
-            if (kbPollInterval) clearInterval(kbPollInterval);
-            // Auto-Refresh a cada 20 segundos para sincronia quase em tempo real ⚡
-            kbPollInterval = setInterval(() => {
-                if (document.hidden) return; // Não gasta recursos se a aba estiver em segundo plano
-                kbCarregar();
-            }, 20000);
-        }
-
-        function kbRenderBoard() {
-            const board = document.getElementById('kb-board');
-            board.innerHTML = '';
-            KB_COLUNAS.forEach(col => {
-                const div = document.createElement('div');
-                div.className = `kb-col ${col.cls}`;
-                div.innerHTML = `
-                <div class="kb-col-header">
-                    ${col.label}
-                    <span class="kb-col-count" id="kbc-${col.id}">0</span>
-                </div>
-                <div class="kb-zone" id="kbz-${col.id}"
-                    ondragover="kbDragOver(event)"
-                    ondragleave="kbDragLeave(event)"
-                    ondrop="kbDrop(event,'${col.id}')">
-                    <div class="kb-empty">Carregando...</div>
-                </div>`;
-                board.appendChild(div);
-            });
-        }
-
-        // ─── DEBUG LOGGER ────────────────────────────────────────────────────────
-        const KB_LOG = (label, value) => {
-            const str = (typeof value === 'object') ? JSON.stringify(value, null, 2) : String(value);
-            console.log(`%c[KB DEBUG] ${label}`, 'color:#818cf8;font-weight:bold', value);
-            // Mostra resumo na label do agente para diagnóstico visual
-            if (label.startsWith('❌')) {
-                document.getElementById('kb-agent-label').textContent = label + ': ' + str.substring(0, 80);
-            }
-        };
-
-        async function kbCarregar() {
-            const url = kbBackendUrl();
-            if (!url) { kbToast('⚠️ Configure a URL do backend!'); return; }
-            const { nome, id } = kbSyncFromCacador();
-            if (!id) { document.getElementById('kb-agent-label').textContent = '👤 Aguardando Identificação...'; return; }
-            const label = document.getElementById('kb-agent-label');
-            label.textContent = '⏳ Carregando Leads...';
-            try {
-                const baseUrl = url.split("?")[0];
-                const finalUrl = baseUrl + (baseUrl.indexOf('?') > 0 ? '&' : '?') + "wait=true";
-                const bodyData = { action: 'list', agent_id: id, vendedor_nome: nome };
-
-                const r = await kbSmartFetch(finalUrl, bodyData, 'POST');
-                const data = await r.json();
+                                const data = await r.json();
                 KB_LOG('Resposta Kestra', data);
 
-                                const _getLeads = (obj) => {
-                    if (!obj || typeof obj !== 'object') return null;
-                    
-                    // Se for array e tiver itens, verifica se o primeiro parece um lead
-                    if (Array.isArray(obj) && obj.length > 0) {
-                        if (obj[0].Id || obj[0].Nome || obj[0].Telefone) return { success: true, leads: obj };
-                    }
-
-                    // Se tiver as chaves conhecidas
-                    const leadsList = obj.leads || obj.list || obj.List || obj.records;
-                    if (leadsList && Array.isArray(leadsList)) return { success: true, leads: leadsList };
-                    
-                    // Busca recursiva profunda em todas as chaves
-                    for (let k in obj) {
-                        if (obj[k] && typeof obj[k] === 'object') {
-                            const res = _getLeads(obj[k]);
-                            if (res) return res;
-                        }
-                    }
-                    return null;
-                };
-
-                const leadsFound = _getLeads(data);
+                const leadsFound = kbExtractLeads(data);
                 if (leadsFound && leadsFound.leads) {
                     label.textContent = `👤 Vendedor: ${nome} (${leadsFound.leads.length} leads)`;
                     kbMostrarLeads(leadsFound);
