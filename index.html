@@ -1408,28 +1408,46 @@
             kbCarregar();
         }
 
-        function kbSyncFromCacador() {
+                function kbSyncFromCacador() {
+            const idEl = document.getElementById('vendedorId');
+            const nmEl = document.getElementById('vendedorNome');
             return {
-                id: document.getElementById('vendedorId') ? document.getElementById('vendedorId').value : "16",
-                nome: document.getElementById('vendedorNome') ? document.getElementById('vendedorNome').value : "Gestor"
+                id: idEl ? idEl.value : (localStorage.getItem('vendedorId') || "16"),
+                nome: nmEl ? nmEl.value : (localStorage.getItem('vendedorNome') || "Gestor")
             };
         }
 
-        async function kbCarregar() {
+                async function kbCarregar() {
             const sync = kbSyncFromCacador();
             const label = document.getElementById('kb-agent-label');
-            if(label) label.textContent = '⏳ Carregando...';
+            if(label) label.textContent = '⏳ Conectando...';
+            console.log('[KB] Carregando leads para:', sync);
+            
             try {
                 const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
                 const body = { action: 'list', agent_id: sync.id, vendedor_nome: sync.nome };
                 const r = await kbSmartFetch(url, body, 'POST');
                 let data = {}; try { data = await r.json(); } catch(e){}
+                
                 const res = kbExtractLeads(data);
-                if (res) { kbMostrarLeads(res, sync.nome); return; }
+                if (res) { 
+                    kbMostrarLeads(res, sync.nome); 
+                    return; 
+                }
+
+                // Se não achou leads mas tem ID de execução, faz polling
                 const execId = (data.execution && data.execution.id) ? data.execution.id : data.id;
-                if (execId && execId.length < 50) kbPollExecution(execId, sync.nome);
-                else if(label) label.textContent = '❌ Dados Inválidos';
-            } catch (err) { if(label) label.textContent = '💥 Erro'; }
+                if (execId && execId.length < 50) {
+                    kbPollExecution(execId, sync.nome);
+                } else {
+                    if(label) label.textContent = '❌ Dados Vazios (Kestra)';
+                    console.error('[KB] Kestra não devolveu ID nem Leads:', data);
+                }
+            } catch (err) { 
+                if(label) label.textContent = '💥 Erro de Rede';
+                console.error('[KB] Falha na requisição:', err);
+            }
+        }
         }
 
         async function kbPollExecution(execId, nome) {
