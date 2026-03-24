@@ -1478,16 +1478,28 @@
             }
 
             // 2. BUSCA EXAUSTIVA: Varre todas as chaves do objeto (Recursão Profunda)
-            kbLog(`🔍 Vasculhando chaves de ${depth}...`);
             for (let k in obj) {
-                // Pula propriedades circulares ou pesadas se necessário, mas aqui o JSON é simples
-                if (typeof obj[k] === 'object' && obj[k] !== null) {
+                if (typeof obj[k] === 'object' && obj[k] !== null && k !== 'trigger') {
                     const found = kbExtractLeads(obj[k], depth + 1);
-                    if (found && Array.isArray(found)) return found;
+                    if (found && Array.isArray(found)) {
+                        // --- FILTRAGEM POR AGENTE (V67 - REATIVADA E SEGURA) ---
+                        if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão" && !kbGestorOverride) {
+                            const searchName = kbAuthNome.toLowerCase().trim();
+                            const searchId = String(kbAuthId).trim();
+                            
+                            return found.filter(l => {
+                                const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
+                                const vId = String(l.agent_id || l.vendedor_id || '').trim();
+                                // Match por nome contém ou ID exato
+                                return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
+                            });
+                        }
+                        return found;
+                    }
                 }
             }
 
-            if (depth === 0) kbLog('DUMP: Nenhum array de leads encontrado no JSON.');
+            if (depth === 0) kbLog('DUMP: Nenhum array de leads encontrado.');
             return null;
         }
 
@@ -1626,7 +1638,14 @@
             
             const norm = (s) => {
                 s = String(s || '').trim().toLowerCase();
-                const map = { 'aberto': 'contactado', 'disparo': 'aguardando disparo', 'aguardando': 'aguardando disparo' };
+                // Mapeamento extra para garantir que variações caiam na coluna certa
+                const map = { 
+                    'aberto': 'contactado', 
+                    'disparo': 'aguardando disparo', 
+                    'aguardando': 'aguardando disparo',
+                    'pente': 'aguardando disparo',
+                    'reserva': 'novo'
+                };
                 return map[s] || s;
             };
 
