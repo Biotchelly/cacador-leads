@@ -162,11 +162,15 @@
         }
 
         .kb-col.col-aberto .kb-col-header {
+            background: #1e3a5f;
+        }
+
+        .kb-col.col-qualif .kb-col-header {
             background: #14532d;
         }
 
         .kb-col.col-negoc .kb-col-header {
-            background: #1e3a5f;
+            background: #713f12;
         }
 
         .kb-col.col-conv .kb-col-header {
@@ -1334,8 +1338,9 @@
                 <option value="Novo">📦 Reserva</option>
                 <option value="Aguardando Disparo">🎯 Pente</option>
                 <option value="Contactado">📬 Aberto</option>
-                <option value="Negociando">🤝 Negociando</option>
-                <option value="Convertido">✅ Convertido</option>
+                <option value="Qualificado">✅ Qualificado</option>
+                <option value="Em Negociacao">🤝 Negociando</option>
+                <option value="Ganho">✅ Convertido</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
             <span class="kb-agent-label" id="kb-agent-label">👤 Identificando...</span>
@@ -1351,8 +1356,9 @@
             { id: 'Novo', label: '📦 Reserva', cls: 'col-novo' },
             { id: 'Aguardando Disparo', label: '🎯 Pente', cls: 'col-pente' },
             { id: 'Contactado', label: '📬 Aberto', cls: 'col-aberto' },
-            { id: 'Negociando', label: '🤝 Negociando', cls: 'col-negoc' },
-            { id: 'Convertido', label: '✅ Convertido', cls: 'col-conv' },
+            { id: 'Qualificado', label: '✅ Qualificado', cls: 'col-qualif' },
+            { id: 'Em Negociacao', label: '🤝 Negociando', cls: 'col-negoc' },
+            { id: 'Ganho', label: '✅ Convertido', cls: 'col-conv' },
             { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
         ];
 
@@ -1653,8 +1659,12 @@
                     'aberto': 'contactado', 
                     'disparo': 'aguardando disparo', 
                     'aguardando': 'aguardando disparo',
+                    'aguardando disp...': 'aguardando disparo',
                     'pente': 'aguardando disparo',
-                    'reserva': 'novo'
+                    'reserva': 'novo',
+                    'negociando': 'em negociacao',
+                    'em negociação': 'em negociacao',
+                    'convertido': 'ganho'
                 };
                 return map[s] || s;
             };
