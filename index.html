@@ -30,7 +30,1756 @@
             font-weight: 600;
             color: var(--text-secondary, #8892a4);
             cursor: pointer;
+            font-family: 'Outfit', 'Inter', sans-serif;<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caçador de Leads | Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ═══════════ TABS ═══════════ */
+        .tabs-nav {
+            display: flex;
+            gap: 0;
+            background: var(--card-bg, #1a1d27);
+            border-bottom: 2px solid var(--border-color, #2e3244);
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 1rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary, #8892a4);
+            cursor: pointer;
             font-family: 'Outfit', 'Inter', sans-serif;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover {
+            color: var(--accent-color, #6366f1);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color, #6366f1);
+            border-bottom-color: var(--accent-color, #6366f1);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ═══════════ KANBAN ═══════════ */
+        #kanban-panel {
+            background: var(--bg-color, #0f1117);
+            min-height: calc(100vh - 60px);
+            display: none;
+            flex-direction: column;
+        }
+
+        #kanban-panel.active {
+            display: flex;
+        }
+
+        .kb-toolbar {
+            padding: 10px 20px;
+            background: var(--card-bg, #1a1d27);
+            border-bottom: 1px solid var(--border-color, #2e3244);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .kb-toolbar input,
+        .kb-toolbar select {
+            background: var(--dropzone-bg, #0f172a);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .kb-btn {
+            background: var(--accent-color, #6366f1);
+            color: #fff;
+            border: none;
+            font-size: 12px;
+            padding: 6px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: opacity .2s;
+            margin-left: auto;
+        }
+
+        .kb-btn:hover {
+            opacity: .8;
+        }
+
+        .kb-agent-label {
+            font-size: 12px;
+            color: var(--text-secondary, #8892a4);
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, .1);
+            border-radius: 999px;
+            border: 1px solid rgba(99, 102, 241, .25);
+        }
+
+        .kb-board {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .kb-col {
+            min-width: 260px;
+            max-width: 280px;
+            border-radius: 10px;
+            background: var(--card-bg, #1a1d27);
+            border: 1px solid var(--border-color, #2e3244);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .kb-col-header {
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kb-col-count {
+            margin-left: auto;
+            background: rgba(255, 255, 255, .12);
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 1px 7px;
+        }
+
+        .kb-col.col-novo .kb-col-header {
+            background: #374151;
+        }
+
+        .kb-col.col-pente .kb-col-header {
+            background: #78350f;
+        }
+
+        .kb-col.col-aberto .kb-col-header {
+            background: #1e3a5f;
+        }
+
+        .kb-col.col-qualif .kb-col-header {
+            background: #14532d;
+        }
+
+        .kb-col.col-negoc .kb-col-header {
+            background: #713f12;
+        }
+
+        .kb-col.col-conv .kb-col-header {
+            background: #064e3b;
+        }
+
+        .kb-col.col-perd .kb-col-header {
+            background: #4a0404;
+        }
+
+        .kb-zone {
+            padding: 8px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 80px;
+        }
+
+        .kb-zone.drag-over {
+            background: rgba(99, 102, 241, .08);
+            border-radius: 6px;
+            outline: 2px dashed rgba(99, 102, 241, .4);
+        }
+
+        .kb-card {
+            background: var(--dropzone-bg, #0f172a);
+            border: 1px solid var(--border-color, #2e3244);
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: grab;
+            transition: transform .15s, box-shadow .15s;
+            font-size: 12px;
+        }
+
+        .kb-card:active {
+            cursor: grabbing;
+        }
+
+        .kb-card.dragging {
+            opacity: .45;
+            transform: rotate(2deg);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+        }
+
+        .kb-card-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary, #e2e8f0);
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .kb-row {
+            display: flex;
+            gap: 5px;
+            align-items: flex-start;
+            color: var(--text-secondary, #8892a4);
+            margin-bottom: 2px;
+            line-height: 1.4;
+            font-size: 11px;
+        }
+
+        .kb-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 5px;
+        }
+
+        .kb-chip {
+            background: rgba(99, 102, 241, .12);
+            color: #a5b4fc;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(99, 102, 241, .25);
+        }
+
+        .kb-chip.g {
+            background: rgba(16, 185, 129, .1);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, .2);
+        }
+
+        .kb-chip.y {
+            background: rgba(245, 158, 11, .1);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, .2);
+        }
+
+        .kb-chip.r {
+            background: rgba(239, 68, 68, .1);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, .2);
+        }
+
+        .kb-notas {
+            width: 100%;
+            margin-top: 7px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 11px;
+            border-radius: 5px;
+            padding: 5px 8px;
+            resize: vertical;
+            font-family: inherit;
+            min-height: 44px;
+        }
+
+        .kb-actions {
+            margin-top: 6px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .kb-save {
+            font-size: 11px;
+            background: var(--accent-color, #6366f1);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .kb-link {
+            font-size: 11px;
+            color: #818cf8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+            text-decoration: underline;
+        }
+
+        .kb-empty {
+            text-align: center;
+            color: var(--text-secondary, #8892a4);
+            padding: 20px;
+            font-size: 11px;
+            opacity: .5;
+        }
+
+        #kb-toast {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: #1e293b;
+            border: 1px solid #2e3244;
+            color: #e2e8f0;
+            font-size: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #kb-toast.show {
+            opacity: 1;
+        }
+
+        /* Console Visual para Debug (Jobs Style) */
+        .kb-debug-console {
+            position: fixed;
+            bottom: 60px;
+            right: 16px;
+            width: 300px;
+            max-height: 200px;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow-y: auto;
+            z-index: 10000;
+            display: none;
+            opacity: 0.8;
+        }
+        .kb-debug-line { border-bottom: 1px solid #222; margin-bottom: 2px; }
+        .kb-debug-time { color: #888; margin-right: 5px; }
+
+        .kb-input-url {
+            flex: 1;
+            background: var(--dropzone-bg, #0f172a);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+
+        .kb-config-bar {
+            padding: 8px 20px;
+            background: rgba(99, 102, 241, .05);
+            border-bottom: 1px solid var(--border-color, #2e3244);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary, #8892a4);
+            flex-wrap: wrap;
+        }
+
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --border-color: #e2e8f0;
+            --console-bg: #0f172a;
+            --console-text: #10b981;
+            --dropzone-bg: #f1f5f9;
+            --dropzone-border: #cbd5e1;
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #020617;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #818cf8;
+            --accent-hover: #a5b4fc;
+            --border-color: #1e293b;
+            --console-bg: #010409;
+            --console-text: #4ade80;
+            --dropzone-bg: #0f172a;
+            --dropzone-border: #334155;
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background: radial-gradient(circle at top right, var(--bg-color), #dee2e6);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* Centraliza apenas o conteudo do Cacador */
+        .cacador-inner {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+            min-height: calc(100vh - 56px);
+        }
+
+        [data-theme="dark"] body {
+            background: radial-gradient(circle at top right, #0f172a, #020617);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            padding: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, rgba(99, 102, 241, 0.05), transparent);
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            letter-spacing: -0.025em;
+        }
+
+        header h1 i {
+            background: linear-gradient(135deg, var(--accent-color), #ec4899);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+        }
+
+        .version-badge {
+            font-size: 0.75rem;
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            text-transform: uppercase;
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-color);
+            padding: 0.35rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-btn {
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .theme-btn.active {
+            background-color: var(--card-bg);
+            color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .content {
+            padding: 3rem;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .config-card {
+            background-color: var(--bg-color);
+            padding: 1.75rem;
+            border-radius: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .config-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .config-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .config-header i {
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .dropzone-container {
+            margin-bottom: 2.5rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--dropzone-border);
+            background-color: var(--dropzone-bg);
+            border-radius: 2rem;
+            padding: 5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent-color);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: scale(1.02);
+        }
+
+        .dropzone i {
+            font-size: 4rem;
+            background: linear-gradient(to bottom, var(--accent-color), #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        .dropzone h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .dropzone p {
+            color: var(--text-secondary);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, var(--accent-color), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.5);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .console {
+            margin-top: 3rem;
+            background-color: var(--console-bg);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: var(--console-text);
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .console::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+
+        .console-line {
+            margin-bottom: 0.6rem;
+            display: flex;
+            gap: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .console-timestamp {
+            opacity: 0.4;
+            font-size: 0.8rem;
+        }
+
+        .jobs-badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-color);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════ NAV DE ABAS ═══════════ -->
+    <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('cacador')" id="tab-cacador">🚀 Caçador de Leads</button>
+        <button class="tab-btn" onclick="switchTab('kanban')" id="tab-kanban">🎯 Kanban SDR</button>
+    </nav>
+
+
+    <!-- ═══════════ ABA 1: CAÇADOR ═══════════ -->
+    <div id="cacador-panel" class="tab-panel active">
+        <div class="cacador-inner">
+            <div class="container">
+                <header>
+                    <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.7.2 Team &
+                            Vendor
+                            Edition</span></h1>
+                    <div class="theme-toggle">
+                        <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
+                                class="fa-solid fa-sun"></i></button>
+                        <button class="theme-btn" onclick="setTheme('system')" title="Sistema"><i
+                                class="fa-solid fa-desktop"></i></button>
+                        <button class="theme-btn" onclick="setTheme('dark')" title="Escuro"><i
+                                class="fa-solid fa-moon"></i></button>
+                    </div>
+                </header>
+
+                <div class="content">
+
+                    <!-- Dica do Jobs -->
+                    <div
+                        style="background: rgba(99, 102, 241, 0.05); padding: 1rem; border-radius: 1rem; border-left: 4px solid var(--accent-color); margin-bottom: 2rem; font-size: 0.9rem;">
+                        <strong>📚 Dica do Jobs:</strong> Use o <strong>Modo Turbo</strong> para ignorar bloqueios do
+                        Chrome. Se
+                        for subir arquivos gigantes, melhor usar o upload direto no Painel do Kestra!
+                    </div>
+
+                    <!-- Painel de Controle Superior -->
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-gear"></i> Configurações do Ciclo
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IDs das Inboxes (Chatwoot)</label>
+                                <input type="text" class="form-input" id="inboxIds" placeholder="Ex: 1, 2, 5" value="1">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para
+                                    rodízio
+                                    (anti-ban).</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
+                                <input type="number" class="form-input" id="reloadCountMain" value="5">
+                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos
+                                    leads
+                                    'Novos' ativar para disparo por vez.</small>
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-database"></i> CRM NocoDB
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ID da Tabela (Destino)</label>
+                                <input type="text" class="form-input" id="tableId" placeholder="ID da tabela no NocoDB"
+                                    value="moqw8l0lnh76bvm">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão:
+                                    moqw8l0lnh76bvm</small>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                                <div class="form-group" style="flex: 2;">
+                                    <label class="form-label">👤 Vendedor Responsável</label>
+                                    <input type="text" class="form-input" id="vendedorNome" placeholder="Nome"
+                                        value="Gestão"
+                                        onchange="localStorage.setItem('vendedorNome', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label">🆔 ID Agente</label>
+                                    <input type="number" class="form-input" id="vendedorId" placeholder="ID" value=""
+                                        onchange="localStorage.setItem('vendedorId', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">👥 ID do Time (Chatwoot)</label>
+                                <input type="number" class="form-input" id="chatwootTeamId" placeholder="Ex: 2"
+                                    value="">
+                                <small style="color: var(--text-secondary); font-size: 0.7rem;">ID para vinculação
+                                    direta da
+                                    conversa.</small>
+                            </div>
+
+                            <div class="switch-container" style="margin-top: 1rem;">
+                                <label class="switch">
+                                    <input type="checkbox" id="updateExisting">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>🔄 Atualizar leads se já existirem?</span>
+                            </div>
+
+                        </div>
+
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-clock"></i> Horário e Cadência
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cadência Sniper (Minutos)</label>
+                                <input type="number" class="form-input" id="sniperCadence" value="5" min="1">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre
+                                    cada
+                                    disparo.</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Max. Disparos por Ciclo</label>
+                                <input type="number" class="form-input" id="maxShots" value="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="dropzone-container">
+                        <div class="dropzone" id="dropzone">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <h3>Arraste seu CSV aqui</h3>
+                            <p>ou clique para selecionar</p>
+                            <input type="file" id="fileInput" accept=".csv">
+                        </div>
+                        <!-- Hidden UI for Ultimate Fallback -->
+                        <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
+                            enctype="application/x-www-form-urlencoded">
+                            <input type="hidden" name="payload" id="ultimatePayload">
+                        </form>
+                        <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
+                        <div class="file-info" id="fileInfo">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <div>
+                                <strong id="fileName">arquivo.csv</strong>
+                                <div style="font-size: 0.8rem; opacity: 0.7;" id="fileSize">0 KB</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Toggles de Operação -->
+                    <div class="config-card" style="margin-bottom: 2rem;">
+                        <div class="config-header">
+                            <i class="fa-solid fa-rocket"></i> Ações do Operador
+                        </div>
+                        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                            <div class="form-group">
+                                <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
+                                    <input type="checkbox" class="toggle-checkbox" id="reloadEnabled" checked>
+                                    <div class="toggle-input"></div>
+                                    <span>Executar Recarga</span>
+                                </label>
+                                <div style="margin-left: 3rem; margin-top: 5px;">
+                                    <label style="font-size: 0.75rem;">Qtd. Leads: </label>
+                                    <input type="number" id="reloadCount" value="5" min="1"
+                                        style="width: 50px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 2px 5px;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
+                                    <input type="checkbox" class="toggle-checkbox" id="sniperEnabled" checked>
+                                    <div class="toggle-input"></div>
+                                    <span>Ligar Sniper 🔫</span>
+                                </label>
+                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Faz o
+                                    disparo
+                                    real.</small>
+                            </div>
+                        </div>
+
+                        <div class="config-card"
+                            style="margin-top: 1rem; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
+                            <div class="config-header" style="color: #f59e0b;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Modo de Conexão
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="connMode" value="extension"
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Modo Estável (Com
+                                        Extensão)</span>
+                                </label>
+                                <small
+                                    style="margin-left: 1.6rem; color: #10b981; font-size: 0.7rem; display: block; margin-top: -4px;">
+                                    <i class="fa-solid fa-check-double"></i> Recomendado. Requer extensão "Allow CORS"
+                                    ativada.
+                                </small>
+
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 4px;">
+                                    <input type="radio" name="connMode" value="proxy"
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem;">Modo Proxy (Lento/Instável)</span>
+                                </label>
+                                <small
+                                    style="margin-left: 1.6rem; color: var(--text-secondary); font-size: 0.7rem; display: block; margin-top: -4px;">
+                                    Tenta túneis públicos. Pode falhar com arquivos grandes (>50KB).
+                                </small>
+
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 8px;">
+                                    <input type="radio" name="connMode" value="private" checked
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem; font-weight: 700; color: #8b5cf6;">🚀 Modo Turbo
+                                        (Proxy
+                                        Privado)</span>
+                                </label>
+                                <div id="privateProxyConfig"
+                                    style="margin-left: 1.6rem; margin-top: 4px; display: block;">
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" class="form-input" id="privateProxyUrl"
+                                            value="https://falling-term-7c4e.maxyadm.workers.dev"
+                                            placeholder="https://seu-worker.workers.dev"
+                                            style="padding: 4px 8px; font-size: 0.8rem; flex: 1;">
+                                        <button onclick="testProxy()"
+                                            style="background: #8b5cf6; color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;">
+                                            Testar
+                                        </button>
+                                    </div>
+                                    <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
+                                        <i class="fa-solid fa-bolt"></i> Recomendado para uso definitivo no navegador.
+                                        <a href="https://falling-term-7c4e.maxyadm.workers.dev" target="_blank"
+                                            style="color: #3b82f6; text-decoration: underline; margin-left: 5px;">Testar
+                                            no
+                                            Navegador 🔗</a>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div id="proxyHelper"
+                                style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
+                                <span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-link-slash"></i>
+                                    Links
+                                    Atualizados (2026):</span>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <a href="https://chromewebstore.google.com/detail/moesif-origin-cors-change/digfbfapnobgndndbneagpbhpccmhlba"
+                                        target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                        1. Moesif CORS (Recomendado)
+                                    </a>
+                                    <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc"
+                                        target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                        2. CORS Unblock (Alternativa)
+                                    </a>
+                                </div>
+                                <button onclick="copyCurl()" id="copyCurlBtn"
+                                    style="display:none; background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 5px; font-weight: bold; width: fit-content; align-self: center;">
+                                    <i class="fa-solid fa-terminal"></i> COPIAR COMANDO CURL (SOLUÇÃO 100%)
+                                </button>
+                                <div id="psFallback"
+                                    style="display:none; text-align: center; margin-top: 5px; padding: 8px; background: rgba(37, 99, 235, 0.1); border: 1px dashed var(--accent-color); border-radius: 6px;">
+                                    <span
+                                        style="font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 4px;">🚀
+                                        <b>Opção Ninja:</b> Use o script que criei na pasta:</span>
+                                    <code
+                                        style="font-size: 0.75rem; background: var(--console-bg); color: var(--console-text); padding: 2px 4px; border-radius: 4px;">Upload_Leads_Garantido.ps1</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
+                                <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
+                                    style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fa-solid fa-plug"></i> Testar URL
+                                </button>
+                            </div>
+                            <input type="text" class="form-input" id="webhookUrl"
+                                value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <button class="action-btn" id="processBtn">
+                        <i class="fa-solid fa-play"></i> Executar Operação
+                    </button>
+
+                    <!-- Console -->
+                    <div class="console" id="console">
+                        <div class="console-line">
+                            <span class="console-timestamp">[00:00:00]</span>
+                            <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div><!-- /cacador-inner -->
+    </div><!-- /cacador-panel -->
+
+    <script>
+
+        async function kbSmartFetch(url, body, method = 'POST') {
+            const mode = document.querySelector('input[name="connMode"]:checked')?.value || 'private';
+            const privateBase = document.getElementById('privateProxyUrl')?.value.trim().replace(/\/$/, "") || "";
+            
+            const tryFetch = async (target, label) => {
+                console.log(`[SmartFetch] Tentando ${label} -> ${target}`);
+                try {
+                    const options = {
+                        method: method,
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    if (body) options.body = JSON.stringify(body);
+                    
+                    let r = await fetch(target, options).catch(() => null);
+                    if (r && r.ok) return r;
+
+                    // Fallback Bypass
+                    if (method === 'POST') {
+                        options.headers['Content-Type'] = 'text/plain';
+                        r = await fetch(target, options).catch(() => null);
+                        if (r && r.ok) return r;
+                    }
+                    return r;
+                } catch(e) { return null; }
+            };
+
+            let res = null;
+            if (mode === 'private' && privateBase) {
+                res = await tryFetch(`${privateBase}/?url=${encodeURIComponent(url)}`, "Modo Turbo");
+            } else if (mode === 'extension') {
+                res = await tryFetch(url, "Modo Direto");
+            } else {
+                res = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, "Proxy Público");
+            }
+
+            // Fallback Geral
+            if (!res || !res.ok) {
+                if (privateBase && mode !== 'private') res = await tryFetch(`${privateBase}/?url=${encodeURIComponent(url)}`, "Fallback Turbo");
+                if (!res || !res.ok) res = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, "Fallback AllOrigins");
+            }
+            return res;
+        }
+
+        // --- Theme Logic ---
+        function setTheme(theme) {
+            const root = document.documentElement;
+            const buttons = document.querySelectorAll('.theme-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (theme === 'system') {
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
+            } else {
+                root.setAttribute('data-theme', theme);
+            }
+            const activeBtn = document.querySelector(`.theme-btn[onclick*="${theme}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            localStorage.setItem('theme', theme);
+        }
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        setTheme(savedTheme);
+
+        // State & Elements
+        let currentFile = null;
+        let lastPayload = null; // Stored for CURL generation
+        const dropZone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileNameDisp = document.getElementById('fileName');
+        const fileSizeDisp = document.getElementById('fileSize');
+        const processBtn = document.getElementById('processBtn');
+        const consoleEl = document.getElementById('console');
+        const copyCurlBtn = document.getElementById('copyCurlBtn');
+
+        // Captura de erros globais para diagnóstico Jobs
+        // 🔑 FIX RACE CONDITION: Flag para suprimir erros globais durante operação controlada
+        window._suppressGlobalErrors = false;
+
+        window.onerror = function (msg, url, line, col, error) {
+            if (window._suppressGlobalErrors) return true; // Suprimir durante operação
+            log(`ERRO DE SCRIP: ${msg} (Linha: ${line})`, 'error');
+            return false;
+        };
+        window.onunhandledrejection = function (event) {
+            if (window._suppressGlobalErrors) {
+                // Consumir silenciosamente — já tratado internamente pelo tryFetch
+                event.preventDefault();
+                return;
+            }
+            log(`FALHA ASSÍNCRONA: ${event.reason}`, 'error');
+        };
+
+        const log = (msg, type = 'info') => {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+
+            let icon = '🚀';
+            if (type === 'error') icon = '❌';
+            if (type === 'success') icon = '✅';
+            if (type === 'warning') icon = '⚠️';
+            if (type === 'jobs') icon = '👨‍🏫';
+
+            line.innerHTML = `
+                <span class="console-timestamp">[${time}]</span>
+                <span class="console-msg">${(type === 'jobs' ? '<span class="jobs-badge">JOBS</span>' : icon)} ${msg}</span>
+            `;
+
+            if (type === 'error') line.style.color = 'var(--danger-color)';
+            if (type === 'success') line.style.color = 'var(--success-color)';
+            if (type === 'warning') line.style.color = 'var(--warning-color)';
+            if (type === 'jobs') line.style.color = 'var(--accent-color)';
+
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+
+        const copyCurl = () => {
+            if (!lastPayload) return;
+            const curl = `curl -X POST "${document.getElementById('webhookUrl').value}" -H "Content-Type: application/json" -d '${JSON.stringify(lastPayload).replace(/'/g, "'\\''")}'`;
+            navigator.clipboard.writeText(curl).then(() => {
+                const oldText = copyCurlBtn.innerHTML;
+                copyCurlBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                setTimeout(() => copyCurlBtn.innerHTML = oldText, 2000);
+            });
+        };
+
+        const testProxy = async () => {
+            const url = document.getElementById('privateProxyUrl').value.trim();
+            if (!url) return log('❌ Digite a URL do Proxy.', 'error');
+            log(`🔍 Testando Proxy: ${url}...`);
+            try {
+                const pingUrl = url.replace(/\/$/, "") + "/ping";
+                const response = await fetch(pingUrl, { mode: 'cors' });
+                if (response.ok) {
+                    const text = await response.text();
+                    log(`✅ SUCESSO! Resposta: ${text}`, 'success');
+                } else {
+                    log(`⚠️ Falha no Proxy: Status ${response.status}`, 'warning');
+                }
+            } catch (e) {
+                log(`❌ ERRO DE CONEXÃO: ${e.message}`, 'error');
+                log(`💡 DICA: Verifique se deu "Deploy" no Cloudflare e se a URL está correta.`, 'info');
+            }
+        };
+
+        // UI Event Listeners
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFile(e.target.files[0]); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        const handleFile = (file) => {
+            if (file && file.name.endsWith('.csv')) {
+                currentFile = file;
+                fileNameDisp.textContent = file.name;
+                if (fileSizeDisp) fileSizeDisp.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                fileInfo.classList.add('visible');
+                log(`Arquivo CSV carregado: ${file.name}`, 'success');
+            } else {
+                log('Erro: Selecione um arquivo .csv válido.', 'error');
+            }
+        };
+
+        processBtn.addEventListener('click', async (e) => {
+            window._lastEvent = e;
+            const reloadEnabled = document.getElementById('reloadEnabled').checked;
+            const sniperEnabled = document.getElementById('sniperEnabled').checked;
+            if (!currentFile && !reloadEnabled && !sniperEnabled) {
+                log('Erro: Carregue um arquivo ou habilite Recarga/Sniper.', 'error');
+                return;
+            }
+
+            processBtn.disabled = true;
+            const originalContent = processBtn.innerHTML;
+            processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+            copyCurlBtn.style.display = 'none';
+
+            window._suppressGlobalErrors = true;
+
+            const sendData = async (csvContent = null) => {
+                const webhookUrl = document.getElementById('webhookUrl').value.trim();
+                const initialMode = document.querySelector('input[name="connMode"]:checked').value;
+                const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
+                log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
+
+                const payload = {
+                    kestra_url: webhookUrl,
+                    csv_content: csvContent || null,
+                    filename: currentFile ? currentFile.name : 'não enviado',
+                    reload_enabled: reloadEnabled,
+                    update_existing: document.getElementById('updateExisting').checked,
+                    sniper_enabled: sniperEnabled,
+                    reload_count: parseInt(document.getElementById('reloadCountMain').value) || 5,
+                    max_disparos_ciclo: parseInt(document.getElementById('maxShots').value) || 10,
+                    sniper_cadence: document.getElementById('sniperCadence').value || "5",
+                    chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
+                    table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
+                    vendedor_nome: document.getElementById('vendedorNome').value || "Gestão",
+                    chatwoot_team_id: document.getElementById('chatwootTeamId').value || "",
+                    agent_id: parseInt(document.getElementById('vendedorId')?.value) || null
+                };
+
+                console.log('[JOBS] Payload:', payload);
+                lastPayload = payload;
+
+                let response = null;
+                const privateBase = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
+
+                response = await kbSmartFetch(webhookUrl, payload);
+
+                // Fallbacks
+                if (!response || !response.ok) {
+                    log("Caminho principal falhou. Iniciando Fallbacks...", 'jobs');
+                    if (initialMode !== 'private' && privateBase) {
+                        response = await kbSmartFetch(webhookUrl, payload);
+                    }
+                    if (!response || !response.ok) {
+                        response = await kbSmartFetch(webhookUrl, payload);
+                    }
+                }
+
+                if (response && response.ok) {
+                    if (response._isBerserker) {
+                        log('⚡ Sniper v4.6 Confirmado! Verifique as execuções no Kestra.', 'warning');
+                    } else {
+                        log('✅ Sucesso! Leads entregues com confirmação HTTP.', 'success');
+                    }
+                } else {
+                    log('Falha Total. Use o script PowerShell ou CURL.', 'error');
+                    copyCurlBtn.style.display = 'block';
+                }
+
+                setTimeout(() => { window._suppressGlobalErrors = false; }, 500);
+                processBtn.disabled = false;
+                processBtn.innerHTML = originalContent;
+            };
+
+            try {
+                if (currentFile) {
+                    const reader = new FileReader();
+                    reader.onload = async (re) => {
+                        try { await sendData(re.target.result); }
+                        catch (err) { log(`Erro no envio: ${err.message}`, 'error'); processBtn.disabled = false; processBtn.innerHTML = originalContent; }
+                    };
+                    reader.readAsText(currentFile);
+                } else {
+                    await sendData();
+                }
+            } catch (err) {
+                log(`Falha na Operação: ${err.message}`, 'error');
+                processBtn.disabled = false;
+                processBtn.innerHTML = originalContent;
+            }
+        });
+
+        // Toggle Private Proxy Input
+        document.querySelectorAll('input[name="connMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const configDiv = document.getElementById('privateProxyConfig');
+                if (configDiv) {
+                    configDiv.style.display = (e.target.value === 'private') ? 'block' : 'none';
+                }
+            });
+        });
+
+        // Initialize display state
+        window.addEventListener('load', () => {
+            const privateRadio = document.querySelector('input[name="connMode"][value="private"]');
+            if (privateRadio && privateRadio.checked) {
+                const cfg = document.getElementById('privateProxyConfig');
+                if (cfg) cfg.style.display = 'block';
+            }
+        });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-panel').classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'kanban') kbInit();
+        }
+    </script>
+
+    <div id="kanban-panel" class="tab-panel">
+        <div class="kb-config-bar">
+            <span>🔗 Backend URL:</span>
+            <input class="kb-input-url" id="kb-backend-url" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key">
+            <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
+        </div>
+        <div class="kb-toolbar">
+            <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:150px;">
+            <select id="kb-filter-status" onchange="kbFiltrar()">
+                <option value="">Status...</option>
+                <option value="Novo">📦 Reserva</option>
+                <option value="Aguardando Disparo">🎯 Pente</option>
+                <option value="Contactado">📬 Aberto</option>
+                <option value="Qualificado">✅ Qualificado</option>
+                <option value="Em Negociacao">🤝 Negociando</option>
+                <option value="Ganho">✅ Convertido</option>
+                <option value="Perdido">❌ Perdido</option>
+            </select>
+            <span class="kb-agent-label" id="kb-agent-label">👤 Identificando...</span>
+            <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
+        </div>
+        <div class="kb-board" id="kb-board"></div>
+        <div id="kb-toast"></div>
+        <div class="kb-debug-console" id="kb-debug-console"></div>
+    </div>
+
+    <script>
+        const KB_COLUNAS = [
+            { id: 'Novo', label: '📦 Reserva', cls: 'col-novo' },
+            { id: 'Aguardando Disparo', label: '🎯 Pente', cls: 'col-pente' },
+            { id: 'Contactado', label: '📬 Aberto', cls: 'col-aberto' },
+            { id: 'Qualificado', label: '✅ Qualificado', cls: 'col-qualif' },
+            { id: 'Em Negociacao', label: '🤝 Negociando', cls: 'col-negoc' },
+            { id: 'Ganho', label: '✅ Convertido', cls: 'col-conv' },
+            { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
+        ];
+
+        let kbLeads = JSON.parse(localStorage.getItem('kbLeads') || '[]');
+        let kbDraggedId = null;
+        let kbInitialized = false;
+        let kbAuthId = localStorage.getItem('kbAuthId') || "";
+        let kbAuthNome = localStorage.getItem('kbAuthNome') || "";
+        let kbAuthTry = 0;
+        let kbGestorOverride = localStorage.getItem('kbGestorOverride') === 'true';
+
+        function kbToggleGestor() {
+            kbGestorOverride = !kbGestorOverride;
+            localStorage.setItem('kbGestorOverride', kbGestorOverride);
+            kbToast(kbGestorOverride ? '🕶️ Modo Gestor ATIVO' : '👥 Modo SDR Ativo');
+            kbCarregar();
+        }
+
+        // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
+        function updateAgent(id, name) {
+            if (!id) return;
+            const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
+            const finalId = String(id).replace(/[^0-9]/g, "");
+            const finalName = map[finalId] || name || "Agente";
+            
+            if (finalId && map[finalId]) {
+                kbAuthId = finalId;
+                kbAuthNome = finalName;
+                localStorage.setItem('kbAuthId', finalId);
+                localStorage.setItem('kbAuthNome', finalName);
+                
+                const vid = document.getElementById('vendedorId');
+                const vnm = document.getElementById('vendedorNome');
+                if (vid) vid.value = finalId;
+                if (vnm) vnm.value = finalName;
+                
+                console.log(`[KB] Autenticado (V53): ${finalName}`);
+                kbLog(`👤 Agente: ${finalName} (ID: ${finalId})`);
+                const label = document.getElementById('kb-agent-label');
+                if(label) label.textContent = `👤 ${finalName}`;
+                
+                if (kbInitialized) kbCarregar();
+            }
+        }
+
+        function kbLog(msg) {
+            const con = document.getElementById('kb-debug-console');
+            if(!con) return;
+            // Se a msg contiver "DUMP", mostra o console
+            if(msg.includes('DUMP')) con.style.display = 'block';
+            const line = document.createElement('div');
+            line.className = 'kb-debug-line';
+            const time = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="kb-debug-time">[${time}]</span> ${msg}`;
+            con.prepend(line);
+        }
+
+        // Handshake Chatwoot
+        window.parent.postMessage({ event: 'dashboardApp:ready' }, '*');
+        console.log('[KB] Enviado Handshake Chatwoot...');
+        kbLog('🚀 Script Kanban V71 Pronto!');
+
+        window.addEventListener('message', function(e) {
+            try { 
+                const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                console.log('[KB] Mensagem Recebida:', d.event || 'vazia');
+                if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
+                    const aid = (d.agent && d.agent.id) || (d.user && d.user.id) || d.id;
+                    const anm = (d.agent && d.agent.name) || (d.user && d.user.name);
+                    if(aid) updateAgent(aid, anm);
+                }
+            } catch(err){}
+        });
+
+        // Monitoramento contínuo (Polling Interno)
+        setInterval(() => {
+            const vid = document.getElementById('vendedorId');
+            const vnm = document.getElementById('vendedorNome');
+            
+            // Tenta recuperar do cache se o campo estiver vazio
+            if (vid && !vid.value && kbAuthId) vid.value = kbAuthId;
+            if (vnm && !vnm.value && kbAuthNome) vnm.value = kbAuthNome;
+
+            const cid = vid?.value;
+            const cnm = vnm?.value;
+            
+            if(cid && cid !== "1" && cid !== "" && cid !== kbAuthId) {
+                updateAgent(cid, cnm);
+            }
+            
+            // Timeout de Identidade (V63)
+            if (!kbAuthId && kbAuthTry > 30) {
+                kbLog('⚠️ Aguardando Handshake Chatwoot...');
+            }
+            if (!kbAuthId) kbAuthTry++;
+        }, 500);
+
+        function kbVal(v) {
+            if (v === null || v === undefined) return '';
+            if (Array.isArray(v)) return v.length > 0 ? kbVal(v[0]) : '';
+            if (typeof v === 'object') return v.title || v.value || v.id || v.name || JSON.stringify(v);
+            return String(v).trim();
+        }
+
+        function kbExtractLeads(obj, depth = 0) {
+            if (!obj || depth > 5) return null;
+            if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
+            
+            // Se for array direto, BINGO!
+            if (Array.isArray(obj)) { 
+                kbLog(`✅ Array localizado (${obj.length} leads)`); 
+                return obj; 
+            }
+
+            if (typeof obj !== 'object') return null;
+
+            // 1. Tenta propriedades conhecidas na raiz
+            const fast = obj.list || obj.records || obj.data || (obj.body && (obj.body.list || obj.body.records || obj.body));
+            if (Array.isArray(fast)) {
+                kbLog(`✅ Lista encontrada em prop (${fast.length} leads)`);
+                return fast;
+            }
+
+            // 2. BUSCA EXAUSTIVA: Varre todas as chaves do objeto (Recursão Profunda)
+            for (let k in obj) {
+                if (typeof obj[k] === 'object' && obj[k] !== null && k !== 'trigger') {
+                    const found = kbExtractLeads(obj[k], depth + 1);
+                    if (found && Array.isArray(found)) {
+                        // --- FILTRAGEM POR AGENTE (V67 - REATIVADA E SEGURA) ---
+                        if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão" && !kbGestorOverride) {
+                            const searchName = kbAuthNome.toLowerCase().trim();
+                            const searchId = String(kbAuthId).trim();
+                            
+                            return found.filter(l => {
+                                const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
+                                const vId = String(l.agent_id || l.vendedor_id || '').trim();
+                                // Match por nome contém ou ID exato
+                                return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
+                            });
+                        }
+                        return found;
+                    }
+                }
+            }
+
+            if (depth === 0) kbLog('DUMP: Nenhum array de leads encontrado.');
+            return null;
+        }
+
+        function kbBackendUrl() { 
+            const el = document.getElementById('kb-backend-url');
+            return el ? el.value.trim() : ""; 
+        }
+
+        function kbToast(msg) {
+            const t = document.getElementById('kb-toast');
+            if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        }
+
+        async function kbInit() {
+            if (kbInitialized) return;
+            const board = document.getElementById('kb-board');
+            if(!board) return;
+            board.innerHTML = KB_COLUNAS.map(col => `
+                <div class="kb-col ${col.cls}" ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'${col.id}')">
+                    <div class="kb-col-header">${col.label} <span class="kb-count" id="kbc-${col.id}">0</span></div>
+                    <div class="kb-dropzone" id="kbz-${col.id}"><div class="kb-empty">Vazio</div></div>
+                </div>
+            `).join('');
+            kbInitialized = true;
+            
+            // --- MEMÓRIA DO JOBS (V68) ---
+            if(kbLeads.length > 0) {
+                kbLog(`📦 Restaurando ${kbLeads.length} leads do cache...`);
+                kbMostrarLeads(kbLeads, kbAuthNome || 'Agente');
+            }
+
+            // Tenta carregar se já estiver autenticado
+            if(kbAuthId) kbCarregar();
+        }
+
+        function kbSyncFromCacador() {
+            return { id: kbAuthId, nome: kbAuthNome };
+        }
+
+        async function kbCarregar() {
+            const label = document.getElementById('kb-agent-label');
+            const board = document.getElementById('kb-board');
+            
+            if (!kbAuthId) {
+                if(label) label.textContent = '⏳ Identificando Agente...';
+                return;
+            }
+            
+            // Se identificou, garante que o board tenha as colunas
+            if (board && (board.innerHTML.includes('Acesso bloqueado') || board.innerHTML === "")) {
+                kbInitialized = false; 
+                kbInit(); 
+                return; 
+            }
+
+            if(label) label.textContent = `⏳ Conectando Kestra (${kbAuthNome})...`;
+            console.log('[KB] Carregando leads para:', kbAuthNome);
+            
+            try {
+                const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
+                const nocoId = document.getElementById('nocoTableId')?.value || "";
+                const nocoToken = document.getElementById('nocoToken')?.value || "";
+                const body = { 
+                    action: 'list', 
+                    agent_id: kbAuthId, 
+                    vendedor_nome: kbAuthNome, 
+                    table_id: nocoId,
+                    token: nocoToken
+                };
+                const r = await kbSmartFetch(url, body, 'POST');
+                
+                if (!r || !r.ok) {
+                    const statusText = r ? `Erro ${r.status}` : 'Bloqueio de Rede (CORS/Proxy)';
+                    if(label) label.textContent = `❌ ${statusText}`;
+                    return;
+                }
+
+                let data = {}; try { data = await r.json(); } catch(e){}
+                console.log('[KB] Data do Kestra:', data);
+                
+                const res = kbExtractLeads(data);
+                if (res) { 
+                    kbMostrarLeads(res, kbAuthNome); 
+                    return; 
+                }
+
+                // Se não achou leads mas tem ID de execução, faz polling
+                const execId = (data.execution && data.execution.id) ? data.execution.id : data.id;
+                if (execId && execId.length < 50) {
+                    kbPollExecution(execId, kbAuthNome);
+                } else {
+                    const msg = kbAuthId === "1" ? "⚠️ Banco de Dados Vazio" : `⚠️ Nenhum lead p/ ${kbAuthNome}`;
+                    if(label) label.textContent = msg;
+                    console.warn('[KB] Resposta sem leads:', data);
+                }
+            } catch (err) { 
+                if(label) label.textContent = '💥 Erro de Rede';
+                console.error('[KB] Falha na requisição:', err);
+            }
+        }
+
+        async function kbPollExecution(execId, nome) {
+            const baseUrl = kbBackendUrl().split('/api/v1/')[0];
+            const label = document.getElementById('kb-agent-label');
+            let retries = 0;
+            while (retries < 30) {
+                await new Promise(r => setTimeout(r, 2000));
+                try {
+                    const r = await kbSmartFetch(`${baseUrl}/api/v1/executions/${execId}`, null, 'GET');
+                    const data = await r.json();
+                    const status = data.state.current;
+                    if(label) label.textContent = `⏳ ${status}...`;
+                    if (status === 'SUCCESS') {
+                        const res = kbExtractLeads(data);
+                        if (res) { kbMostrarLeads(res, nome); return; }
+                    }
+                    if (status === 'FAILED' || status === 'KILLED') break;
+                } catch (e) {}
+                retries++;
+            }
+            if(label) label.textContent = '❌ Timeout';
+        }
+
+        function kbMostrarLeads(data, nome) {
+            // Se data já é o array de registros vindo do kbExtractLeads, usa direto.
+            kbLeads = Array.isArray(data) ? data : (data.leads || []);
+            
+            // Salva no cache para evitar reset no Chatwoot
+            localStorage.setItem('kbLeads', JSON.stringify(kbLeads));
+
+            // Log de Diagnóstico (DUMP) para o console interno do Jobs
+            if (kbLeads.length > 0) {
+                const amostra = kbLeads.slice(0, 3);
+                kbLog(`🧪 DUMP DE DIAGNÓSTICO (${kbLeads.length} leads):`);
+                amostra.forEach((l, i) => {
+                    kbLog(`Lead ${i+1}: ${l.Nome || 'Sem Nome'} | Status: ${JSON.stringify(l.Status || l.status || 'N/A')}`);
+                });
+            }
+
+            // Normaliza status de todos os leads recebidos
+            kbLeads.forEach(l => {
+                const sObj = l.Status || l.status;
+                if (sObj && typeof sObj === 'object') {
+                    l.Status = sObj.title || sObj.value || sObj.id || JSON.stringify(sObj);
+                } else {
+                    l.Status = String(sObj || '').trim();
+                }
+                const original = l.Status;
+                console.log(`[KB] Lead: ${l.Nome} | Status Bruto: ${original} | Normalizado: ${kbFiltrar_norm_only(original)}`);
+            });
+            const label = document.getElementById('kb-agent-label');
+            const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
+            kbLog(`📊 Status em cache: ${statusEncontrados.join(', ')}`);
+            console.log('[KB] Status normalizados recebidos:', statusEncontrados);
+            if(label) label.textContent = `👤 ${nome} (${kbLeads.length} leads)`;
+            kbFiltrar();
+        }
+
+        // Função auxiliar para debug (mesma lógica do norm dentro de kbFiltrar)
+        function kbFiltrar_norm_only(s) {
+            s = String(s || '').trim().toLowerCase();
+            const map = { 
+                'aberto': 'contactado', 
+                'disparo': 'aguardando disparo', 
+                'aguardando': 'aguardando disparo',
+                'aguardando disp...': 'aguardando disparo',
+                'pente': 'aguardando disparo',
+                'reserva': 'novo',
+                'negociando': 'em negociacao',
+                'em negociação': 'em negociacao',
+                'convertido': 'ganho'
+            };
+            return map[s] || s;
+        }
+
+        function kbFiltrar() {
+            const busca = (document.getElementById('kb-search').value || '').toLowerCase();
+            const statusF = (document.getElementById('kb-filter-status').value || '').toLowerCase();
+            
+            const norm = (s) => {
+                s = String(s || '').trim().toLowerCase();
+                // Mapeamento extra para garantir que variações caiam na coluna certa
+                const map = { 
+                    'aberto': 'contactado', 
+                    'disparo': 'aguardando disparo', 
+                    'aguardando': 'aguardando disparo',
+                    'aguardando disp...': 'aguardando disparo',
+                    'pente': 'aguardando disparo',
+                    'reserva': 'novo',
+                    'negociando': 'em negociacao',
+                    'em negociação': 'em negociacao',
+                    'convertido': 'ganho'
+                };
+                return map[s] || s;
+            };
+
+            const filtrados = kbLeads.filter(l => {
+                const s = norm(l.Status);
+                const okBusca = !busca || (l.Nome || '').toLowerCase().includes(busca) || (l.Telefone || '').includes(busca);
+                const okStatus = !statusF || s === statusF.toLowerCase();
+                return okBusca && okStatus;
+            });
+            
+            KB_COLUNAS.forEach(col => {
+                const zone = document.getElementById(`kbz-${col.id}`);
+                const sub = filtrados.filter(l => norm(l.Status) === col.id.toLowerCase());
+                document.getElementById(`kbc-${col.id}`).textContent = sub.length;
+                zone.innerHTML = sub.length === 0 ? '<div class="kb-empty">Vazio</div>' : sub.map(l => kbBuildCard(l)).join('');
+            });
+        }
+
+        function kbBuildCard(l) {
+            const notas = l.Resumo_IA || l.Notas_Vendedor || '';
+            const statusBruto = String(l.Status || '').trim();
+            return `
+                <div class="kb-card" draggable="true" ondragstart="kbDragStart(event,${l.Id})" ondragend="kbDragEnd(event)" id="kbcard-${l.Id}">
+                    <div class="kb-card-name">🏢 ${l.Nome || 'Sem Nome'}</div>
+                    <div class="kb-row"><span>📞</span><a href="tel:${l.Telefone}" style="color:#818cf8">${l.Telefone || '-'}</a></div>
+                    <div style="font-size:9px; color:#6366f1; margin:5px 0;">🏷️ Status: ${statusBruto}</div>
+                    <textarea class="kb-notas" placeholder="Resumo IA..." id="kbn-${l.Id}">${notas}</textarea>
+                    <div class="kb-actions"><button class="kb-save" onclick="kbSalvarNotas(${l.Id})">💾 Salvar</button></div>
+                </div>`;
+        }
+        function kbDragStart(e, id) { kbDraggedId = id; }
+        function kbDragEnd() { kbDraggedId = null; }
+        function kbDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        function kbDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+        async function kbDrop(e, status) {
+            e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+            if (!kbDraggedId) return;
+            const lead = kbLeads.find(l => l.Id === kbDraggedId);
+            if (lead) { lead.Status = status; kbFiltrar(); }
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: kbDraggedId, status });
+        }
+        async function kbSalvarNotas(id) {
+            const notas = document.getElementById(`kbn-${id}`).value;
+            kbToast('Salvando...');
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas, resumo_ia: notas });
+            kbToast('✅ Salvo!');
+        }
+    </script>
+</body>
+</html>
             transition: all 0.25s;
             display: flex;
             align-items: center;
