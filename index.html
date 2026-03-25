@@ -1638,7 +1638,9 @@
             // Normaliza status de todos os leads recebidos
             kbLeads.forEach(l => {
                 if (l.Status && typeof l.Status === 'object') l.Status = l.Status.title || l.Status.value || l.Status.id;
-                l.Status = String(l.Status || '').trim();
+                const original = String(l.Status || '').trim();
+                l.Status = original;
+                console.log(`[KB] Lead: ${l.Nome} | Status Bruto: ${original} | Normalizado: ${kbFiltrar_norm_only(original)}`);
             });
             const label = document.getElementById('kb-agent-label');
             const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
@@ -1646,6 +1648,23 @@
             console.log('[KB] Status normalizados recebidos:', statusEncontrados);
             if(label) label.textContent = `👤 ${nome} (${kbLeads.length} leads)`;
             kbFiltrar();
+        }
+
+        // Função auxiliar para debug (mesma lógica do norm dentro de kbFiltrar)
+        function kbFiltrar_norm_only(s) {
+            s = String(s || '').trim().toLowerCase();
+            const map = { 
+                'aberto': 'contactado', 
+                'disparo': 'aguardando disparo', 
+                'aguardando': 'aguardando disparo',
+                'aguardando disp...': 'aguardando disparo',
+                'pente': 'aguardando disparo',
+                'reserva': 'novo',
+                'negociando': 'em negociacao',
+                'em negociação': 'em negociacao',
+                'convertido': 'ganho'
+            };
+            return map[s] || s;
         }
 
         function kbFiltrar() {
