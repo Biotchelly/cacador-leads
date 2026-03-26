@@ -1378,32 +1378,34 @@
             kbCarregar();
         }
 
-        // --- DETECÇÃO SEGURA DE VENDEDOR (V73) ---
+        // --- DETECÇÃO SEGURA DE VENDEDOR (V73.1) ---
         function updateAgent(id, name) {
             if (!id) return;
             const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
             const finalId = String(id).replace(/[^0-9]/g, "");
             const finalName = map[finalId] || name || "Agente";
-            
-            if (finalId && finalId !== kbAuthId) {
-                kbAuthId = finalId;
-                kbAuthNome = finalName;
-                localStorage.setItem('kbAuthId', finalId);
-                localStorage.setItem('kbAuthNome', finalName);
-                
-                const vid = document.getElementById('vendedorId');
-                const vnm = document.getElementById('vendedorNome');
-                if (vid) vid.value = finalId;
-                if (vnm) vnm.value = finalName;
-                
-                kbLog(`👤 Autenticado V73: ${finalName} (ID: ${finalId})`);
-                const label = document.getElementById('kb-agent-label');
-                if(label) label.textContent = `👤 ${finalName}`;
-                
-                if (kbInitialized) {
-                    kbLeads = []; // Limpa leads do agente anterior
-                    kbCarregar(); 
-                }
+            if (!finalId) return;
+
+            const agentChanged = finalId !== kbAuthId;
+
+            // Sempre persiste identidade
+            kbAuthId = finalId;
+            kbAuthNome = finalName;
+            localStorage.setItem('kbAuthId', finalId);
+            localStorage.setItem('kbAuthNome', finalName);
+
+            const vid = document.getElementById('vendedorId');
+            const vnm = document.getElementById('vendedorNome');
+            if (vid) vid.value = finalId;
+            if (vnm) vnm.value = finalName;
+
+            const label = document.getElementById('kb-agent-label');
+            if (label) label.textContent = `👤 ${finalName}`;
+            kbLog(`👤 Autenticado V73.1: ${finalName} (ID: ${finalId})`);
+
+            if (kbInitialized) {
+                if (agentChanged) kbLeads = []; // Limpa leads do agente anterior
+                kbCarregar();
             }
         }
 
