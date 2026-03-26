@@ -1569,6 +1569,7 @@
                 let firstPageData = null;
 
                 while (hasMore) {
+                    kbLog(`📡 Buscando página (Offset: ${offset})...`);
                     const url = `${kbBackendUrl()}${kbBackendUrl().indexOf('?') > 0 ? '&' : '?'}wait=true&offset=${offset}`;
                     const nocoId = document.getElementById('nocoTableId')?.value || "";
                     const nocoToken = document.getElementById('nocoToken')?.value || "";
@@ -1579,17 +1580,18 @@
                         vendedor_nome: kbAuthNome, 
                         table_id: nocoId,
                         token: nocoToken,
-                        offset: offset // Passa offset para o backend
+                        offset: offset 
                     };
 
                     const r = await kbSmartFetch(url, body, 'POST');
                     if (!r || !r.ok) {
-                        const statusText = r ? `Erro ${r.status}` : 'Erro de Rede';
-                        if(label) label.textContent = `❌ ${statusText}`;
+                        kbLog(`❌ Erro no Fetch: ${r ? r.status : 'Sem resposta'}`);
                         break;
                     }
 
                     const data = await r.json();
+                    kbLog(`📦 Resposta recebida. Itens: ${data.list ? data.list.length : 0}`);
+                    
                     if (!firstPageData) firstPageData = data;
 
                     const res = kbExtractLeads(data);
@@ -1597,30 +1599,35 @@
                         allLeads = allLeads.concat(res);
                         
                         // Lógica de Paginação (NocoDB V2)
-                        if (data.pageInfo) {
-                            totalRows = data.pageInfo.totalRows;
-                            offset += data.pageInfo.pageSize || 100;
-                            hasMore = !data.pageInfo.isLastPage && allLeads.length < totalRows;
-                            if (hasMore) label.textContent = `⏳ Lendo página... (${allLeads.length}/${totalRows})`;
+                        const p = data.pageInfo || (data.body && data.body.pageInfo);
+                        if (p) {
+                            totalRows = p.totalRows;
+                            const ps = p.pageSize || 100;
+                            offset += ps;
+                            hasMore = !p.isLastPage && allLeads.length < totalRows;
+                            kbLog(`📄 Info: ${allLeads.length}/${totalRows} leads. Próxima: ${hasMore}`);
+                            if (hasMore) label.textContent = `⏳ Lendo... (${allLeads.length}/${totalRows})`;
                         } else {
+                            kbLog('⚠️ pageInfo não encontrado na resposta.');
                             hasMore = false;
                         }
                     } else {
                         // Trata Polling se necessário
                         const execId = (data.execution && data.execution.id) ? data.execution.id : (data.id && data.id.length < 50 ? data.id : null);
                         if (execId && allLeads.length === 0) {
+                            kbLog(`🔄 Entrando em modo Polling (Exec: ${execId})`);
                             return kbPollExecution(execId, kbAuthNome);
                         }
                         hasMore = false;
                     }
 
-                    // Segurança para não entrar em loop infinito
-                    if (offset > 5000) hasMore = false; 
+                    if (offset > 5000) { kbLog('🚨 Limite de 5000 leads atingido.'); hasMore = false; }
                 }
 
                 if (allLeads.length > 0) {
-                    // Prepara objeto final para kbMostrarLeads
+                    kbLog(`✅ Busca finalizada: ${allLeads.length} leads totais.`);
                     const finalData = { ...firstPageData, list: allLeads };
+                    if (firstPageData.pageInfo) finalData.pageInfo = firstPageData.pageInfo;
                     kbMostrarLeads(finalData, kbAuthNome);
                 } else {
                     const msg = kbAuthId === "1" ? "⚠️ Banco Vazio" : `⚠️ Sem leads p/ ${kbAuthNome}`;
