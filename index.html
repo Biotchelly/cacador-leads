@@ -1475,8 +1475,10 @@
 
             if (typeof obj !== 'object') return null;
 
-            // 1. Tenta propriedades conhecidas na raiz
-            const fast = obj.list || obj.records || obj.data || (obj.body && (obj.body.list || obj.body.records || obj.body));
+            // 1. Tenta propriedades conhecidas na raiz (incluindo wrap do Kestra)
+            const fast = obj.list || obj.records || obj.data || 
+                         (obj.response && (obj.response.list || obj.response.records)) ||
+                         (obj.body && (obj.body.list || obj.body.records || obj.body));
             if (Array.isArray(fast)) {
                 kbLog(`✅ Lista encontrada em prop (${fast.length} leads)`);
                 return fast;
@@ -1590,7 +1592,9 @@
                     }
 
                     const data = await r.json();
-                    kbLog(`📦 Resposta recebida. Itens: ${data.list ? data.list.length : 0}`);
+                    // Kestra wrapping: data.response ou data.body
+                    const realData = data.response || data.body || data;
+                    kbLog(`📦 Resposta recebida. Itens: ${realData.list ? realData.list.length : (realData.records ? realData.records.length : '0')}`);
                     
                     if (!firstPageData) firstPageData = data;
 
@@ -1598,17 +1602,18 @@
                     if (res && Array.isArray(res)) {
                         allLeads = allLeads.concat(res);
                         
-                        // Lógica de Paginação (NocoDB V2)
-                        const p = data.pageInfo || (data.body && data.body.pageInfo);
+                        // Lógica de Paginação Robustecida
+                        const p = realData.pageInfo || (realData.body && realData.body.pageInfo) || (data.pageInfo);
                         if (p) {
                             totalRows = p.totalRows;
                             const ps = p.pageSize || 100;
                             offset += ps;
-                            hasMore = !p.isLastPage && allLeads.length < totalRows;
+                            hasMore = !p.isLastPage && (allLeads.length < totalRows);
                             kbLog(`📄 Info: ${allLeads.length}/${totalRows} leads. Próxima: ${hasMore}`);
                             if (hasMore) label.textContent = `⏳ Lendo... (${allLeads.length}/${totalRows})`;
                         } else {
-                            kbLog('⚠️ pageInfo não encontrado na resposta.');
+                            kbLog('⚠️ pageInfo não encontrado. Verificando estrutura...');
+                            console.log('[KB] Data structure:', data);
                             hasMore = false;
                         }
                     } else {
