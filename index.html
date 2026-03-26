@@ -125,6 +125,7 @@
             overflow-x: auto;
             flex: 1;
             min-height: 0;
+            align-items: flex-start;
         }
 
         .kb-col {
@@ -136,6 +137,8 @@
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
+            max-height: calc(100vh - 160px);
+            overflow-y: auto;
         }
 
         .kb-col-header {
@@ -146,6 +149,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .kb-col-count {
