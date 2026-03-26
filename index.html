@@ -1335,12 +1335,12 @@
             <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:150px;">
             <select id="kb-filter-status" onchange="kbFiltrar()">
                 <option value="">Status...</option>
-                <option value="Novo">📦 Reserva</option>
-                <option value="Aguardando Disparo">🎯 Pente</option>
-                <option value="Contactado">📬 Aberto</option>
+                <option value="Novo">📋 Novo</option>
+                <option value="Aguardando Disparo">🎯 Aguardando Disparo</option>
+                <option value="Contactado">📫 Contactado</option>
                 <option value="Qualificado">✅ Qualificado</option>
-                <option value="Em Negociacao">🤝 Negociando</option>
-                <option value="Ganho">✅ Convertido</option>
+                <option value="Em Negociacao">🤝 Em Negociacao</option>
+                <option value="Ganho">💰 Ganho</option>
                 <option value="Perdido">❌ Perdido</option>
             </select>
             <span class="kb-agent-label" id="kb-agent-label">👤 Identificando...</span>
@@ -1353,12 +1353,12 @@
 
     <script>
         const KB_COLUNAS = [
-            { id: 'Novo', label: '📦 Reserva', cls: 'col-novo' },
-            { id: 'Aguardando Disparo', label: '🎯 Pente', cls: 'col-pente' },
-            { id: 'Contactado', label: '📬 Aberto', cls: 'col-aberto' },
+            { id: 'Novo', label: '📋 Novo', cls: 'col-novo' },
+            { id: 'Aguardando Disparo', label: '🎯 Aguardando Disparo', cls: 'col-pente' },
+            { id: 'Contactado', label: '📫 Contactado', cls: 'col-aberto' },
             { id: 'Qualificado', label: '✅ Qualificado', cls: 'col-qualif' },
-            { id: 'Em Negociacao', label: '🤝 Negociando', cls: 'col-negoc' },
-            { id: 'Ganho', label: '✅ Convertido', cls: 'col-conv' },
+            { id: 'Em Negociacao', label: '🤝 Em Negociacao', cls: 'col-negoc' },
+            { id: 'Ganho', label: '💰 Ganho', cls: 'col-conv' },
             { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
         ];
 
