@@ -1629,14 +1629,21 @@
         }
 
         function kbMostrarLeads(data, nome) {
-            // Se data já é o array de registros vindo do kbExtractLeads, usa direto.
-            kbLeads = Array.isArray(data) ? data : (data.leads || []);
+            // Extração de dados com suporte a PageInfo
+            const foundArray = Array.isArray(data) ? data : (data.list || data.records || data.data || []);
+            kbLeads = foundArray;
             
             // Salva no cache para evitar reset no Chatwoot
             localStorage.setItem('kbLeads', JSON.stringify(kbLeads));
 
             // Log de Diagnóstico (DUMP) para o console interno do Jobs
             if (kbLeads.length > 0) {
+                const totalRows = (data.pageInfo && data.pageInfo.totalRows) || kbLeads.length;
+                const isLast = (data.pageInfo) ? data.pageInfo.isLastPage : true;
+                
+                kbLog(`🧪 DUMP DE DIAGNÓSTICO: ${kbLeads.length}/${totalRows} leads carregados.`);
+                if (!isLast) kbLog(`⚠️ Tem + leads no NocoDB! (Página 1 de ${Math.ceil(totalRows/kbLeads.length)})`);
+
                 // Estatísticas de Status
                 const stats = {};
                 kbLeads.forEach(l => {
@@ -1644,14 +1651,8 @@
                     stats[s] = (stats[s] || 0) + 1;
                 });
                 
-                kbLog(`🧪 DUMP DE DIAGNÓSTICO (${kbLeads.length} leads p/ ${nome}):`);
                 Object.keys(stats).forEach(s => {
                     kbLog(`   - Status [${s}]: ${stats[s]} leads`);
-                });
-
-                const amostra = kbLeads.slice(0, 2);
-                amostra.forEach((l, i) => {
-                    kbLog(`🔍 Exemplo ${i+1}: ${l.Nome || 'Sem Nome'} | Vendedor: ${l.Vendedor || l.Agente || 'N/A'}`);
                 });
             }
 
