@@ -1553,7 +1553,6 @@
                 return;
             }
             
-            // Se identificou, garante que o board tenha as colunas
             if (board && (board.innerHTML.includes('Acesso bloqueado') || board.innerHTML === "")) {
                 kbInitialized = false; 
                 kbInit(); 
@@ -1561,44 +1560,71 @@
             }
 
             if(label) label.textContent = `⏳ Conectando Kestra (${kbAuthNome})...`;
-            console.log('[KB] Carregando leads para:', kbAuthNome);
             
             try {
-                const url = kbBackendUrl() + (kbBackendUrl().indexOf('?') > 0 ? '&' : '?') + "wait=true";
-                const nocoId = document.getElementById('nocoTableId')?.value || "";
-                const nocoToken = document.getElementById('nocoToken')?.value || "";
-                const body = { 
-                    action: 'list', 
-                    agent_id: kbAuthId, 
-                    vendedor_nome: kbAuthNome, 
-                    table_id: nocoId,
-                    token: nocoToken
-                };
-                const r = await kbSmartFetch(url, body, 'POST');
-                
-                if (!r || !r.ok) {
-                    const statusText = r ? `Erro ${r.status}` : 'Bloqueio de Rede (CORS/Proxy)';
-                    if(label) label.textContent = `❌ ${statusText}`;
-                    return;
+                let allLeads = [];
+                let offset = 0;
+                let hasMore = true;
+                let totalRows = 0;
+                let firstPageData = null;
+
+                while (hasMore) {
+                    const url = `${kbBackendUrl()}${kbBackendUrl().indexOf('?') > 0 ? '&' : '?'}wait=true&offset=${offset}`;
+                    const nocoId = document.getElementById('nocoTableId')?.value || "";
+                    const nocoToken = document.getElementById('nocoToken')?.value || "";
+                    
+                    const body = { 
+                        action: 'list', 
+                        agent_id: kbAuthId, 
+                        vendedor_nome: kbAuthNome, 
+                        table_id: nocoId,
+                        token: nocoToken,
+                        offset: offset // Passa offset para o backend
+                    };
+
+                    const r = await kbSmartFetch(url, body, 'POST');
+                    if (!r || !r.ok) {
+                        const statusText = r ? `Erro ${r.status}` : 'Erro de Rede';
+                        if(label) label.textContent = `❌ ${statusText}`;
+                        break;
+                    }
+
+                    const data = await r.json();
+                    if (!firstPageData) firstPageData = data;
+
+                    const res = kbExtractLeads(data);
+                    if (res && Array.isArray(res)) {
+                        allLeads = allLeads.concat(res);
+                        
+                        // Lógica de Paginação (NocoDB V2)
+                        if (data.pageInfo) {
+                            totalRows = data.pageInfo.totalRows;
+                            offset += data.pageInfo.pageSize || 100;
+                            hasMore = !data.pageInfo.isLastPage && allLeads.length < totalRows;
+                            if (hasMore) label.textContent = `⏳ Lendo página... (${allLeads.length}/${totalRows})`;
+                        } else {
+                            hasMore = false;
+                        }
+                    } else {
+                        // Trata Polling se necessário
+                        const execId = (data.execution && data.execution.id) ? data.execution.id : (data.id && data.id.length < 50 ? data.id : null);
+                        if (execId && allLeads.length === 0) {
+                            return kbPollExecution(execId, kbAuthNome);
+                        }
+                        hasMore = false;
+                    }
+
+                    // Segurança para não entrar em loop infinito
+                    if (offset > 5000) hasMore = false; 
                 }
 
-                let data = {}; try { data = await r.json(); } catch(e){}
-                console.log('[KB] Data do Kestra:', data);
-                
-                const res = kbExtractLeads(data);
-                if (res) { 
-                    kbMostrarLeads(res, kbAuthNome); 
-                    return; 
-                }
-
-                // Se não achou leads mas tem ID de execução, faz polling
-                const execId = (data.execution && data.execution.id) ? data.execution.id : data.id;
-                if (execId && execId.length < 50) {
-                    kbPollExecution(execId, kbAuthNome);
+                if (allLeads.length > 0) {
+                    // Prepara objeto final para kbMostrarLeads
+                    const finalData = { ...firstPageData, list: allLeads };
+                    kbMostrarLeads(finalData, kbAuthNome);
                 } else {
-                    const msg = kbAuthId === "1" ? "⚠️ Banco de Dados Vazio" : `⚠️ Nenhum lead p/ ${kbAuthNome}`;
+                    const msg = kbAuthId === "1" ? "⚠️ Banco Vazio" : `⚠️ Sem leads p/ ${kbAuthNome}`;
                     if(label) label.textContent = msg;
-                    console.warn('[KB] Resposta sem leads:', data);
                 }
             } catch (err) { 
                 if(label) label.textContent = '💥 Erro de Rede';
