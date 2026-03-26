@@ -118,15 +118,29 @@
             border: 1px solid rgba(99, 102, 241, .25);
         }
 
+        html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar, body::-webkit-scrollbar {
+            display: none;
+        }
+
         .kb-board {
             display: flex;
             gap: 12px;
             padding: 16px;
             overflow-x: auto;
-            overflow-y: visible;
+            overflow-y: hidden;
             flex: 1;
             min-height: 0;
             align-items: flex-start;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .kb-board::-webkit-scrollbar {
+            display: none;
         }
 
         .kb-col {
