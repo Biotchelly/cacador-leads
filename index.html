@@ -1378,14 +1378,14 @@
             kbCarregar();
         }
 
-        // --- DETECÇÃO SEGURA DE VENDEDOR (CHATWOOT EXCLUSIVE) ---
+        // --- DETECÇÃO SEGURA DE VENDEDOR (V73) ---
         function updateAgent(id, name) {
             if (!id) return;
             const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
             const finalId = String(id).replace(/[^0-9]/g, "");
             const finalName = map[finalId] || name || "Agente";
             
-            if (finalId && map[finalId]) {
+            if (finalId && finalId !== kbAuthId) {
                 kbAuthId = finalId;
                 kbAuthNome = finalName;
                 localStorage.setItem('kbAuthId', finalId);
@@ -1396,12 +1396,14 @@
                 if (vid) vid.value = finalId;
                 if (vnm) vnm.value = finalName;
                 
-                console.log(`[KB] Autenticado (V53): ${finalName}`);
-                kbLog(`👤 Agente: ${finalName} (ID: ${finalId})`);
+                kbLog(`👤 Autenticado V73: ${finalName} (ID: ${finalId})`);
                 const label = document.getElementById('kb-agent-label');
                 if(label) label.textContent = `👤 ${finalName}`;
                 
-                if (kbInitialized) kbCarregar();
+                if (kbInitialized) {
+                    kbLeads = []; // Limpa leads do agente anterior
+                    kbCarregar(); 
+                }
             }
         }
 
@@ -1466,47 +1468,46 @@
 
         function kbFilterByAgent(leads) {
             if (!Array.isArray(leads)) return [];
-            if (!kbAuthId || kbAuthId === "1" || kbAuthNome === "Gestão" || kbGestorOverride) return leads;
+            if (!kbAuthId) return []; // Se não identificou, não mostra nada por segurança
             
-            const searchName = kbAuthNome.toLowerCase().trim();
+            if (kbAuthId === "1" || kbAuthNome === "Gestão" || kbGestorOverride) {
+                kbLog(`🔓 Modo Admin/Gestor (V73)`);
+                return leads;
+            }
+            
             const searchId = String(kbAuthId).trim();
+            const searchName = kbAuthNome.toLowerCase().trim();
 
-            return leads.filter(l => {
-                const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
+            const filtered = leads.filter(l => {
                 const vId = String(l.agent_id || l.vendedor_id || '').trim();
-                // Match por nome contém ou ID exato
-                return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
+                const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
+                return (vId === searchId) || (vName !== '' && vName.includes(searchName));
             });
+
+            kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
+            return filtered;
         }
 
         function kbExtractLeads(obj, depth = 0) {
             if (!obj || depth > 5) return null;
             if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
             
-            // Se for array direto, aplica filtro e retorna
-            if (Array.isArray(obj)) { 
-                const filtered = kbFilterByAgent(obj);
-                kbLog(`✅ Lista filtrada (${filtered.length} leads de ${obj.length})`); 
-                return filtered; 
-            }
+            if (Array.isArray(obj)) return kbFilterByAgent(obj);
 
             if (typeof obj !== 'object') return null;
 
-            // 1. Tenta propriedades conhecidas na raiz (incluindo wrap do Kestra)
+            // 1. Tenta propriedades conhecidas na raiz
             const fast = obj.list || obj.records || obj.data || 
                          (obj.response && (obj.response.list || obj.response.records)) ||
                          (obj.body && (obj.body.list || obj.body.records || obj.body));
-            if (Array.isArray(fast)) {
-                const filtered = kbFilterByAgent(fast);
-                kbLog(`✅ Lista encontrada e filtrada (${filtered.length} leads)`);
-                return filtered;
-            }
+            
+            if (Array.isArray(fast)) return kbFilterByAgent(fast);
 
             // 2. BUSCA EXAUSTIVA
             for (let k in obj) {
                 if (typeof obj[k] === 'object' && obj[k] !== null && k !== 'trigger') {
                     const found = kbExtractLeads(obj[k], depth + 1);
-                    if (found && Array.isArray(found)) return found; // Já vem filtrado da recursão
+                    if (found && Array.isArray(found)) return found;
                 }
             }
             return null;
