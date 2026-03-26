@@ -1637,10 +1637,21 @@
 
             // Log de Diagnóstico (DUMP) para o console interno do Jobs
             if (kbLeads.length > 0) {
-                const amostra = kbLeads.slice(0, 3);
-                kbLog(`🧪 DUMP DE DIAGNÓSTICO (${kbLeads.length} leads):`);
+                // Estatísticas de Status
+                const stats = {};
+                kbLeads.forEach(l => {
+                    const s = String(l.Status || l.status || 'N/A');
+                    stats[s] = (stats[s] || 0) + 1;
+                });
+                
+                kbLog(`🧪 DUMP DE DIAGNÓSTICO (${kbLeads.length} leads p/ ${nome}):`);
+                Object.keys(stats).forEach(s => {
+                    kbLog(`   - Status [${s}]: ${stats[s]} leads`);
+                });
+
+                const amostra = kbLeads.slice(0, 2);
                 amostra.forEach((l, i) => {
-                    kbLog(`Lead ${i+1}: ${l.Nome || 'Sem Nome'} | Status: ${JSON.stringify(l.Status || l.status || 'N/A')}`);
+                    kbLog(`🔍 Exemplo ${i+1}: ${l.Nome || 'Sem Nome'} | Vendedor: ${l.Vendedor || l.Agente || 'N/A'}`);
                 });
             }
 
