@@ -1362,14 +1362,15 @@
             { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
         ];
 
+        let kbAuthId = localStorage.getItem('kbAuthId') || "";
+        let kbAuthNome = localStorage.getItem('kbAuthNome') || "";
         let kbRawCache = JSON.parse(localStorage.getItem('kbLeads') || '{}');
         let kbLeads = (kbRawCache.agentId === kbAuthId || kbAuthId === "1") ? (Array.isArray(kbRawCache.list) ? kbRawCache.list : (Array.isArray(kbRawCache) ? kbRawCache : [])) : [];
         let kbDraggedId = null;
         let kbInitialized = false;
-        let kbAuthId = localStorage.getItem('kbAuthId') || "";
-        let kbAuthNome = localStorage.getItem('kbAuthNome') || "";
         let kbAuthTry = 0;
         let kbGestorOverride = localStorage.getItem('kbGestorOverride') === 'true';
+
 
         function kbToggleGestor() {
             kbGestorOverride = !kbGestorOverride;
