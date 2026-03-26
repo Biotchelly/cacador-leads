@@ -255,6 +255,48 @@
         .kb-modal-btn.primary { background: #6366f1; color: #fff; }
         .kb-modal-btn.secondary { background: rgba(255,255,255,.08); color: #cbd5e1; }
         .kb-status-badge { display:inline-block; padding:2px 10px; border-radius:999px; font-size:10px; font-weight:700; background:rgba(99,102,241,.15); color:#a5b4fc; border:1px solid rgba(99,102,241,.3); }
+        
+        .kb-modal-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(99,102,241,.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99,102,241,.3);
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .kb-modal-resumo {
+            background: rgba(255,255,255,.05);
+            border: 1px dashed #2e3244;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+        .kb-modal-action-btn {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            transition: background .2s;
+        }
+        .kb-modal-action-btn:hover { background: #059669; }
         /* Card compacto */
         .kb-card-compact {
             background: var(--dropzone-bg, #0f172a); border: 1px solid var(--border-color, #2e3244);
@@ -1909,6 +1951,7 @@
             if (!l) return;
             _kbModalId = id;
             document.getElementById('kb-modal-title').textContent = `🏢 ${l.Nome || 'Lead'}`;
+            
             const rows = [
                 ['📞 Telefone',   l.Telefone],
                 ['📧 Email',      l.Email],
@@ -1921,13 +1964,34 @@
                 ['🕐 Contato',   l.Ultimo_Contato],
                 ['📅 Follow-up', l.Proximo_FollowUp],
             ];
+
+            // Renderiza Etiquetas (Sincronizadas com Chatwoot)
+            let tagsHtml = '';
+            if (l.Etiquetas) {
+                const tagsRaw = typeof l.Etiquetas === 'string' ? l.Etiquetas.split(',') : (Array.isArray(l.Etiquetas) ? l.Etiquetas : []);
+                tagsHtml = tagsRaw.map(t => `<span class="kb-modal-badge">${t.trim()}</span>`).join('');
+            }
+
             const body = document.getElementById('kb-modal-body');
-            body.innerHTML = rows.filter(([,v]) => v).map(([label, val]) =>
-                `<div class="kb-modal-row"><span class="kb-modal-label">${label}</span><span class="kb-modal-val">${val}</span></div>`
-            ).join('') +
-            `<hr class="kb-modal-divider">
-            <div style="font-size:11px;color:#6366f1;font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
-            <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Digite suas notas aqui...">${l.Notas_Vendedor || l.Resumo_IA || ''}</textarea>`;
+            body.innerHTML = `
+                ${rows.filter(([,v]) => v).map(([label, val]) =>
+                    `<div class="kb-modal-row"><span class="kb-modal-label">${label}</span><span class="kb-modal-val">${val}</span></div>`
+                ).join('')}
+                
+                ${tagsHtml ? `<div class="kb-modal-row" style="margin-top:8px;"><span class="kb-modal-label">🏷️ Etiquetas</span><div style="display:flex;flex-wrap:wrap;">${tagsHtml}</div></div>` : ''}
+                
+                <hr class="kb-modal-divider">
+                
+                <div style="font-size:11px;color:#10b981;font-weight:700;margin-bottom:6px;">🤖 Resumo IA</div>
+                <div class="kb-modal-resumo">${l.Resumo_IA || 'Nenhum resumo gerado pela IA ainda.'}</div>
+                
+                <div style="font-size:11px;color:#6366f1;font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
+                <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Digite suas notas sobre o lead...">${l.Notas_Vendedor || ''}</textarea>
+                
+                <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')">
+                    📅 Agendar Tarefa / Call
+                </button>
+            `;
             document.getElementById('kb-modal-overlay').classList.add('open');
         }
 
@@ -1943,8 +2007,8 @@
             const notas = document.getElementById('kb-modal-notas').value;
             kbToast('Salvando...');
             const lead = kbLeads.find(l => l.Id === _kbModalId);
-            if (lead) { lead.Notas_Vendedor = notas; lead.Resumo_IA = notas; }
-            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: _kbModalId, notas_vendedor: notas, resumo_ia: notas });
+            if (lead) { lead.Notas_Vendedor = notas; }
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: _kbModalId, notas_vendedor: notas });
             kbToast('✅ Notas salvas!');
             document.getElementById('kb-modal-overlay').classList.remove('open');
             _kbModalId = null;
