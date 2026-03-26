@@ -1362,7 +1362,8 @@
             { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
         ];
 
-        let kbLeads = JSON.parse(localStorage.getItem('kbLeads') || '[]');
+        let kbRawCache = JSON.parse(localStorage.getItem('kbLeads') || '{}');
+        let kbLeads = (kbRawCache.agentId === kbAuthId || kbAuthId === "1") ? (Array.isArray(kbRawCache.list) ? kbRawCache.list : (Array.isArray(kbRawCache) ? kbRawCache : [])) : [];
         let kbDraggedId = null;
         let kbInitialized = false;
         let kbAuthId = localStorage.getItem('kbAuthId') || "";
@@ -1463,14 +1464,30 @@
             return String(v).trim();
         }
 
+        function kbFilterByAgent(leads) {
+            if (!Array.isArray(leads)) return [];
+            if (!kbAuthId || kbAuthId === "1" || kbAuthNome === "Gestão" || kbGestorOverride) return leads;
+            
+            const searchName = kbAuthNome.toLowerCase().trim();
+            const searchId = String(kbAuthId).trim();
+
+            return leads.filter(l => {
+                const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
+                const vId = String(l.agent_id || l.vendedor_id || '').trim();
+                // Match por nome contém ou ID exato
+                return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
+            });
+        }
+
         function kbExtractLeads(obj, depth = 0) {
             if (!obj || depth > 5) return null;
             if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
             
-            // Se for array direto, BINGO!
+            // Se for array direto, aplica filtro e retorna
             if (Array.isArray(obj)) { 
-                kbLog(`✅ Array localizado (${obj.length} leads)`); 
-                return obj; 
+                const filtered = kbFilterByAgent(obj);
+                kbLog(`✅ Lista filtrada (${filtered.length} leads de ${obj.length})`); 
+                return filtered; 
             }
 
             if (typeof obj !== 'object') return null;
@@ -1480,33 +1497,18 @@
                          (obj.response && (obj.response.list || obj.response.records)) ||
                          (obj.body && (obj.body.list || obj.body.records || obj.body));
             if (Array.isArray(fast)) {
-                kbLog(`✅ Lista encontrada em prop (${fast.length} leads)`);
-                return fast;
+                const filtered = kbFilterByAgent(fast);
+                kbLog(`✅ Lista encontrada e filtrada (${filtered.length} leads)`);
+                return filtered;
             }
 
-            // 2. BUSCA EXAUSTIVA: Varre todas as chaves do objeto (Recursão Profunda)
+            // 2. BUSCA EXAUSTIVA
             for (let k in obj) {
                 if (typeof obj[k] === 'object' && obj[k] !== null && k !== 'trigger') {
                     const found = kbExtractLeads(obj[k], depth + 1);
-                    if (found && Array.isArray(found)) {
-                        // --- FILTRAGEM POR AGENTE (V67 - REATIVADA E SEGURA) ---
-                        if (kbAuthId && kbAuthId !== "1" && kbAuthNome !== "Gestão" && !kbGestorOverride) {
-                            const searchName = kbAuthNome.toLowerCase().trim();
-                            const searchId = String(kbAuthId).trim();
-                            
-                            return found.filter(l => {
-                                const vName = kbVal(l.Vendedor || l.Agente || l.Responsavel || '').toLowerCase();
-                                const vId = String(l.agent_id || l.vendedor_id || '').trim();
-                                // Match por nome contém ou ID exato
-                                return (vName !== '' && vName.includes(searchName)) || (vId !== '' && vId === searchId);
-                            });
-                        }
-                        return found;
-                    }
+                    if (found && Array.isArray(found)) return found; // Já vem filtrado da recursão
                 }
             }
-
-            if (depth === 0) kbLog('DUMP: Nenhum array de leads encontrado.');
             return null;
         }
 
@@ -1667,12 +1669,15 @@
         }
 
         function kbMostrarLeads(data, nome) {
-            // Extração de dados com suporte a PageInfo
-            const foundArray = Array.isArray(data) ? data : (data.list || data.records || data.data || []);
-            kbLeads = foundArray;
+            // Extração de dados com filtragem por agente integrada (V72)
+            kbLeads = kbExtractLeads(data) || [];
             
-            // Salva no cache para evitar reset no Chatwoot
-            localStorage.setItem('kbLeads', JSON.stringify(kbLeads));
+            // Salva no cache com ID do Agente para evitar vazamento entre sessões
+            localStorage.setItem('kbLeads', JSON.stringify({ 
+                list: kbLeads, 
+                pageInfo: data.pageInfo || null,
+                agentId: kbAuthId 
+            }));
 
             // Log de Diagnóstico (DUMP) para o console interno do Jobs
             if (kbLeads.length > 0) {
