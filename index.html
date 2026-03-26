@@ -181,6 +181,59 @@
             background: #4a0404;
         }
 
+        /* ══════ MODAL CARD ══════ */
+        #kb-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
+            z-index: 50000; align-items: center; justify-content: center;
+        }
+        #kb-modal-overlay.open { display: flex; }
+        #kb-modal {
+            background: #1a1d27; border: 1px solid #2e3244; border-radius: 16px;
+            width: 92%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,.6); animation: modalIn .22s ease;
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform: translateY(18px) scale(.97); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+        #kb-modal-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            padding: 18px 20px 14px; border-bottom: 1px solid #2e3244; gap: 10px;
+        }
+        #kb-modal-title { font-size: 14px; font-weight: 700; color: #e2e8f0; line-height: 1.3; }
+        #kb-modal-close {
+            background: rgba(255,255,255,.08); border: none; border-radius: 50%;
+            width: 28px; height: 28px; color: #8892a4; cursor: pointer; font-size: 14px; flex-shrink: 0;
+        }
+        #kb-modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .kb-modal-row { display: flex; align-items: baseline; gap: 8px; font-size: 12px; }
+        .kb-modal-label { color: #6366f1; font-weight: 700; min-width: 115px; flex-shrink: 0; font-size: 11px; text-transform: uppercase; }
+        .kb-modal-val { color: #cbd5e1; word-break: break-word; }
+        .kb-modal-divider { border: none; border-top: 1px solid #2e3244; margin: 4px 0; }
+        .kb-modal-notes {
+            width: 100%; background: rgba(255,255,255,.04); border: 1px solid #2e3244;
+            border-radius: 8px; color: #e2e8f0; font-size: 12px; font-family: inherit;
+            padding: 10px 12px; resize: vertical; min-height: 90px;
+        }
+        .kb-modal-notes:focus { outline: none; border-color: #6366f1; }
+        .kb-modal-footer {
+            padding: 14px 20px; border-top: 1px solid #2e3244;
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .kb-modal-btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .kb-modal-btn.primary { background: #6366f1; color: #fff; }
+        .kb-modal-btn.secondary { background: rgba(255,255,255,.08); color: #cbd5e1; }
+        .kb-status-badge { display:inline-block; padding:2px 10px; border-radius:999px; font-size:10px; font-weight:700; background:rgba(99,102,241,.15); color:#a5b4fc; border:1px solid rgba(99,102,241,.3); }
+        /* Card compacto */
+        .kb-card-compact {
+            background: var(--dropzone-bg, #0f172a); border: 1px solid var(--border-color, #2e3244);
+            border-radius: 8px; padding: 10px 12px; cursor: pointer;
+            transition: transform .15s, box-shadow .15s, border-color .15s; font-size: 12px; user-select: none;
+        }
+        .kb-card-compact:hover { border-color: #6366f1; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,.2); }
+        .kb-card-compact.dragging { opacity:.45; transform:rotate(2deg); }
+
         .kb-zone {
             padding: 8px;
             overflow-y: auto;
@@ -1325,6 +1378,21 @@
         }
     </script>
 
+    <!-- ═══════════ MODAL CARD ═══════════ -->
+    <div id="kb-modal-overlay" onclick="kbModalClose(event)">
+        <div id="kb-modal">
+            <div id="kb-modal-header">
+                <div id="kb-modal-title">Lead</div>
+                <button id="kb-modal-close" onclick="kbModalClose()">✕</button>
+            </div>
+            <div id="kb-modal-body"></div>
+            <div class="kb-modal-footer">
+                <button class="kb-modal-btn secondary" onclick="kbModalClose()">Fechar</button>
+                <button class="kb-modal-btn primary" onclick="kbSalvarModal()">💾 Salvar Notas</button>
+            </div>
+        </div>
+    </div>
+
     <div id="kanban-panel" class="tab-panel">
         <div class="kb-config-bar">
             <span>🔗 Backend URL:</span>
@@ -1766,7 +1834,7 @@
                 const okStatus = !statusF || s === statusF.toLowerCase();
                 return okBusca && okStatus;
             });
-            
+
             KB_COLUNAS.forEach(col => {
                 const zone = document.getElementById(`kbz-${col.id}`);
                 const sub = filtrados.filter(l => norm(l.Status) === col.id.toLowerCase());
@@ -1776,19 +1844,23 @@
         }
 
         function kbBuildCard(l) {
-            const notas = l.Resumo_IA || l.Notas_Vendedor || '';
             const statusBruto = String(l.Status || '').trim();
-            return `
-                <div class="kb-card" draggable="true" ondragstart="kbDragStart(event,${l.Id})" ondragend="kbDragEnd(event)" id="kbcard-${l.Id}">
-                    <div class="kb-card-name">🏢 ${l.Nome || 'Sem Nome'}</div>
-                    <div class="kb-row"><span>📞</span><a href="tel:${l.Telefone}" style="color:#818cf8">${l.Telefone || '-'}</a></div>
-                    <div style="font-size:9px; color:#6366f1; margin:5px 0;">🏷️ Status: ${statusBruto}</div>
-                    <textarea class="kb-notas" placeholder="Resumo IA..." id="kbn-${l.Id}">${notas}</textarea>
-                    <div class="kb-actions"><button class="kb-save" onclick="kbSalvarNotas(${l.Id})">💾 Salvar</button></div>
-                </div>`;
+            const notas = (l.Notas_Vendedor || l.Resumo_IA || '').trim();
+            return `<div class="kb-card-compact" draggable="true"
+                ondragstart="kbDragStart(event,${l.Id})"
+                ondragend="kbDragEnd(event)"
+                onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
+                id="kbcard-${l.Id}">
+                <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
+                <div class="kb-row"><span>📞</span><span style="color:#818cf8">${l.Telefone||'-'}</span></div>
+                ${notas ? `<div style="font-size:10px;color:#64748b;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📝 ${notas.substring(0,60)}</div>` : ''}
+                <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
+            </div>`;
         }
-        function kbDragStart(e, id) { kbDraggedId = id; }
-        function kbDragEnd() { kbDraggedId = null; }
+
+        let _kbDragging = false;
+        function kbDragStart(e, id) { kbDraggedId = id; _kbDragging = true; }
+        function kbDragEnd() { kbDraggedId = null; setTimeout(()=>{ _kbDragging = false; }, 50); }
         function kbDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
         function kbDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
         async function kbDrop(e, status) {
@@ -1798,11 +1870,52 @@
             if (lead) { lead.Status = status; kbFiltrar(); }
             await kbSmartFetch(kbBackendUrl(), { action: 'update', id: kbDraggedId, status });
         }
-        async function kbSalvarNotas(id) {
-            const notas = document.getElementById(`kbn-${id}`).value;
+
+        function kbOpenModal(id) {
+            const l = kbLeads.find(x => x.Id === id);
+            if (!l) return;
+            _kbModalId = id;
+            document.getElementById('kb-modal-title').textContent = `🏢 ${l.Nome || 'Lead'}`;
+            const rows = [
+                ['📞 Telefone',   l.Telefone],
+                ['📧 Email',      l.Email],
+                ['🏷️ Status',    l.Status],
+                ['🏛️ Porte',     l.Porte],
+                ['💼 Atividade', l.Atividade_Principal],
+                ['📊 Capital',   l.Capital_Social ? `R$ ${Number(l.Capital_Social).toLocaleString('pt-BR')}` : null],
+                ['🤝 Sócios',    l.Socios],
+                ['📍 Endereço',  l.Endereco],
+                ['🕐 Contato',   l.Ultimo_Contato],
+                ['📅 Follow-up', l.Proximo_FollowUp],
+            ];
+            const body = document.getElementById('kb-modal-body');
+            body.innerHTML = rows.filter(([,v]) => v).map(([label, val]) =>
+                `<div class="kb-modal-row"><span class="kb-modal-label">${label}</span><span class="kb-modal-val">${val}</span></div>`
+            ).join('') +
+            `<hr class="kb-modal-divider">
+            <div style="font-size:11px;color:#6366f1;font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
+            <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Digite suas notas aqui...">${l.Notas_Vendedor || l.Resumo_IA || ''}</textarea>`;
+            document.getElementById('kb-modal-overlay').classList.add('open');
+        }
+
+        function kbModalClose(e) {
+            if (e && e.currentTarget === e.target || !e) {
+                document.getElementById('kb-modal-overlay').classList.remove('open');
+                _kbModalId = null;
+            }
+        }
+
+        async function kbSalvarModal() {
+            if (!_kbModalId) return;
+            const notas = document.getElementById('kb-modal-notas').value;
             kbToast('Salvando...');
-            await kbSmartFetch(kbBackendUrl(), { action: 'update', id, notas_vendedor: notas, resumo_ia: notas });
-            kbToast('✅ Salvo!');
+            const lead = kbLeads.find(l => l.Id === _kbModalId);
+            if (lead) { lead.Notas_Vendedor = notas; lead.Resumo_IA = notas; }
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: _kbModalId, notas_vendedor: notas, resumo_ia: notas });
+            kbToast('✅ Notas salvas!');
+            document.getElementById('kb-modal-overlay').classList.remove('open');
+            _kbModalId = null;
+            kbFiltrar();
         }
     </script>
 </body>
