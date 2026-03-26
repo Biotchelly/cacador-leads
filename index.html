@@ -140,6 +140,12 @@
             flex-shrink: 0;
             max-height: calc(100vh - 155px);
             overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .kb-col::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
 
         .kb-col-header {
