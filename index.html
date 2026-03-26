@@ -1965,11 +1965,12 @@
                 ['📅 Follow-up', l.Proximo_FollowUp],
             ];
 
-            // Renderiza Etiquetas (Sincronizadas com Chatwoot)
+            // Renderiza Etiquetas (Tenta várias variações: Etiquetas, etiquetas, Tags, etc.)
             let tagsHtml = '';
-            if (l.Etiquetas) {
-                const tagsRaw = typeof l.Etiquetas === 'string' ? l.Etiquetas.split(',') : (Array.isArray(l.Etiquetas) ? l.Etiquetas : []);
-                tagsHtml = tagsRaw.map(t => `<span class="kb-modal-badge">${t.trim()}</span>`).join('');
+            const labelsValue = l.Etiquetas || l.etiquetas || l.Tags || l.tags || l.Labels || l.labels;
+            if (labelsValue) {
+                const tagsRaw = typeof labelsValue === 'string' ? labelsValue.split(',') : (Array.isArray(labelsValue) ? labelsValue : []);
+                tagsHtml = tagsRaw.filter(t => t && t.trim()).map(t => `<span class="kb-modal-badge">${t.trim()}</span>`).join('');
             }
 
             const body = document.getElementById('kb-modal-body');
@@ -2007,8 +2008,16 @@
             const notas = document.getElementById('kb-modal-notas').value;
             kbToast('Salvando...');
             const lead = kbLeads.find(l => l.Id === _kbModalId);
-            if (lead) { lead.Notas_Vendedor = notas; }
-            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: _kbModalId, notas_vendedor: notas });
+            if (lead) { 
+                lead.Notas_Vendedor = notas; 
+                // MUITO IMPORTANTE: Enviar o Status atual para o Kestra/NocoDB não limpar o campo!
+                await kbSmartFetch(kbBackendUrl(), { 
+                    action: 'update', 
+                    id: _kbModalId, 
+                    notas_vendedor: notas,
+                    status: lead.Status
+                });
+            }
             kbToast('✅ Notas salvas!');
             document.getElementById('kb-modal-overlay').classList.remove('open');
             _kbModalId = null;
