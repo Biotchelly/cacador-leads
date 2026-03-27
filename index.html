@@ -1604,6 +1604,17 @@
             } catch(err){}
         });
 
+        // 🚀 Função para saltar para a conversa no Chatwoot (V74)
+        function kbOpenConversation(convId) {
+            if (!convId) return;
+            // O Chatwoot Dashboard App permite trocar de contexto via postMessage
+            window.parent.postMessage(JSON.stringify({
+                event: 'appContext:change',
+                conversationId: parseInt(convId)
+            }), '*');
+            kbToast('🚀 Saltando para a conversa...');
+        }
+
         // Monitoramento contínuo (Polling Interno)
         setInterval(() => {
             const vid = document.getElementById('vendedorId');
@@ -1876,8 +1887,12 @@
                 } else {
                     l.Status = String(sObj || '').trim();
                 }
+
+                // Normaliza ID da Conversa (V74)
+                l.Conversation_ID = l.Conversation_ID || l.conversation_id || l['# Conversation_ID'] || null;
+
                 const original = l.Status;
-                console.log(`[KB] Lead: ${l.Nome} | Status Bruto: ${original} | Normalizado: ${kbFiltrar_norm_only(original)}`);
+                console.log(`[KB] Lead: ${l.Nome} | Status: ${original} | ConvID: ${l.Conversation_ID}`);
             });
             const label = document.getElementById('kb-agent-label');
             const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
@@ -1949,7 +1964,11 @@
                 onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
                 id="kbcard-${l.Id}">
                 <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
-                <div class="kb-row"><span>📞</span><span style="color:var(--text-secondary)">${l.Telefone||'-'}</span></div>
+                <div class="kb-row" ${l.Conversation_ID ? `onclick="event.stopPropagation();kbOpenConversation(${l.Conversation_ID})"` : ''} 
+                     style="${l.Conversation_ID ? 'cursor:pointer;color:var(--accent-color);' : ''}">
+                    <span>📞</span><span style="color:${l.Conversation_ID ? 'var(--accent-color)' : 'var(--text-secondary)'}">${l.Telefone||'-'}</span>
+                    ${l.Conversation_ID ? '<span style="margin-left:auto;font-size:12px;">💬</span>' : ''}
+                </div>
                 ${notas ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7">📝 ${notas.substring(0,60)}</div>` : ''}
                 <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
             </div>`;
@@ -2016,9 +2035,15 @@
                 <div style="font-size:11px;color:var(--accent-color);font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
                 <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Sua nota será salva automaticamente..." onchange="kbSalvarModal()">${l.Notas_Vendedor || ''}</textarea>
                 
-                <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')">
-                    📅 Agendar Tarefa / Call
-                </button>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    ${l.Conversation_ID ? `
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation(${l.Conversation_ID})" style="background:#0284c7;flex:1;">
+                        💬 Abrir Conversa
+                    </button>` : ''}
+                    <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')" style="flex:1;">
+                        📅 Agendar Tarefa
+                    </button>
+                </div>
             `;
             document.getElementById('kb-modal-overlay').classList.add('open');
         }
