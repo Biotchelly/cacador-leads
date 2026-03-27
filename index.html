@@ -1965,12 +1965,17 @@
                 ['📅 Follow-up', l.Proximo_FollowUp],
             ];
 
-            // Renderiza Etiquetas (Tenta várias variações: Etiquetas, etiquetas, Tags, etc.)
+            // Renderiza Etiquetas (Melhorado para lidar com arrays de objetos do NocoDB)
             let tagsHtml = '';
-            const labelsValue = l.Etiquetas || l.etiquetas || l.Tags || l.tags || l.Labels || l.labels;
-            if (labelsValue) {
-                const tagsRaw = typeof labelsValue === 'string' ? labelsValue.split(',') : (Array.isArray(labelsValue) ? labelsValue : []);
-                tagsHtml = tagsRaw.filter(t => t && t.trim()).map(t => `<span class="kb-modal-badge">${t.trim()}</span>`).join('');
+            const rawLabels = l.Etiquetas || l.etiquetas || l.Tags || l.tags || l.Labels || l.labels;
+            if (rawLabels) {
+                let tagsArr = [];
+                if (typeof rawLabels === 'string') {
+                    tagsArr = rawLabels.split(',');
+                } else if (Array.isArray(rawLabels)) {
+                    tagsArr = rawLabels.map(t => (typeof t === 'object' && t !== null) ? (t.title || t.value || t.name) : t);
+                }
+                tagsHtml = tagsArr.filter(t => t && String(t).trim()).map(t => `<span class="kb-modal-badge">${String(t).trim()}</span>`).join('');
             }
 
             const body = document.getElementById('kb-modal-body');
@@ -2010,11 +2015,12 @@
             const lead = kbLeads.find(l => l.Id === _kbModalId);
             if (lead) { 
                 lead.Notas_Vendedor = notas; 
-                // MUITO IMPORTANTE: Enviar o Status atual para o Kestra/NocoDB não limpar o campo!
+                // MUITO IMPORTANTE: Enviar o Status e Resumo_IA atuais para evitar sobrescrita ou erro
                 await kbSmartFetch(kbBackendUrl(), { 
                     action: 'update', 
                     id: _kbModalId, 
                     notas_vendedor: notas,
+                    resumo_ia: lead.Resumo_IA || '', // Envia o que já existe para manter separado
                     status: lead.Status
                 });
             }
