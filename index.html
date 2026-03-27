@@ -544,7 +544,7 @@
             padding: 8px 20px;
             background: var(--bg-color);
             border-bottom: 1px solid var(--border-color);
-            display: flex;
+            display: none;
             gap: 10px;
             align-items: center;
             font-size: 11px;
@@ -1578,8 +1578,8 @@
         function kbLog(msg) {
             const con = document.getElementById('kb-debug-console');
             if(!con) return;
-            // Se a msg contiver "DUMP", mostra o console
-            if(msg.includes('DUMP')) con.style.display = 'block';
+            // Ocultar console por padrão (pedido do usuário)
+            // if(msg.includes('DUMP')) con.style.display = 'block';
             const line = document.createElement('div');
             line.className = 'kb-debug-line';
             const time = new Date().toLocaleTimeString();
