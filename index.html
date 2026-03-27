@@ -1537,6 +1537,8 @@
         let kbGestorOverride = localStorage.getItem('kbGestorOverride') === 'true';
 
 
+        let kbAccountId = null; // 🆔 ID da Conta Chatwoot (V78.1)
+
         function kbToggleGestor() {
             kbGestorOverride = !kbGestorOverride;
             localStorage.setItem('kbGestorOverride', kbGestorOverride);
@@ -1560,6 +1562,7 @@
             localStorage.setItem('kbAuthId', finalId);
             localStorage.setItem('kbAuthNome', finalName);
 
+            // Vincula com campos escondidos se existirem (para automações externas)
             const vid = document.getElementById('vendedorId');
             const vnm = document.getElementById('vendedorNome');
             if (vid) vid.value = finalId;
@@ -1578,8 +1581,6 @@
         function kbLog(msg) {
             const con = document.getElementById('kb-debug-console');
             if(!con) return;
-            // Ocultar console por padrão (pedido do usuário)
-            // if(msg.includes('DUMP')) con.style.display = 'block';
             const line = document.createElement('div');
             line.className = 'kb-debug-line';
             const time = new Date().toLocaleTimeString();
@@ -1589,73 +1590,80 @@
 
         // Handshake Chatwoot
         window.parent.postMessage({ event: 'dashboardApp:ready' }, '*');
-        console.log('[KB] Enviado Handshake Chatwoot...');
-        kbLog('🚀 Script Kanban V71 Pronto!');
+        kbLog('🚀 Sistema Kanban Pronto!');
 
         window.addEventListener('message', function(e) {
             try { 
                 const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                console.log('[KB] Mensagem Recebida:', d.event || 'vazia');
                 if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
-                    const aid = (d.agent && d.agent.id) || (d.user && d.user.id) || d.id;
-                    const anm = (d.agent && d.agent.name) || (d.user && d.user.name);
+                    const agent = d.agent || d.user || (d.data && d.data.currentAgent);
+                    const aid = (agent && agent.id) || d.id;
+                    const anm = (agent && agent.name);
+                    const accId = (agent && agent.account_id) || (d.data && d.data.currentAgent && d.data.currentAgent.account_id);
+                    
                     if(aid) updateAgent(aid, anm);
+                    if(accId) {
+                        kbAccountId = accId;
+                        kbLog(`🏢 Account detectado: ${accId}`);
+                    }
                 }
             } catch(err){}
         });
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78-Surgical)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.1)
         function kbOpenConversation(convId, phone) {
             try {
                 // 🧹 Limpeza cirúrgica do ID (NocoDB às vezes manda "123.0" ou strings complexas)
-                const cleanIdStr = String(convId).split('.')[0].replace(/\D/g, '');
-                const finalId = parseInt(cleanIdStr);
+                var cleanIdStr = String(convId).split('.')[0].replace(/\D/g, '');
+                var finalId = parseInt(cleanIdStr);
                 
-                kbLog(`🔍 Tentando abrir conversa: Original=${convId}, Clean=${cleanIdStr}, Int=${finalId}`);
+                kbLog('🔍 Tentando abrir conversa: ID_Int=' + finalId + ', Phone=' + phone);
                 
                 if (!isNaN(finalId) && finalId > 0) {
                     kbToast('🚀 Saltando para a conversa...');
                     
                     // 🚀 Payload multi-versão para garantir compatibilidade com Chatwoot
-                    const payloads = [
+                    var payloads = [
                         { event: 'appContext:change', conversationId: finalId },
                         { event: 'conversation:change', conversationId: finalId },
                         { event: 'conversation:change', id: finalId }
                     ];
                     
-                    // ⚓ Disparo redundante em todas as camadas e formatos
-                    payloads.forEach(p => {
-                        const jsonP = JSON.stringify(p);
-                        [window.parent, window.top].forEach(target => {
+                    // ⚓ Disparo redundante em todas as camadas e formatos (JS Tradicional para compatibilidade)
+                    for (var i = 0; i < payloads.length; i++) {
+                        var p = payloads[i];
+                        var jsonP = JSON.stringify(p);
+                        var targets = [window.parent, window.top];
+                        for (var j = 0; j < targets.length; j++) {
+                            var target = targets[j];
                             if (target) {
                                 target.postMessage(p, '*');
                                 target.postMessage(jsonP, '*');
                             }
-                        });
-                    });
+                        }
+                    }
 
-                    kbLog(`✅ Sinais de SALTO (N=${payloads.length * 4}) enviados para ID: ${finalId}`);
+                    kbLog('✅ Sinais de SALTO enviados para ID: ' + finalId);
 
-                    // 🛠️ Fallback Agressivo: Se houver um AccountID e estivermos empacados, prepara redirecionamento total
-                    if (kbAccountId && finalId) {
-                        setTimeout(() => {
-                           kbLog('💡 Dica: Se o salto não ocorreu, pode haver bloqueio de iframe ou versão incompatível.');
-                           // Fallback de URL completa comentado por segurança; ativar se o postMessage falhar consistentemente
-                           // window.top.location.href = `https://chatwoot.empreendedorserial.com/app/accounts/${kbAccountId}/conversations/${finalId}`;
+                    // 🛠️ Fallback Agressivo: Se houver um AccountID e estivermos empacados
+                    // (Referência em kbAccountId para evitar ReferenceError)
+                    if (window.kbAccountId && finalId) {
+                        setTimeout(function() {
+                           kbLog('💡 Dica: Se o salto automático falhar, verifique se o ID #' + finalId + ' pertence à conta #' + window.kbAccountId);
                         }, 1500);
                     }
                 } else if (phone && String(phone).length > 5) {
-                    kbLog('⚠️ ID de conversa inválido ou inexistente. Tentando fallback WhatsApp...');
-                    const cleanPhone = String(phone).replace(/\D/g, '');
-                    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+                    kbLog('⚠️ ID de conversa inválido. Abrindo WhatsApp...');
+                    var cleanPhone = String(phone).replace(/\D/g, '');
+                    window.open('https://wa.me/' + cleanPhone, '_blank');
                     kbToast('📲 Abrindo WhatsApp...');
                 } else {
-                    kbLog('❌ Erro: Lead sem ID e sem telefone válido.');
                     kbToast('⚠️ Sem ID ou Telefone válido');
                 }
             } catch (err) {
-                kbLog(`❌ Erro em kbOpenConversation: ${err.message}`);
-                kbToast('🛑 Erro técnico ao abrir conversa');
+                console.error('[KB] Erro em kbOpenConversation:', err);
+                kbToast('🛑 Erro: ' + err.message);
+                kbLog('❌ Falha técnica: ' + err.message);
             }
         }
 
