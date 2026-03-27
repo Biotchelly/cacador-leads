@@ -1718,6 +1718,59 @@
             }
         }
 
+        // 🚀 Iniciar conversa proativamente via Kestra (V90)
+        async function kbProactiveStart(id) {
+            const l = kbLeads.find(x => x.Id === id);
+            if (!l) return;
+            
+            kbLog('🚀 Iniciando disparo proativo para: ' + l.Nome);
+            kbToast('⏳ Comandando Kestra para abrir conversa...');
+            
+            const headers = ['Nome', 'Telefone', 'Email', 'Status', 'Atividade_Principal', 'Capital_Social', 'Socios', 'Endereco', 'Inbox_ID', 'Team_ID'];
+            const values = [
+                l.Nome || '',
+                l.Telefone || '',
+                l.Email || '',
+                l.Status || 'Novo',
+                l.Atividade_Principal || '',
+                l.Capital_Social || '',
+                l.Socios || '',
+                l.Endereco || '',
+                l.Inbox_ID || '',
+                l.Team_ID || ''
+            ];
+            
+            const csvLine = values.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',');
+            const csvContent = headers.join(',') + '\n' + csvLine;
+
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            const payload = {
+                kestra_url: webhookUrl,
+                csv_content: csvContent,
+                update_existing: true,
+                sniper_enabled: true,
+                reload_enabled: false,
+                chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
+                chatwoot_team_id: l.Team_ID || document.getElementById('chatwootTeamId').value || "",
+                agent_id: parseInt(document.getElementById('vendedorId')?.value) || null,
+                vendedor_nome: document.getElementById('vendedorNome').value || "Gestão"
+            };
+
+            try {
+                const response = await kbSmartFetch(webhookUrl, payload);
+                if (response && response.ok) {
+                    kbToast('✅ Sucesso! A conversa aparecerá em instantes.');
+                    kbLog('✨ Disparo individual confirmado pelo Kestra.');
+                    setTimeout(() => kbModalClose(), 2000);
+                } else {
+                    kbToast('🛑 Falha no comando. Verifique o Kestra.');
+                }
+            } catch (err) {
+                console.error('[KB] Falha no Proactive:', err);
+                kbToast('🛑 Erro de conexão com o Kestra');
+            }
+        }
+
         // Monitoramento contínuo (Polling Interno)
         setInterval(() => {
             const vid = document.getElementById('vendedorId');
@@ -2146,8 +2199,8 @@
                     <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="background:#0284c7;flex:1;">
                         💬 Ir para o Chat
                     </button>` : `
-                    <button class="kb-modal-action-btn" onclick="kbOpenConversation(null, '${l.Telefone}', '${l.Team_ID || ''}')" style="background:#10b981;flex:1;">
-                        📲 Abrir WhatsApp
+                    <button class="kb-modal-action-btn" onclick="kbProactiveStart(${l.Id})" style="background:#10b981;flex:1;">
+                        🚀 Iniciar no Chatwoot
                     </button>
                     `}
                     <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')" style="flex:1;">
