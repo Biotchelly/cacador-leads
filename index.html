@@ -912,42 +912,28 @@
 
                     <!-- Painel de Controle Superior -->
                     <div class="config-grid">
+                        <!-- Grupo A: Conexão e CRM -->
                         <div class="config-card">
                             <div class="config-header">
-                                <i class="fa-solid fa-gear"></i> Configurações do Ciclo
+                                <i class="fa-solid fa-link"></i> Configuração de Conexão (CRM & Chatwoot)
                             </div>
                             <div class="form-group">
                                 <label class="form-label">IDs das Inboxes (Chatwoot)</label>
                                 <input type="text" class="form-input" id="inboxIds" placeholder="Ex: 1, 2, 5" value="1">
-                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para
-                                    rodízio
-                                    (anti-ban).</small>
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para rodízio.</small>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
-                                <input type="number" class="form-input" id="reloadCountMain" value="5">
-                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos
-                                    leads
-                                    'Novos' ativar para disparo por vez.</small>
-                            </div>
-                        </div>
-
-                        <div class="config-card">
-                            <div class="config-header">
-                                <i class="fa-solid fa-database"></i> CRM NocoDB
+                                <label class="form-label">ID da Conta (Chatwoot)</label>
+                                <input type="number" class="form-input" id="chatwootAccountId" value="1">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">ID da Tabela (Destino)</label>
-                                <input type="text" class="form-input" id="tableId" placeholder="ID da tabela no NocoDB"
-                                    value="moqw8l0lnh76bvm">
-                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Hunter padrão:
-                                    moqw8l0lnh76bvm</small>
+                                <label class="form-label">ID da Tabela (Destino NocoDB)</label>
+                                <input type="text" class="form-input" id="tableId" placeholder="ID da tabela" value="moqw8l0lnh76bvm">
                             </div>
-                            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                            <div style="display: flex; gap: 10px;">
                                 <div class="form-group" style="flex: 2;">
                                     <label class="form-label">👤 Vendedor Responsável</label>
-                                    <input type="text" class="form-input" id="vendedorNome" placeholder="Nome"
-                                        value="Gestão"
+                                    <input type="text" class="form-input" id="vendedorNome" placeholder="Nome" value="Gestão"
                                         onchange="localStorage.setItem('vendedorNome', this.value); if(typeof kbSyncFromCacador === 'function') kbSyncFromCacador();">
                                 </div>
                                 <div class="form-group" style="flex: 1;">
@@ -958,33 +944,31 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">👥 ID do Time (Chatwoot)</label>
-                                <input type="number" class="form-input" id="chatwootTeamId" placeholder="Ex: 2"
-                                    value="">
-                                <small style="color: var(--text-secondary); font-size: 0.7rem;">ID para vinculação
-                                    direta da
-                                    conversa.</small>
+                                <input type="number" class="form-input" id="chatwootTeamId" placeholder="Ex: 2" value="">
                             </div>
-
-                            <div class="switch-container" style="margin-top: 1rem;">
+                            <div class="switch-container">
                                 <label class="switch">
                                     <input type="checkbox" id="updateExisting">
                                     <span class="slider"></span>
                                 </label>
                                 <span>🔄 Atualizar leads se já existirem?</span>
                             </div>
-
                         </div>
 
+                        <!-- Grupo B: Ciclo Sniper -->
                         <div class="config-card">
                             <div class="config-header">
-                                <i class="fa-solid fa-clock"></i> Horário e Cadência
+                                <i class="fa-solid fa-crosshairs"></i> Configurações do Ciclo Sniper
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
+                                <input type="number" class="form-input" id="reloadCountMain" value="5">
+                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos leads 'Novos' ativar por vez.</small>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Cadência Sniper (Minutos)</label>
                                 <input type="number" class="form-input" id="sniperCadence" value="5" min="1">
-                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre
-                                    cada
-                                    disparo.</small>
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre cada disparo.</small>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Max. Disparos por Ciclo</label>
@@ -1388,6 +1372,7 @@
                     max_disparos_ciclo: parseInt(document.getElementById('maxShots').value) || 10,
                     sniper_cadence: document.getElementById('sniperCadence').value || "5",
                     chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
+                    chatwoot_account_id: parseInt(document.getElementById('chatwootAccountId')?.value) || 1,
                     table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
                     vendedor_nome: document.getElementById('vendedorNome').value || "Gestão",
                     chatwoot_team_id: document.getElementById('chatwootTeamId').value || "",
@@ -1735,18 +1720,15 @@
                 manual_lead_id: parseInt(l.Id),
                 table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
                 chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
+                chatwoot_account_id: parseInt(document.getElementById('chatwootAccountId')?.value) || 1,
                 chatwoot_team_id: parseInt(l.Team_ID || document.getElementById('chatwootTeamId').value) || null,
                 agent_id: parseInt(document.getElementById('vendedorId')?.value) || null,
                 vendedor_nome: document.getElementById('vendedorNome').value || "Gestão"
             };
 
             try {
-                // Chamada via POST JSON (Diferente da importação CSV do Caçador)
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                // Usando kbSmartFetch para maior resiliência e suporte a Proxy/Cors
+                const response = await kbSmartFetch(webhookUrl, payload);
 
                 if (response && response.ok) {
                     kbToast('✅ Conversa preparada! Saltando...');
