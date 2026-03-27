@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0b0e14;
-            --card-bg: #151921;
-            --dropzone-bg: #0b0e14;
-            --border-color: #222630;
+            --bg-color: #111111;
+            --card-bg: #151718;
+            --dropzone-bg: #111111;
+            --border-color: #222222;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --accent-color: #1f93ff;
@@ -43,7 +43,7 @@
             background: none;
             border: none;
             border-bottom: 2px solid transparent;
-            padding: 0.75rem 1.25rem;
+            padding: 0.6rem 1rem;
             font-size: 13px;
             font-weight: 500;
             color: var(--text-secondary);
@@ -75,15 +75,19 @@
 
         /* ═══════════ KANBAN ═══════════ */
         #kanban-panel {
-            background: var(--bg-color);
+            background: #111111;
             min-height: calc(100vh - 40px);
             display: none;
             flex-direction: column;
         }
 
+        #kanban-panel.active {
+            display: flex;
+        }
+
         .kb-toolbar {
-            padding: 8px 16px;
-            background: #111827;
+            padding: 6px 14px;
+            background: #111111;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             gap: 12px;
@@ -96,11 +100,11 @@
 
         .kb-toolbar input,
         .kb-toolbar select {
-            background: #0b0e14;
+            background: #1a1d21;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             font-size: 13px;
-            padding: 7px 12px;
+            padding: 6px 12px;
             border-radius: 6px;
             font-family: inherit;
         }
@@ -160,13 +164,13 @@
         .kb-col {
             min-width: 290px;
             max-width: 320px;
-            border-radius: 8px;
-            background: #111827;
+            border-radius: 6px;
+            background: #111111;
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            max-height: calc(100vh - 145px);
+            max-height: calc(100vh - 125px);
             overflow-y: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
@@ -177,10 +181,10 @@
         }
 
         .kb-col-header {
-            padding: 12px 14px;
+            padding: 10px 14px;
             font-size: 13px;
             font-weight: 600;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -197,13 +201,13 @@
             padding: 1px 7px;
         }
 
-        .kb-col.col-novo .kb-col-header { background: #2d333b; }
-        .kb-col.col-pente .kb-col-header { background: #45371c; }
-        .kb-col.col-aberto .kb-col-header { background: #1c2d4a; }
-        .kb-col.col-qualif .kb-col-header { background: #133d2c; }
-        .kb-col.col-negoc .kb-col-header { background: #5a3a1a; }
-        .kb-col.col-conv .kb-col-header { background: #0c4a3e; }
-        .kb-col.col-perd .kb-col-header { background: #4a1515; }
+        .kb-col.col-novo .kb-col-header { background: #22252b; border-bottom-color: #31363f; }
+        .kb-col.col-pente .kb-col-header { background: #332b1a; border-bottom-color: #453b24; }
+        .kb-col.col-aberto .kb-col-header { background: #1a2333; border-bottom-color: #242e45; }
+        .kb-col.col-qualif .kb-col-header { background: #132d1e; border-bottom-color: #1a3d2c; }
+        .kb-col.col-negoc .kb-col-header { background: #3d2b1a; border-bottom-color: #553b24; }
+        .kb-col.col-conv .kb-col-header { background: #0c332b; border-bottom-color: #0c4a3e; }
+        .kb-col.col-perd .kb-col-header { background: #330f0f; border-bottom-color: #4a1515; }
 
         /* ══════ MODAL CARD ══════ */
         #kb-modal-overlay {
@@ -213,12 +217,12 @@
         }
         #kb-modal-overlay.open { display: flex; }
         #kb-modal {
-            background: #111827; 
+            background: #111111; 
             border: 1px solid var(--border-color); 
-            border-radius: 12px;
+            border-radius: 8px;
             width: 94%; max-width: 600px; max-height: 85vh; overflow-y: auto;
             box-shadow: 0 25px 60px rgba(0,0,0,.6); 
-            animation: modalIn .2s ease-out;
+            animation: modalIn .15s ease-out;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
@@ -1215,6 +1219,22 @@
             return res;
         }
 
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            const activePanel = document.getElementById(`${tabId}-panel`);
+            
+            if (activeBtn) activeBtn.classList.add('active');
+            if (activePanel) activePanel.classList.add('active');
+            
+            if (tabId === 'kanban' && typeof kbCarregar === 'function') {
+                kbCarregar();
+            }
+        }
+
         // --- Theme Logic ---
         function setTheme(theme) {
             const root = document.documentElement;
@@ -1999,8 +2019,8 @@
                 <div style="font-size:11px;color:#10b981;font-weight:700;margin-bottom:6px;">🤖 Resumo IA</div>
                 <div class="kb-modal-resumo">${l.Resumo_IA || 'Nenhum resumo gerado pela IA ainda.'}</div>
                 
-                <div style="font-size:11px;color:#6366f1;font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
-                <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Digite suas notas sobre o lead...">${l.Notas_Vendedor || ''}</textarea>
+                <div style="font-size:11px;color:var(--accent-color);font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
+                <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Sua nota será salva automaticamente..." onchange="kbSalvarModal()">${l.Notas_Vendedor || ''}</textarea>
                 
                 <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')">
                     📅 Agendar Tarefa / Call
