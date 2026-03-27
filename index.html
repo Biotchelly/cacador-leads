@@ -1626,8 +1626,8 @@
             if (acc) kbAccountId = acc;
         })();
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V80 - Ultimate Debug)
-        function kbOpenConversation(convId, phone) {
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V81 - Dynamic Team)
+        function kbOpenConversation(convId, phone, leadTeamId) {
             try {
                 var cleanIdStr = String(convId || '').split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
@@ -1636,20 +1636,21 @@
                 var teamEl = document.getElementById('kb-team-id');
                 
                 var chatwootUrl = urlEl ? urlEl.value.trim() : '';
-                var teamId = teamEl ? teamEl.value.trim() : '';
+                // Prioridade: ID do Lead (CSV/Noco) > ID Global (Barra Superior)
+                var teamId = (leadTeamId && leadTeamId !== 'null' && leadTeamId !== 'undefined') ? leadTeamId : (teamEl ? teamEl.value.trim() : '');
                 
                 // Sanitização da URL base
                 if (chatwootUrl && !chatwootUrl.startsWith('http')) chatwootUrl = 'https://' + chatwootUrl;
                 chatwootUrl = chatwootUrl.replace(/\/$/, '').replace(/\/app$/, '');
 
-                kbLog('🔍 Gatilho: ID=' + finalId + ' | Acc=' + kbAccountId + ' | Team=' + teamId);
+                kbLog('🔍 Gatilho V81: ID=' + finalId + ' | Acc=' + kbAccountId + ' | Team=' + teamId);
                 
                 if (!isNaN(finalId) && finalId > 0) {
                     var teamPart = teamId ? ('/team/' + teamId) : '';
                     var path = '/accounts/' + kbAccountId + teamPart + '/conversations/' + finalId;
                     var fullJumpUrl = chatwootUrl + '/app' + path;
 
-                    kbToast('🚀 Saltando para: ' + path);
+                    kbToast('🚀 Saltando para Conversa: ' + finalId);
                     kbLog('🔗 URL Alvo: ' + fullJumpUrl);
                     
                     // 1. Sinais via postMessage (Suave)
@@ -1675,14 +1676,12 @@
                     // 2. Fallback via Redirecionamento de Janela (Bruto)
                     setTimeout(function() {
                         if (chatwootUrl && window.top) {
-                            // Se após 1.8s a URL do topo não contém o ID, força o salto
                             try {
                                 if (!window.top.location.href.includes('/conversations/' + finalId)) {
                                     kbLog('⚡ Forçando navegação total...');
                                     window.top.location.href = fullJumpUrl;
                                 }
                             } catch(e) {
-                                // Se der erro de CORS ao ler a URL do topo, força assim mesmo
                                 window.top.location.href = fullJumpUrl;
                             }
                         }
@@ -1976,9 +1975,12 @@
 
                 // Normaliza ID da Conversa (V74)
                 l.Conversation_ID = l.Conversation_ID || l.conversation_id || l['# Conversation_ID'] || null;
+                
+                // Normaliza ID do Time (V81)
+                l.Team_ID = l.Team_ID || l.team_id || l.ID_do_Time || l.ID_Time || l.Chatwoot_Team_ID || null;
 
                 const original = l.Status;
-                console.log(`[KB] Lead: ${l.Nome} | Status: ${original} | ConvID: ${l.Conversation_ID}`);
+                console.log(`[KB] Lead: ${l.Nome} | Status: ${original} | ConvID: ${l.Conversation_ID} | TeamID: ${l.Team_ID}`);
             });
             const label = document.getElementById('kb-agent-label');
             const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
@@ -2122,10 +2124,10 @@
                 
                 <div style="display:flex;gap:10px;margin-top:10px;">
                     ${l.Conversation_ID ? `
-                    <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}')" style="background:#0284c7;flex:1;">
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}')" style="background:#0284c7;flex:1;">
                         💬 Abrir Conversa
                     </button>` : `
-                    <button class="kb-modal-action-btn" onclick="kbOpenConversation(null, '${l.Telefone}')" style="background:#10b981;flex:1;">
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation(null, '${l.Telefone}', '${l.Team_ID || ''}')" style="background:#10b981;flex:1;">
                         📲 Abrir WhatsApp
                     </button>
                     `}
