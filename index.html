@@ -1493,10 +1493,12 @@
     <div id="kanban-panel" class="tab-panel">
         <div class="kb-config-bar">
             <span>🔗 Backend:</span>
-            <input class="kb-input-url" id="kb-backend-url" style="width:120px;" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key">
-            <span style="margin-left:5px;">🏠 Chatwoot URL:</span>
-            <input class="kb-input-url" id="kb-chatwoot-url" style="width:180px;" placeholder="Ex: https://app.chatwoot.com" value="https://biotchellyprospecta-chatwoot.mbtqpp.easypanel.host">
-            <button class="kb-save" onclick="kbCarregar()">↻ Carregar</button>
+            <input class="kb-input-url" id="kb-backend-url" style="width:100px;" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key">
+            <span style="margin-left:5px;">🏠 URL:</span>
+            <input class="kb-input-url" id="kb-chatwoot-url" style="width:140px;" value="https://biotchellyprospecta-chatwoot.mbtqpp.easypanel.host">
+            <span style="margin-left:5px;">👥 Time:</span>
+            <input class="kb-input-url" id="kb-team-id" style="width:40px;" placeholder="Ex: 6" value="6">
+            <button class="kb-save" onclick="kbCarregar()">↻</button>
         </div>
         <div class="kb-toolbar">
             <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:150px;">
@@ -1624,67 +1626,78 @@
             if (acc) kbAccountId = acc;
         })();
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.7 - Ultra Fix)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V80 - Ultimate Debug)
         function kbOpenConversation(convId, phone) {
             try {
                 var cleanIdStr = String(convId || '').split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
-                var chatwootUrl = document.getElementById('kb-chatwoot-url') ? document.getElementById('kb-chatwoot-url').value.trim() : '';
                 
-                kbLog('🔍 Abrindo conversa: ID=' + finalId + ' (Acc: ' + kbAccountId + ')');
+                var urlEl = document.getElementById('kb-chatwoot-url');
+                var teamEl = document.getElementById('kb-team-id');
+                
+                var chatwootUrl = urlEl ? urlEl.value.trim() : '';
+                var teamId = teamEl ? teamEl.value.trim() : '';
+                
+                // Sanitização da URL base
+                if (chatwootUrl && !chatwootUrl.startsWith('http')) chatwootUrl = 'https://' + chatwootUrl;
+                chatwootUrl = chatwootUrl.replace(/\/$/, '').replace(/\/app$/, '');
+
+                kbLog('🔍 Gatilho: ID=' + finalId + ' | Acc=' + kbAccountId + ' | Team=' + teamId);
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    kbToast('🚀 Tentando salto...');
+                    var teamPart = teamId ? ('/team/' + teamId) : '';
+                    var path = '/accounts/' + kbAccountId + teamPart + '/conversations/' + finalId;
+                    var fullJumpUrl = chatwootUrl + '/app' + path;
+
+                    kbToast('🚀 Saltando para: ' + path);
+                    kbLog('🔗 URL Alvo: ' + fullJumpUrl);
                     
-                    var path = '/accounts/' + kbAccountId + '/conversations/' + finalId;
-                    
-                    // 1. Sinais "Suaves" via Bridge (Várias versões para garantir compatibilidade)
+                    // 1. Sinais via postMessage (Suave)
                     var signals = [
-                        { event: 'appContext:change', data: { conversationId: finalId } },
-                        { event: 'conversation:change', id: finalId },
+                        { event: 'appContext:change', data: { conversationId: finalId, teamId: teamId } },
+                        { event: 'conversation:change', id: finalId, teamId: teamId },
                         { event: 'conversation:change', conversationId: finalId },
-                        { event: 'setConversation', id: finalId },
-                        { event: 'setConversation', conversationId: finalId },
-                        { event: 'pushState', path: path } // Algumas versões de SPA aceitam isso
+                        { event: 'pushState', path: path }
                     ];
                     
-                    for (var i = 0; i < signals.length; i++) {
-                        var msg = signals[i];
-                        var jsonMsg = JSON.stringify(msg);
+                    signals.forEach(function(msg) {
+                        var jsonStr = JSON.stringify(msg);
                         [window.parent, window.top].forEach(function(target) {
-                            if (target) {
+                            if (target && target !== window) {
                                 try {
                                     target.postMessage(msg, '*');
-                                    target.postMessage(jsonMsg, '*');
+                                    target.postMessage(jsonStr, '*');
                                 } catch(e){}
                             }
                         });
-                    }
+                    });
 
-                    // 2. ⚡ Redirecionamento Total (Fallback)
+                    // 2. Fallback via Redirecionamento de Janela (Bruto)
                     setTimeout(function() {
-                        if (chatwootUrl) {
-                            var baseUrl = chatwootUrl.replace(/\/$/, '') + '/app';
-                            var jumpUrl = baseUrl + path;
-                            
-                            // Somente força se ainda estivermos no mesmo lugar ou se não houver reação
-                            if (window.top) {
-                                kbLog('🔗 Forçando salto via URL: ' + jumpUrl);
-                                window.top.location.href = jumpUrl; 
+                        if (chatwootUrl && window.top) {
+                            // Se após 1.8s a URL do topo não contém o ID, força o salto
+                            try {
+                                if (!window.top.location.href.includes('/conversations/' + finalId)) {
+                                    kbLog('⚡ Forçando navegação total...');
+                                    window.top.location.href = fullJumpUrl;
+                                }
+                            } catch(e) {
+                                // Se der erro de CORS ao ler a URL do topo, força assim mesmo
+                                window.top.location.href = fullJumpUrl;
                             }
                         }
-                    }, 1500);
+                    }, 1800);
 
                 } else if (phone && String(phone).length > 5) {
                     var cleanPhone = String(phone).replace(/\D/g, '');
                     window.open('https://wa.me/' + cleanPhone, '_blank');
                     kbToast('📲 Abrindo WhatsApp...');
                 } else {
-                    kbToast('⚠️ Lead sem ID ou Telefone');
+                    kbToast('⚠️ Lead sem ID de Conversa');
                 }
             } catch (err) {
                 console.error('[KB] Falha:', err);
-                kbToast('🛑 Erro ao abrir');
+                kbToast('🛑 Erro no roteamento');
             }
         }
 
