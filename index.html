@@ -1607,37 +1607,55 @@
         // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78-Surgical)
         function kbOpenConversation(convId, phone) {
             try {
-                const finalId = parseInt(convId);
-                kbLog(`🔍 Tentando abrir conversa: ID=${convId}, Telefone=${phone}`);
+                // 🧹 Limpeza cirúrgica do ID (NocoDB às vezes manda "123.0" ou strings complexas)
+                const cleanIdStr = String(convId).split('.')[0].replace(/\D/g, '');
+                const finalId = parseInt(cleanIdStr);
+                
+                kbLog(`🔍 Tentando abrir conversa: Original=${convId}, Clean=${cleanIdStr}, Int=${finalId}`);
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    const payload = { event: 'appContext:change', conversationId: finalId };
-                    const jsonPayload = JSON.stringify(payload);
-                    
-                    // ⚓ Tenta em todas as camadas (Parent e Top) para garantir o salto
-                    if (window.parent) {
-                        window.parent.postMessage(jsonPayload, '*');
-                        window.parent.postMessage(payload, '*');
-                    }
-                    if (window.top && window.top !== window.parent) {
-                        window.top.postMessage(jsonPayload, '*');
-                        window.top.postMessage(payload, '*');
-                    }
-                    
-                    kbLog(`🚀 Sinal de SALTO enviado para ID: ${finalId}`);
                     kbToast('🚀 Saltando para a conversa...');
-                } else if (phone) {
+                    
+                    // 🚀 Payload multi-versão para garantir compatibilidade com Chatwoot
+                    const payloads = [
+                        { event: 'appContext:change', conversationId: finalId },
+                        { event: 'conversation:change', conversationId: finalId },
+                        { event: 'conversation:change', id: finalId }
+                    ];
+                    
+                    // ⚓ Disparo redundante em todas as camadas e formatos
+                    payloads.forEach(p => {
+                        const jsonP = JSON.stringify(p);
+                        [window.parent, window.top].forEach(target => {
+                            if (target) {
+                                target.postMessage(p, '*');
+                                target.postMessage(jsonP, '*');
+                            }
+                        });
+                    });
+
+                    kbLog(`✅ Sinais de SALTO (N=${payloads.length * 4}) enviados para ID: ${finalId}`);
+
+                    // 🛠️ Fallback Agressivo: Se houver um AccountID e estivermos empacados, prepara redirecionamento total
+                    if (kbAccountId && finalId) {
+                        setTimeout(() => {
+                           kbLog('💡 Dica: Se o salto não ocorreu, pode haver bloqueio de iframe ou versão incompatível.');
+                           // Fallback de URL completa comentado por segurança; ativar se o postMessage falhar consistentemente
+                           // window.top.location.href = `https://chatwoot.empreendedorserial.com/app/accounts/${kbAccountId}/conversations/${finalId}`;
+                        }, 1500);
+                    }
+                } else if (phone && String(phone).length > 5) {
+                    kbLog('⚠️ ID de conversa inválido ou inexistente. Tentando fallback WhatsApp...');
                     const cleanPhone = String(phone).replace(/\D/g, '');
                     window.open(`https://wa.me/${cleanPhone}`, '_blank');
-                    kbLog(`📲 Fallback: Abrindo WhatsApp para ${cleanPhone}`);
                     kbToast('📲 Abrindo WhatsApp...');
                 } else {
                     kbLog('❌ Erro: Lead sem ID e sem telefone válido.');
-                    alert('⚠️ Não foi possível encontrar um ID ou Telefone para este lead.');
+                    kbToast('⚠️ Sem ID ou Telefone válido');
                 }
             } catch (err) {
-                kbLog(`❌ Erro crítico em kbOpenConversation: ${err.message}`);
-                alert(`❌ Erro ao tentar abrir conversa: ${err.message}`);
+                kbLog(`❌ Erro em kbOpenConversation: ${err.message}`);
+                kbToast('🛑 Erro técnico ao abrir conversa');
             }
         }
 
