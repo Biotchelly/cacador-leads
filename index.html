@@ -1604,15 +1604,21 @@
             } catch(err){}
         });
 
-        // 🚀 Função para saltar para a conversa no Chatwoot (V74)
-        function kbOpenConversation(convId) {
-            if (!convId) return;
-            // O Chatwoot Dashboard App permite trocar de contexto via postMessage
-            window.parent.postMessage(JSON.stringify({
-                event: 'appContext:change',
-                conversationId: parseInt(convId)
-            }), '*');
-            kbToast('🚀 Saltando para a conversa...');
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V75)
+        function kbOpenConversation(convId, phone) {
+            if (convId) {
+                // Se tem ID, pula para a conversa no Chatwoot (Nativo)
+                window.parent.postMessage(JSON.stringify({
+                    event: 'appContext:change',
+                    conversationId: parseInt(convId)
+                }), '*');
+                kbToast('🚀 Saltando para a conversa...');
+            } else if (phone) {
+                // Se não tem ID, abre WhatsApp (Fallback)
+                const cleanPhone = String(phone).replace(/\D/g, '');
+                window.open(`https://wa.me/${cleanPhone}`, '_blank');
+                kbToast('📲 Abrindo WhatsApp...');
+            }
         }
 
         // Monitoramento contínuo (Polling Interno)
@@ -1964,10 +1970,10 @@
                 onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
                 id="kbcard-${l.Id}">
                 <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
-                <div class="kb-row" ${l.Conversation_ID ? `onclick="event.stopPropagation();kbOpenConversation(${l.Conversation_ID})"` : ''} 
-                     style="${l.Conversation_ID ? 'cursor:pointer;color:var(--accent-color);' : ''}">
-                    <span>📞</span><span style="color:${l.Conversation_ID ? 'var(--accent-color)' : 'var(--text-secondary)'}">${l.Telefone||'-'}</span>
-                    ${l.Conversation_ID ? '<span style="margin-left:auto;font-size:12px;">💬</span>' : ''}
+                <div class="kb-row" onclick="event.stopPropagation();kbOpenConversation(${l.Conversation_ID || 'null'}, '${l.Telefone || ''}')" 
+                     style="cursor:pointer; color:${l.Conversation_ID ? 'var(--accent-color)' : 'var(--text-secondary)'};">
+                    <span>📞</span><span style="font-weight:${l.Conversation_ID ? '700' : '400'}">${l.Telefone||'-'}</span>
+                    ${l.Conversation_ID ? '<span style="margin-left:auto;font-size:12px;">💬</span>' : '<span style="margin-left:auto;font-size:10px;opacity:0.5;">↗️</span>'}
                 </div>
                 ${notas ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7">📝 ${notas.substring(0,60)}</div>` : ''}
                 <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
@@ -2039,7 +2045,11 @@
                     ${l.Conversation_ID ? `
                     <button class="kb-modal-action-btn" onclick="kbOpenConversation(${l.Conversation_ID})" style="background:#0284c7;flex:1;">
                         💬 Abrir Conversa
-                    </button>` : ''}
+                    </button>` : `
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation(null, '${l.Telefone}')" style="background:#10b981;flex:1;">
+                        📲 Abrir WhatsApp
+                    </button>
+                    `}
                     <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')" style="flex:1;">
                         📅 Agendar Tarefa
                     </button>
