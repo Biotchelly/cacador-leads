@@ -1718,56 +1718,59 @@
             }
         }
 
-        // 🚀 Iniciar conversa proativamente via Kestra (V90)
+        // 🚀 Iniciar conversa proativamente via Kestra (V96 - Megazord All-in-One)
         async function kbProactiveStart(id) {
             const l = kbLeads.find(x => x.Id === id);
             if (!l) return;
             
-            kbLog('🚀 Iniciando disparo proativo para: ' + l.Nome);
-            kbToast('⏳ Comandando Kestra para abrir conversa...');
+            kbLog('🚀 Iniciando disparo MANUAL no Caçador para: ' + l.Nome);
+            kbToast('⏳ Preparando conversa no Chatwoot...');
             
-            const headers = ['Nome', 'Telefone', 'Email', 'Status', 'Atividade_Principal', 'Capital_Social', 'Socios', 'Endereco', 'Inbox_ID', 'Team_ID'];
-            const values = [
-                l.Nome || '',
-                l.Telefone || '',
-                l.Email || '',
-                l.Status || 'Novo',
-                l.Atividade_Principal || '',
-                l.Capital_Social || '',
-                l.Socios || '',
-                l.Endereco || '',
-                l.Inbox_ID || '',
-                l.Team_ID || ''
-            ];
-            
-            const csvLine = values.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',');
-            const csvContent = headers.join(',') + '\n' + csvLine;
-
             const webhookUrl = document.getElementById('webhookUrl').value.trim();
+
             const payload = {
-                kestra_url: webhookUrl,
-                csv_content: csvContent,
-                update_existing: true,
-                sniper_enabled: true,
-                reload_enabled: false,
+                manual_mode: true, // Aciona a ramificação cirúrgica no Kestra
+                manual_phone: l.Telefone || '',
+                manual_name: l.Nome || '',
+                manual_lead_id: parseInt(l.Id),
+                table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
                 chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
-                chatwoot_team_id: l.Team_ID || document.getElementById('chatwootTeamId').value || "",
+                chatwoot_team_id: parseInt(l.Team_ID || document.getElementById('chatwootTeamId').value) || null,
                 agent_id: parseInt(document.getElementById('vendedorId')?.value) || null,
                 vendedor_nome: document.getElementById('vendedorNome').value || "Gestão"
             };
 
             try {
-                const response = await kbSmartFetch(webhookUrl, payload);
+                // Chamada via POST JSON (Diferente da importação CSV do Caçador)
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
                 if (response && response.ok) {
-                    kbToast('✅ Sucesso! A conversa aparecerá em instantes.');
-                    kbLog('✨ Disparo individual confirmado pelo Kestra.');
-                    setTimeout(() => kbModalClose(), 2000);
+                    kbToast('✅ Conversa preparada! Saltando...');
+                    kbLog('✨ Modo Manual ativado no Caçador.');
+                    
+                    // Polling curto de 4s para pegar o ID e saltar
+                    setTimeout(async () => {
+                        kbToast('🔍 Sincronizando e abrindo...');
+                        await kbRefresh(); // Atualiza os leads para pegar o Conversation_ID
+                        setTimeout(() => {
+                            const updatedLead = kbLeads.find(x => x.Id === id);
+                            if (updatedLead && updatedLead.Conversation_ID) {
+                                kbOpenConversation(updatedLead.Conversation_ID, updatedLead.Telefone, updatedLead.Team_ID, updatedLead.Inbox_ID);
+                            } else {
+                                kbToast('⚠️ID gerado, mas ainda sincronizando. Tente em 2s.');
+                            }
+                        }, 1500);
+                    }, 4000);
                 } else {
-                    kbToast('🛑 Falha no comando. Verifique o Kestra.');
+                    kbToast('🛑 Falha ao acionar Modo Manual do Caçador.');
                 }
             } catch (err) {
                 console.error('[KB] Falha no Proactive:', err);
-                kbToast('🛑 Erro de conexão com o Kestra');
+                kbToast('🛑 Erro de conexão com Kestra');
             }
         }
 
