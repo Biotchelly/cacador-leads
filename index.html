@@ -1610,50 +1610,54 @@
             } catch(err){}
         });
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.1)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.2 - Plano B Ativo)
         function kbOpenConversation(convId, phone) {
             try {
-                // 🧹 Limpeza cirúrgica do ID (NocoDB às vezes manda "123.0" ou strings complexas)
                 var cleanIdStr = String(convId).split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
                 
-                kbLog('🔍 Tentando abrir conversa: ID_Int=' + finalId + ', Phone=' + phone);
+                kbLog('🔍 Tentando abrir conversa: ID=' + finalId);
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    kbToast('🚀 Saltando para a conversa...');
+                    kbToast('🚀 Abrindo conversa...');
                     
-                    // 🚀 Payload multi-versão para garantir compatibilidade com Chatwoot
+                    // 1. Tenta o salto "suave" via postMessage (várias versões)
                     var payloads = [
                         { event: 'appContext:change', conversationId: finalId },
                         { event: 'conversation:change', conversationId: finalId },
-                        { event: 'conversation:change', id: finalId }
+                        { event: 'setConversation', id: finalId }
                     ];
                     
-                    // ⚓ Disparo redundante em todas as camadas e formatos (JS Tradicional para compatibilidade)
                     for (var i = 0; i < payloads.length; i++) {
                         var p = payloads[i];
                         var jsonP = JSON.stringify(p);
-                        var targets = [window.parent, window.top];
-                        for (var j = 0; j < targets.length; j++) {
-                            var target = targets[j];
+                        [window.parent, window.top].forEach(function(target) {
                             if (target) {
                                 target.postMessage(p, '*');
                                 target.postMessage(jsonP, '*');
                             }
-                        }
+                        });
                     }
 
-                    kbLog('✅ Sinais de SALTO enviados para ID: ' + finalId);
-
-                    // 🛠️ Fallback Agressivo: Se houver um AccountID e estivermos empacados
-                    // (Referência em kbAccountId para evitar ReferenceError)
-                    if (window.kbAccountId && finalId) {
+                    // 2. ⚡ PLANO B: Redirecionamento Total (Garante o resultado se o postMessage falhar)
+                    // Se tivermos o AccountID, forçamos a navegação do browser inteiro
+                    if (kbAccountId && finalId) {
                         setTimeout(function() {
-                           kbLog('💡 Dica: Se o salto automático falhar, verifique se o ID #' + finalId + ' pertence à conta #' + window.kbAccountId);
-                        }, 1500);
+                            // Constrói a URL base dinamicamente ou usa o padrão detectado
+                            var baseUrl = window.location.origin.includes('chatwoot') ? (window.location.origin + '/app') : 'https://chatwoot.empreendedorserial.com/app';
+                            var jumpUrl = baseUrl + '/accounts/' + kbAccountId + '/conversations/' + finalId;
+                            
+                            kbLog('🔗 Forçando redirecionamento para: ' + jumpUrl);
+                            if (window.top) {
+                                window.top.location.href = jumpUrl;
+                            }
+                        }, 500); // 500ms de delay para permitir que o postMessage tente primeiro
+                    } else {
+                        kbLog('⚠️ Aviso: AccountID não detectado. O salto automático pode falhar.');
                     }
+
                 } else if (phone && String(phone).length > 5) {
-                    kbLog('⚠️ ID de conversa inválido. Abrindo WhatsApp...');
+                    kbLog('⚠️ ID inválido. Abrindo WhatsApp...');
                     var cleanPhone = String(phone).replace(/\D/g, '');
                     window.open('https://wa.me/' + cleanPhone, '_blank');
                     kbToast('📲 Abrindo WhatsApp...');
@@ -1663,7 +1667,6 @@
             } catch (err) {
                 console.error('[KB] Erro em kbOpenConversation:', err);
                 kbToast('🛑 Erro: ' + err.message);
-                kbLog('❌ Falha técnica: ' + err.message);
             }
         }
 
