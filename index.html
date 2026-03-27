@@ -125,7 +125,7 @@
 
         .kb-toolbar input,
         .kb-toolbar select {
-            background: #1a1d21;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             font-size: 13px;
@@ -362,8 +362,8 @@
         }
 
         .kb-card {
-            background: var(--dropzone-bg, #0f172a);
-            border: 1px solid var(--border-color, #2e3244);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 10px 12px;
             cursor: grab;
@@ -531,9 +531,9 @@
 
         .kb-input-url {
             flex: 1;
-            background: var(--dropzone-bg, #0f172a);
-            border: 1px solid var(--border-color, #2e3244);
-            color: var(--text-primary, #e2e8f0);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
             font-size: 11px;
             padding: 5px 10px;
             border-radius: 6px;
@@ -542,51 +542,20 @@
 
         .kb-config-bar {
             padding: 8px 20px;
-            background: rgba(99, 102, 241, .05);
-            border-bottom: 1px solid var(--border-color, #2e3244);
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
             align-items: center;
             font-size: 11px;
-            color: var(--text-secondary, #8892a4);
+            color: var(--text-secondary);
             flex-wrap: wrap;
             position: sticky;
             top: 0;
             z-index: 91;
         }
 
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --accent-color: #6366f1;
-            --accent-hover: #4f46e5;
-            --border-color: #e2e8f0;
-            --console-bg: #0f172a;
-            --console-text: #10b981;
-            --dropzone-bg: #f1f5f9;
-            --dropzone-border: #cbd5e1;
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #020617;
-            --card-bg: rgba(30, 41, 59, 0.8);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --accent-color: #818cf8;
-            --accent-hover: #a5b4fc;
-            --border-color: #1e293b;
-            --console-bg: #010409;
-            --console-text: #4ade80;
-            --dropzone-bg: #0f172a;
-            --dropzone-border: #334155;
-            --glass-border: rgba(255, 255, 255, 0.05);
-        }
+        /* Unified Theme System moved to top */
 
         * {
             margin: 0;
@@ -597,7 +566,7 @@
         }
 
         body {
-            background: radial-gradient(circle at top right, var(--bg-color), #dee2e6);
+            background: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -617,9 +586,7 @@
             min-height: calc(100vh - 56px);
         }
 
-        [data-theme="dark"] body {
-            background: radial-gradient(circle at top right, #0f172a, #020617);
-        }
+        /* Body theme handling unified at top */
 
         .container {
             width: 100%;
