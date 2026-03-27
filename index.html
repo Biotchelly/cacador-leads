@@ -1595,20 +1595,39 @@
         window.addEventListener('message', function(e) {
             try { 
                 var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user || d.account_id) {
-                    var agent = d.agent || d.user || (d.data && d.data.currentAgent) || d;
-                    var aid = (agent && agent.id) || d.id;
-                    var anm = (agent && agent.name);
-                    var accId = (agent && agent.account_id) || (d.data && d.data.currentAgent && d.data.currentAgent.account_id) || d.account_id;
-                    
-                    if(aid) updateAgent(aid, anm);
-                    if(accId) {
-                        kbAccountId = accId;
-                        kbLog('🏢 Account detectado: ' + accId);
+                // 🕵️ Busca Exaustiva por IDs de conta e agente em qualquer profundidade
+                function findKey(obj, keyName) {
+                    if (!obj || typeof obj !== 'object') return null;
+                    if (obj[keyName]) return obj[keyName];
+                    for (var k in obj) {
+                        var found = findKey(obj[k], keyName);
+                        if (found) return found;
                     }
+                    return null;
                 }
+
+                var accId = findKey(d, 'account_id') || findKey(d, 'accountId') || findKey(d, 'accountId');
+                var agentId = findKey(d, 'agent_id') || findKey(d, 'id');
+                var agentName = findKey(d, 'name') || findKey(d, 'first_name');
+
+                if (accId) {
+                    kbAccountId = accId;
+                    kbLog('🏢 Account detectado via Mensagem: ' + accId);
+                }
+                if (agentId) updateAgent(agentId, agentName);
+
             } catch(err){}
         });
+
+        // 🔍 Tenta capturar AccountID via URL (Chatwoot envia como param às vezes)
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var acc = params.get('account_id') || params.get('accountId');
+            if (acc) {
+                kbAccountId = acc;
+                kbLog('🏢 Account detectado via URL: ' + acc);
+            }
+        })();
 
         // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.3 - Diagnóstico)
         function kbOpenConversation(convId, phone) {
