@@ -1624,23 +1624,28 @@
             if (acc) kbAccountId = acc;
         })();
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.5 - Final Force)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.7 - Ultra Fix)
         function kbOpenConversation(convId, phone) {
             try {
                 var cleanIdStr = String(convId || '').split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
-                var chatwootUrl = document.getElementById('kb-chatwoot-url') ? document.getElementById('kb-chatwoot-url').value.trim() : 'https://chatwoot.empreendedorserial.com';
+                var chatwootUrl = document.getElementById('kb-chatwoot-url') ? document.getElementById('kb-chatwoot-url').value.trim() : '';
                 
                 kbLog('🔍 Abrindo conversa: ID=' + finalId + ' (Acc: ' + kbAccountId + ')');
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    kbToast('🚀 Saltando para conversa...');
+                    kbToast('🚀 Tentando salto...');
                     
-                    // 1. Sinais "Suaves" via Bridge (com o wrapper 'data' exigido por algumas versões)
+                    var path = '/accounts/' + kbAccountId + '/conversations/' + finalId;
+                    
+                    // 1. Sinais "Suaves" via Bridge (Várias versões para garantir compatibilidade)
                     var signals = [
                         { event: 'appContext:change', data: { conversationId: finalId } },
+                        { event: 'conversation:change', id: finalId },
                         { event: 'conversation:change', conversationId: finalId },
-                        { event: 'setConversation', id: finalId }
+                        { event: 'setConversation', id: finalId },
+                        { event: 'setConversation', conversationId: finalId },
+                        { event: 'pushState', path: path } // Algumas versões de SPA aceitam isso
                     ];
                     
                     for (var i = 0; i < signals.length; i++) {
@@ -1648,35 +1653,38 @@
                         var jsonMsg = JSON.stringify(msg);
                         [window.parent, window.top].forEach(function(target) {
                             if (target) {
-                                target.postMessage(msg, '*');
-                                target.postMessage(jsonMsg, '*');
+                                try {
+                                    target.postMessage(msg, '*');
+                                    target.postMessage(jsonMsg, '*');
+                                } catch(e){}
                             }
                         });
                     }
 
-                    // 2. ⚡ Redirecionamento Total (Fallback com URL Configurável)
+                    // 2. ⚡ Redirecionamento Total (Fallback)
                     setTimeout(function() {
-                        var baseUrl = chatwootUrl.replace(/\/$/, '') + '/app';
-                        var jumpUrl = baseUrl + '/accounts/' + kbAccountId + '/conversations/' + finalId;
-                        
-                        // Se estiver carregado dentro do Chatwoot, o postMessage DEVE funcionar. 
-                        // O redirecionamento total é o último recurso.
-                        if (window.top && window.top !== window) {
-                           kbLog('🔗 Forçando salto via URL: ' + jumpUrl);
-                           window.top.location.href = jumpUrl; 
+                        if (chatwootUrl) {
+                            var baseUrl = chatwootUrl.replace(/\/$/, '') + '/app';
+                            var jumpUrl = baseUrl + path;
+                            
+                            // Somente força se ainda estivermos no mesmo lugar ou se não houver reação
+                            if (window.top) {
+                                kbLog('🔗 Forçando salto via URL: ' + jumpUrl);
+                                window.top.location.href = jumpUrl; 
+                            }
                         }
-                    }, 1200); // 1.2s para dar tempo ao postMessage suave
+                    }, 1500);
 
                 } else if (phone && String(phone).length > 5) {
                     var cleanPhone = String(phone).replace(/\D/g, '');
                     window.open('https://wa.me/' + cleanPhone, '_blank');
                     kbToast('📲 Abrindo WhatsApp...');
                 } else {
-                    kbToast('⚠️ Sem ID ou Telefone');
+                    kbToast('⚠️ Lead sem ID ou Telefone');
                 }
             } catch (err) {
                 console.error('[KB] Falha:', err);
-                kbToast('🛑 Erro: ' + err.message);
+                kbToast('🛑 Erro ao abrir');
             }
         }
 
