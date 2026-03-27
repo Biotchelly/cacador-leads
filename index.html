@@ -1604,20 +1604,24 @@
             } catch(err){}
         });
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V75)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V77)
         function kbOpenConversation(convId, phone) {
-            if (convId) {
-                // Se tem ID, pula para a conversa no Chatwoot (Nativo)
-                window.parent.postMessage(JSON.stringify({
-                    event: 'appContext:change',
-                    conversationId: parseInt(convId)
-                }), '*');
+            const finalId = parseInt(convId);
+            if (!isNaN(finalId) && finalId > 0) {
+                const payload = { event: 'appContext:change', conversationId: finalId };
+                // Algumas versões aceitam objeto, outras JSON stringificado
+                window.parent.postMessage(JSON.stringify(payload), '*');
+                window.parent.postMessage(payload, '*'); 
+                kbLog(`🚀 Saltando para Conversa ID: ${finalId}`);
                 kbToast('🚀 Saltando para a conversa...');
             } else if (phone) {
-                // Se não tem ID, abre WhatsApp (Fallback)
                 const cleanPhone = String(phone).replace(/\D/g, '');
                 window.open(`https://wa.me/${cleanPhone}`, '_blank');
+                kbLog(`📲 Abrindo WhatsApp para: ${cleanPhone}`);
                 kbToast('📲 Abrindo WhatsApp...');
+            } else {
+                kbLog('⚠️ Falha: Nem ID nem Telefone válidos para abrir conversa.');
+                kbToast('⚠️ Erro ao abrir conversa.');
             }
         }
 
