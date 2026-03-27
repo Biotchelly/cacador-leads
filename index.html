@@ -1592,58 +1592,48 @@
         window.parent.postMessage({ event: 'dashboardApp:ready' }, '*');
         kbLog('🚀 Sistema Kanban Pronto!');
 
+        // 🛡️ Identificação Blindada (V78.4)
         window.addEventListener('message', function(e) {
             try { 
                 var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
                 
-                // 🛡️ Identificação Blindada: Prioriza chaves específicas de Agente/Conta
+                // Prioriza contextos de usuário/agente para evitar colisão com dados do Lead
                 var agent = d.currentAgent || (d.data && d.data.currentAgent) || d.agent || d.user;
                 var account = d.account || (d.data && d.data.account) || (agent && agent.account) || d;
 
-                // 🔍 Busca de ID da Conta
                 var accId = (account && (account.id || account.account_id)) || d.account_id;
-                
-                // 👤 Busca de Identidade do Agente (Evita chaves genéricas na raiz que podem ser do Lead)
                 var agentId = (agent && agent.id) || null;
                 var agentName = (agent && (agent.name || agent.first_name)) || null;
 
                 if (accId) {
                     kbAccountId = accId;
-                    kbLog('🏢 Account detectado: ' + accId);
                 }
 
-                // Só atualiza agente se tivermos um objeto de agente claro para evitar confundir com Lead/Conversa
                 if (agentId && agentId !== kbAuthId) {
                     updateAgent(agentId, agentName);
                 }
-
-            } catch(err){
-                kbLog('⚠️ Erro no listener de handshake: ' + err.message);
-            }
+            } catch(err){}
         });
 
-        // 🔍 Tenta capturar AccountID via URL (Chatwoot envia como param às vezes)
+        // Fallback de detecção via URL
         (function() {
             var params = new URLSearchParams(window.location.search);
             var acc = params.get('account_id') || params.get('accountId');
-            if (acc) {
-                kbAccountId = acc;
-                kbLog('🏢 Account detectado via URL: ' + acc);
-            }
+            if (acc) kbAccountId = acc;
         })();
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.3 - Diagnóstico)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.4 - Gold)
         function kbOpenConversation(convId, phone) {
             try {
-                var cleanIdStr = String(convId).split('.')[0].replace(/\D/g, '');
+                var cleanIdStr = String(convId || '').split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
                 
-                kbLog('🔍 Tentando abrir conversa: ID=' + finalId + ' (Acc: ' + kbAccountId + ')');
+                kbLog('🔍 Abrindo conversa: ID=' + finalId + ' (Acc: ' + kbAccountId + ')');
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    kbToast('⚡ V78.3: Saltando... (Acc: ' + (kbAccountId || 'Nulo') + ')');
+                    kbToast('🚀 Abrindo conversa...');
                     
-                    // 1. Tenta o salto "suave" via postMessage
+                    // 1. Salto Suave (postMessage)
                     var payloads = [
                         { event: 'appContext:change', conversationId: finalId },
                         { event: 'conversation:change', conversationId: finalId },
@@ -1661,31 +1651,25 @@
                         });
                     }
 
-                    // 2. ⚡ PLANO B: Redirecionamento Total (Fallback)
-                    if (finalId) {
-                        setTimeout(function() {
-                            if (kbAccountId) {
-                                var baseUrl = window.location.origin.includes('chatwoot') ? (window.location.origin + '/app') : 'https://chatwoot.empreendedorserial.com/app';
-                                var jumpUrl = baseUrl + '/accounts/' + kbAccountId + '/conversations/' + finalId;
-                                kbLog('🔗 Redirecionando: ' + jumpUrl);
-                                if (window.top) window.top.location.href = jumpUrl;
-                            } else {
-                                kbLog('🛑 Falha: AccountID não disponível para redirecionamento.');
-                                kbToast('🛑 Erro: AccountID não detectado');
-                            }
-                        }, 600);
-                    }
+                    // 2. ⚡ Redirecionamento Total (Fallback Automático)
+                    setTimeout(function() {
+                        var baseUrl = window.location.origin.includes('chatwoot') ? (window.location.origin + '/app') : 'https://chatwoot.empreendedorserial.com/app';
+                        var jumpUrl = baseUrl + '/accounts/' + kbAccountId + '/conversations/' + finalId;
+                        if (window.top && window.top.location.href !== jumpUrl) {
+                            window.top.location.href = jumpUrl;
+                        }
+                    }, 600);
 
                 } else if (phone && String(phone).length > 5) {
                     var cleanPhone = String(phone).replace(/\D/g, '');
                     window.open('https://wa.me/' + cleanPhone, '_blank');
                     kbToast('📲 Abrindo WhatsApp...');
                 } else {
-                    kbToast('⚠️ Sem ID ou Telefone');
+                    kbToast('⚠️ Lead sem ID ou Telefone');
                 }
             } catch (err) {
                 console.error('[KB] Erro:', err);
-                kbToast('🛑 Erro: ' + err.message);
+                kbToast('🛑 Erro ao abrir');
             }
         }
 
