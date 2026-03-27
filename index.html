@@ -752,40 +752,59 @@
         }
 
         .dropzone {
-            border: 2px dashed var(--dropzone-border);
-            background-color: var(--dropzone-bg);
-            border-radius: 2rem;
-            padding: 5rem 2rem;
-            text-align: center;
+            border: 2px dashed var(--border-color);
+            background-color: var(--card-bg);
+            border-radius: 1.25rem;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 64px;
         }
 
         .dropzone:hover,
         .dropzone.dragover {
             border-color: var(--accent-color);
             background-color: rgba(99, 102, 241, 0.05);
-            transform: scale(1.02);
         }
 
-        .dropzone i {
-            font-size: 4rem;
-            background: linear-gradient(to bottom, var(--accent-color), #8b5cf6);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1.5rem;
-        }
-
-        .dropzone h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .dropzone p {
+        .dropzone-text {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             color: var(--text-secondary);
+            font-size: 0.95rem;
+            flex: 1;
+        }
+
+        .dropzone-text i {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .dropzone-btn {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .dropzone-btn:hover {
+            background: #4f46e5;
+            transform: scale(1.02);
         }
 
         .action-btn {
@@ -960,9 +979,28 @@
                             <div class="config-header">
                                 <i class="fa-solid fa-crosshairs"></i> Configurações do Ciclo Sniper
                             </div>
+
+                            <!-- Toggles de Controle Unitário -->
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border-color);">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
+                                        <input type="checkbox" class="toggle-checkbox" id="reloadEnabled" checked>
+                                        <div class="toggle-input"></div>
+                                        <span style="font-size: 0.85rem; font-weight: 700;">Executar Recarga</span>
+                                    </label>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
+                                        <input type="checkbox" class="toggle-checkbox" id="sniperEnabled" checked>
+                                        <div class="toggle-input"></div>
+                                        <span style="font-size: 0.85rem; font-weight: 700;">Ligar Sniper 🔫</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
-                                <input type="number" class="form-input" id="reloadCountMain" value="5">
+                                <input type="number" class="form-input" id="reloadCountMain" value="5" oninput="document.getElementById('reloadCount').value = this.value">
                                 <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos leads 'Novos' ativar por vez.</small>
                             </div>
                             <div class="form-group">
@@ -974,16 +1012,23 @@
                                 <label class="form-label">Max. Disparos por Ciclo</label>
                                 <input type="number" class="form-input" id="maxShots" value="10">
                             </div>
+
+                            <!-- Hidden Sync Input -->
+                            <input type="hidden" id="reloadCount" value="5">
                         </div>
                     </div>
 
                     <!-- File Upload -->
                     <div class="dropzone-container">
                         <div class="dropzone" id="dropzone">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <h3>Arraste seu CSV aqui</h3>
-                            <p>ou clique para selecionar</p>
-                            <input type="file" id="fileInput" accept=".csv">
+                            <div class="dropzone-text">
+                                <i class="fa-solid fa-file-csv"></i>
+                                <span><strong>Arraste seu CSV</strong> aqui ou use o botão ao lado</span>
+                            </div>
+                            <button class="dropzone-btn" onclick="document.getElementById('fileInput').click()">
+                                <i class="fa-solid fa-plus"></i> Selecionar Arquivo
+                            </button>
+                            <input type="file" id="fileInput" accept=".csv" style="display: none;">
                         </div>
                         <!-- Hidden UI for Ultimate Fallback -->
                         <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
@@ -991,44 +1036,8 @@
                             <input type="hidden" name="payload" id="ultimatePayload">
                         </form>
                         <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
-                        <div class="file-info" id="fileInfo">
-                            <i class="fa-solid fa-file-csv"></i>
-                            <div>
-                                <strong id="fileName">arquivo.csv</strong>
-                                <div style="font-size: 0.8rem; opacity: 0.7;" id="fileSize">0 KB</div>
-                            </div>
                         </div>
-                    </div>
 
-                    <!-- Toggles de Operação -->
-                    <div class="config-card" style="margin-bottom: 2rem;">
-                        <div class="config-header">
-                            <i class="fa-solid fa-rocket"></i> Ações do Operador
-                        </div>
-                        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-                            <div class="form-group">
-                                <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
-                                    <input type="checkbox" class="toggle-checkbox" id="reloadEnabled" checked>
-                                    <div class="toggle-input"></div>
-                                    <span>Executar Recarga</span>
-                                </label>
-                                <div style="margin-left: 3rem; margin-top: 5px;">
-                                    <label style="font-size: 0.75rem;">Qtd. Leads: </label>
-                                    <input type="number" id="reloadCount" value="5" min="1"
-                                        style="width: 50px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 2px 5px;">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
-                                    <input type="checkbox" class="toggle-checkbox" id="sniperEnabled" checked>
-                                    <div class="toggle-input"></div>
-                                    <span>Ligar Sniper 🔫</span>
-                                </label>
-                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Faz o
-                                    disparo
-                                    real.</small>
-                            </div>
-                        </div>
 
                         <div class="config-card"
                             style="margin-top: 1rem; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
@@ -1330,9 +1339,10 @@
         const handleFile = (file) => {
             if (file && file.name.endsWith('.csv')) {
                 currentFile = file;
-                fileNameDisp.textContent = file.name;
-                if (fileSizeDisp) fileSizeDisp.textContent = (file.size / 1024).toFixed(1) + ' KB';
-                fileInfo.classList.add('visible');
+                const dropSpan = document.querySelector('.dropzone-text span');
+                if (dropSpan) {
+                    dropSpan.innerHTML = `📄 <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+                }
                 log(`Arquivo CSV carregado: ${file.name}`, 'success');
             } else {
                 log('Erro: Selecione um arquivo .csv válido.', 'error');
