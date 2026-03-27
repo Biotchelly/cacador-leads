@@ -1626,38 +1626,56 @@
             if (acc) kbAccountId = acc;
         })();
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V81 - Dynamic Team)
-        function kbOpenConversation(convId, phone, leadTeamId) {
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V88 - Hybrid Context)
+        function kbOpenConversation(convId, phone, leadTeamId, leadInboxId) {
             try {
                 var cleanIdStr = String(convId || '').split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
                 
                 var urlEl = document.getElementById('kb-chatwoot-url');
                 var teamEl = document.getElementById('kb-team-id');
+                var inboxGlobalEl = document.getElementById('inboxIds'); // Do Caçador
                 
                 var chatwootUrl = urlEl ? urlEl.value.trim() : '';
-                // Prioridade: ID do Lead (CSV/Noco) > ID Global (Barra Superior)
-                var teamId = (leadTeamId && leadTeamId !== 'null' && leadTeamId !== 'undefined') ? leadTeamId : (teamEl ? teamEl.value.trim() : '');
                 
+                // Determinação do Contexto (Inbox vs Team)
+                var contextPart = '';
+                var targetType = '';
+                var targetId = '';
+
+                if (leadInboxId && leadInboxId !== 'null' && leadInboxId !== 'undefined') {
+                    contextPart = '/inbox/' + leadInboxId;
+                    targetType = 'inbox'; targetId = leadInboxId;
+                } else if (leadTeamId && leadTeamId !== 'null' && leadTeamId !== 'undefined') {
+                    contextPart = '/team/' + leadTeamId;
+                    targetType = 'team'; targetId = leadTeamId;
+                } else if (teamEl && teamEl.value.trim()) {
+                    contextPart = '/team/' + teamEl.value.trim();
+                    targetType = 'team'; targetId = teamEl.value.trim();
+                } else if (inboxGlobalEl && inboxGlobalEl.value.trim()) {
+                    var firstInbox = inboxGlobalEl.value.split(',')[0].trim();
+                    contextPart = '/inbox/' + firstInbox;
+                    targetType = 'inbox'; targetId = firstInbox;
+                }
+
                 // Sanitização da URL base
                 if (chatwootUrl && !chatwootUrl.startsWith('http')) chatwootUrl = 'https://' + chatwootUrl;
                 chatwootUrl = chatwootUrl.replace(/\/$/, '').replace(/\/app$/, '');
 
-                kbLog('🔍 Gatilho V81: ID=' + finalId + ' | Acc=' + kbAccountId + ' | Team=' + teamId);
+                kbLog('🔍 Gatilho V88: Conv=' + finalId + ' | Contexto=' + contextPart);
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    var teamPart = teamId ? ('/team/' + teamId) : '';
-                    var path = '/accounts/' + kbAccountId + teamPart + '/conversations/' + finalId;
+                    var acc = kbAccountId || 1;
+                    var path = '/accounts/' + acc + contextPart + '/conversations/' + finalId;
                     var fullJumpUrl = chatwootUrl + '/app' + path;
 
-                    kbToast('🚀 Saltando para Conversa: ' + finalId);
-                    kbLog('🔗 URL Alvo: ' + fullJumpUrl);
+                    kbToast('🚀 Indo para o Chat: ' + finalId);
+                    kbLog('🔗 Rota: ' + path);
                     
-                    // 1. Sinais via postMessage (Suave)
+                    // 1. Sinais via postMessage
                     var signals = [
-                        { event: 'appContext:change', data: { conversationId: finalId, teamId: teamId } },
-                        { event: 'conversation:change', id: finalId, teamId: teamId },
-                        { event: 'conversation:change', conversationId: finalId },
+                        { event: 'appContext:change', data: { conversationId: finalId, accountId: acc, teamId: (targetType==='team'?targetId:null), inboxId: (targetType==='inbox'?targetId:null) } },
+                        { event: 'conversation:change', id: finalId, accountId: acc },
                         { event: 'pushState', path: path }
                     ];
                     
@@ -1673,19 +1691,19 @@
                         });
                     });
 
-                    // 2. Fallback via Redirecionamento de Janela (Bruto)
+                    // 2. Fallback via Redirecionamento Total (1.4s)
                     setTimeout(function() {
                         if (chatwootUrl && window.top) {
                             try {
                                 if (!window.top.location.href.includes('/conversations/' + finalId)) {
-                                    kbLog('⚡ Forçando navegação total...');
+                                    kbLog('⚡ SPA parado. Forçando salto total para ' + targetType + '...');
                                     window.top.location.href = fullJumpUrl;
                                 }
                             } catch(e) {
                                 window.top.location.href = fullJumpUrl;
                             }
                         }
-                    }, 1800);
+                    }, 1400);
 
                 } else if (phone && String(phone).length > 5) {
                     var cleanPhone = String(phone).replace(/\D/g, '');
@@ -1976,11 +1994,12 @@
                 // Normaliza ID da Conversa (V74)
                 l.Conversation_ID = l.Conversation_ID || l.conversation_id || l['# Conversation_ID'] || null;
                 
-                // Normaliza ID do Time (V81)
+                // Normaliza IDs de Contexto (V88)
                 l.Team_ID = l.Team_ID || l.team_id || l.ID_do_Time || l.ID_Time || l.Chatwoot_Team_ID || null;
+                l.Inbox_ID = l.Inbox_ID || l.inbox_id || l.ID_da_Inbox || l.InboxId || null;
 
                 const original = l.Status;
-                console.log(`[KB] Lead: ${l.Nome} | Status: ${original} | ConvID: ${l.Conversation_ID} | TeamID: ${l.Team_ID}`);
+                console.log(`[KB] Lead: ${l.Nome} | ConvID: ${l.Conversation_ID} | Team: ${l.Team_ID} | Inbox: ${l.Inbox_ID}`);
             });
             const label = document.getElementById('kb-agent-label');
             const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
@@ -2054,7 +2073,7 @@
                 <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
                 <div class="kb-row" style="color:var(--text-secondary);">
                     <span>📞</span><span>${l.Telefone||'-'}</span>
-                    ${l.Conversation_ID ? `<span onclick="event.stopPropagation();kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}')" style="margin-left:auto;font-size:14px;color:var(--accent-color);cursor:pointer;padding:2px 5px;" title="Ir para o Chat">💬</span>` : ''}
+                    ${l.Conversation_ID ? `<span onclick="event.stopPropagation();kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="margin-left:auto;font-size:14px;color:var(--accent-color);cursor:pointer;padding:2px 5px;" title="Ir para o Chat">💬</span>` : ''}
                 </div>
                 ${notas ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7">📝 ${notas.substring(0,60)}</div>` : ''}
                 <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
@@ -2124,7 +2143,7 @@
                 
                 <div style="display:flex;gap:10px;margin-top:10px;">
                     ${l.Conversation_ID ? `
-                    <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}')" style="background:#0284c7;flex:1;">
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="background:#0284c7;flex:1;">
                         💬 Ir para o Chat
                     </button>` : `
                     <button class="kb-modal-action-btn" onclick="kbOpenConversation(null, '${l.Telefone}', '${l.Team_ID || ''}')" style="background:#10b981;flex:1;">
