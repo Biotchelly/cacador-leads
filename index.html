@@ -5,46 +5,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caçador de Leads | Command Center</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #151921;
+            --dropzone-bg: #0b0e14;
+            --border-color: #222630;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #1f93ff;
+            --success-color: #10b981;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+        }
         /* ═══════════ TABS ═══════════ */
         .tabs-nav {
             display: flex;
             gap: 0;
-            background: var(--card-bg, #1a1d27);
-            border-bottom: 2px solid var(--border-color, #2e3244);
-            padding: 0 2rem;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1rem;
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(12px);
         }
 
         .tab-btn {
             background: none;
             border: none;
-            border-bottom: 3px solid transparent;
-            padding: 1rem 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-secondary, #8892a4);
+            border-bottom: 2px solid transparent;
+            padding: 0.75rem 1.25rem;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
             cursor: pointer;
-            font-family: 'Outfit', 'Inter', sans-serif;
-            transition: all 0.25s;
+            font-family: var(--font-main);
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: -2px;
+            margin-bottom: -1px;
         }
 
         .tab-btn:hover {
-            color: var(--accent-color, #6366f1);
+            color: var(--text-primary);
         }
 
         .tab-btn.active {
-            color: var(--accent-color, #6366f1);
-            border-bottom-color: var(--accent-color, #6366f1);
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
         }
 
         .tab-panel {
@@ -57,65 +75,61 @@
 
         /* ═══════════ KANBAN ═══════════ */
         #kanban-panel {
-            background: var(--bg-color, #0f1117);
-            min-height: calc(100vh - 60px);
+            background: var(--bg-color);
+            min-height: calc(100vh - 40px);
             display: none;
             flex-direction: column;
         }
 
-        #kanban-panel.active {
-            display: flex;
-        }
-
         .kb-toolbar {
-            padding: 10px 20px;
-            background: var(--card-bg, #1a1d27);
-            border-bottom: 1px solid var(--border-color, #2e3244);
+            padding: 8px 16px;
+            background: #111827;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
             flex-shrink: 0;
             position: sticky;
-            top: 40px;
+            top: 0;
             z-index: 90;
         }
 
         .kb-toolbar input,
         .kb-toolbar select {
-            background: var(--dropzone-bg, #0f172a);
-            border: 1px solid var(--border-color, #2e3244);
-            color: var(--text-primary, #e2e8f0);
-            font-size: 12px;
-            padding: 6px 12px;
-            border-radius: 8px;
+            background: #0b0e14;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 13px;
+            padding: 7px 12px;
+            border-radius: 6px;
             font-family: inherit;
         }
 
         .kb-btn {
-            background: var(--accent-color, #6366f1);
+            background: var(--accent-color);
             color: #fff;
             border: none;
-            font-size: 12px;
-            padding: 6px 16px;
-            border-radius: 8px;
+            font-size: 13px;
+            padding: 7px 16px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: inherit;
-            font-weight: 600;
-            transition: opacity .2s;
+            font-weight: 500;
+            transition: background .2s;
             margin-left: auto;
         }
 
         .kb-btn:hover {
-            opacity: .8;
+            background: #1a7fdd;
         }
 
         .kb-agent-label {
             font-size: 12px;
-            color: var(--text-secondary, #8892a4);
+            color: var(--text-secondary);
             padding: 4px 12px;
-            background: rgba(99, 102, 241, .1);
-            border-radius: 999px;
-            border: 1px solid rgba(99, 102, 241, .25);
+            background: rgba(31, 147, 255, .1);
+            border-radius: 4px;
+            border: 1px solid rgba(31, 147, 255, .2);
         }
 
         html, body {
@@ -144,18 +158,18 @@
         }
 
         .kb-col {
-            min-width: 260px;
-            max-width: 280px;
-            border-radius: 10px;
-            background: var(--card-bg, #1a1d27);
-            border: 1px solid var(--border-color, #2e3244);
+            min-width: 290px;
+            max-width: 320px;
+            border-radius: 8px;
+            background: #111827;
+            border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            max-height: calc(100vh - 155px);
+            max-height: calc(100vh - 145px);
             overflow-y: auto;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         .kb-col::-webkit-scrollbar {
@@ -163,13 +177,13 @@
         }
 
         .kb-col-header {
-            padding: 10px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 10px 10px 0 0;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -183,33 +197,13 @@
             padding: 1px 7px;
         }
 
-        .kb-col.col-novo .kb-col-header {
-            background: #374151;
-        }
-
-        .kb-col.col-pente .kb-col-header {
-            background: #78350f;
-        }
-
-        .kb-col.col-aberto .kb-col-header {
-            background: #1e3a5f;
-        }
-
-        .kb-col.col-qualif .kb-col-header {
-            background: #14532d;
-        }
-
-        .kb-col.col-negoc .kb-col-header {
-            background: #713f12;
-        }
-
-        .kb-col.col-conv .kb-col-header {
-            background: #064e3b;
-        }
-
-        .kb-col.col-perd .kb-col-header {
-            background: #4a0404;
-        }
+        .kb-col.col-novo .kb-col-header { background: #2d333b; }
+        .kb-col.col-pente .kb-col-header { background: #45371c; }
+        .kb-col.col-aberto .kb-col-header { background: #1c2d4a; }
+        .kb-col.col-qualif .kb-col-header { background: #133d2c; }
+        .kb-col.col-negoc .kb-col-header { background: #5a3a1a; }
+        .kb-col.col-conv .kb-col-header { background: #0c4a3e; }
+        .kb-col.col-perd .kb-col-header { background: #4a1515; }
 
         /* ══════ MODAL CARD ══════ */
         #kb-modal-overlay {
@@ -219,28 +213,34 @@
         }
         #kb-modal-overlay.open { display: flex; }
         #kb-modal {
-            background: #1a1d27; border: 1px solid #2e3244; border-radius: 16px;
-            width: 92%; max-width: 560px; max-height: 90vh; overflow-y: auto;
-            box-shadow: 0 25px 60px rgba(0,0,0,.6); animation: modalIn .22s ease;
+            background: #111827; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px;
+            width: 94%; max-width: 600px; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,.6); 
+            animation: modalIn .2s ease-out;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
+        #kb-modal::-webkit-scrollbar { display: none; }
         @keyframes modalIn {
             from { opacity:0; transform: translateY(18px) scale(.97); }
             to   { opacity:1; transform: translateY(0) scale(1); }
         }
         #kb-modal-header {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 18px 20px 14px; border-bottom: 1px solid #2e3244; gap: 10px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px; border-bottom: 1px solid var(--border-color); gap: 10px;
         }
-        #kb-modal-title { font-size: 14px; font-weight: 700; color: #e2e8f0; line-height: 1.3; }
+        #kb-modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
         #kb-modal-close {
             background: rgba(255,255,255,.08); border: none; border-radius: 50%;
             width: 28px; height: 28px; color: #8892a4; cursor: pointer; font-size: 14px; flex-shrink: 0;
         }
-        #kb-modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
-        .kb-modal-row { display: flex; align-items: baseline; gap: 8px; font-size: 12px; }
-        .kb-modal-label { color: #6366f1; font-weight: 700; min-width: 115px; flex-shrink: 0; font-size: 11px; text-transform: uppercase; }
-        .kb-modal-val { color: #cbd5e1; word-break: break-word; }
-        .kb-modal-divider { border: none; border-top: 1px solid #2e3244; margin: 4px 0; }
+        #kb-modal-body { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+        .kb-modal-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .kb-modal-label { color: var(--accent-color); font-weight: 600; min-width: 125px; flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .kb-modal-val { color: var(--text-primary); word-break: break-word; }
+        .kb-modal-divider { border: none; border-top: 1px solid var(--border-color); margin: 8px 0; }
         .kb-modal-notes {
             width: 100%; background: rgba(255,255,255,.04); border: 1px solid #2e3244;
             border-radius: 8px; color: #e2e8f0; font-size: 12px; font-family: inherit;
@@ -299,11 +299,19 @@
         .kb-modal-action-btn:hover { background: #059669; }
         /* Card compacto */
         .kb-card-compact {
-            background: var(--dropzone-bg, #0f172a); border: 1px solid var(--border-color, #2e3244);
-            border-radius: 8px; padding: 10px 12px; cursor: pointer;
-            transition: transform .15s, box-shadow .15s, border-color .15s; font-size: 12px; user-select: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: background 0.1s, border-color 0.1s;
+            font-size: 12px;
+            user-select: none;
         }
-        .kb-card-compact:hover { border-color: #6366f1; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,.2); }
+        .kb-card-compact:hover {
+            border-color: #3b82f6;
+            background: #1c2633;
+        }
         .kb-card-compact.dragging { opacity:.45; transform:rotate(2deg); }
 
         .kb-zone {
