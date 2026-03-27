@@ -1970,10 +1970,9 @@
                 onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
                 id="kbcard-${l.Id}">
                 <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
-                <div class="kb-row" onclick="event.stopPropagation();kbOpenConversation(${l.Conversation_ID || 'null'}, '${l.Telefone || ''}')" 
-                     style="cursor:pointer; color:${l.Conversation_ID ? 'var(--accent-color)' : 'var(--text-secondary)'};">
-                    <span>📞</span><span style="font-weight:${l.Conversation_ID ? '700' : '400'}">${l.Telefone||'-'}</span>
-                    ${l.Conversation_ID ? '<span style="margin-left:auto;font-size:12px;">💬</span>' : '<span style="margin-left:auto;font-size:10px;opacity:0.5;">↗️</span>'}
+                <div class="kb-row" style="color:var(--text-secondary);">
+                    <span>📞</span><span>${l.Telefone||'-'}</span>
+                    ${l.Conversation_ID ? '<span style="margin-left:auto;font-size:12px;color:var(--accent-color);">💬</span>' : ''}
                 </div>
                 ${notas ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7">📝 ${notas.substring(0,60)}</div>` : ''}
                 <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
@@ -2043,7 +2042,7 @@
                 
                 <div style="display:flex;gap:10px;margin-top:10px;">
                     ${l.Conversation_ID ? `
-                    <button class="kb-modal-action-btn" onclick="kbOpenConversation(${l.Conversation_ID})" style="background:#0284c7;flex:1;">
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}')" style="background:#0284c7;flex:1;">
                         💬 Abrir Conversa
                     </button>` : `
                     <button class="kb-modal-action-btn" onclick="kbOpenConversation(null, '${l.Telefone}')" style="background:#10b981;flex:1;">
