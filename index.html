@@ -10,9 +10,9 @@
     <style>
         :root {
             --bg-color: #111111;
-            --card-bg: #1c1e21;
+            --card-bg: #1a1c1e;
             --dropzone-bg: #111111;
-            --border-color: #262a2e;
+            --border-color: #1e2124;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --accent-color: #1f93ff;
@@ -251,7 +251,7 @@
         }
         .kb-modal-notes:focus { outline: none; border-color: #6366f1; }
         .kb-modal-footer {
-            padding: 14px 20px; border-top: 1px solid #2e3244;
+            padding: 14px 20px; border-top: 1px solid var(--border-color);
             display: flex; gap: 10px; justify-content: flex-end;
         }
         .kb-modal-btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
@@ -272,8 +272,8 @@
             margin-bottom: 4px;
         }
         .kb-modal-resumo {
-            background: rgba(255,255,255,.05);
-            border: 1px dashed #2e3244;
+            background: rgba(255,255,255,.03);
+            border: 1px dashed var(--border-color);
             padding: 10px;
             border-radius: 8px;
             font-size: 11px;
@@ -307,15 +307,14 @@
             padding: 10px;
             margin-bottom: 8px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.15s ease-in-out;
             position: relative;
             background-clip: padding-box;
             user-select: none;
         }
         .kb-card-compact:hover {
             border-color: var(--accent-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            background: #1e2124;
             z-index: 5;
         }
         .kb-card-compact.dragging { opacity:.45; transform:rotate(2deg); }
