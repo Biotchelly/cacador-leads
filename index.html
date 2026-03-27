@@ -1595,28 +1595,31 @@
         window.addEventListener('message', function(e) {
             try { 
                 var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                // 🕵️ Busca Exaustiva por IDs de conta e agente em qualquer profundidade
-                function findKey(obj, keyName) {
-                    if (!obj || typeof obj !== 'object') return null;
-                    if (obj[keyName]) return obj[keyName];
-                    for (var k in obj) {
-                        var found = findKey(obj[k], keyName);
-                        if (found) return found;
-                    }
-                    return null;
-                }
+                
+                // 🛡️ Identificação Blindada: Prioriza chaves específicas de Agente/Conta
+                var agent = d.currentAgent || (d.data && d.data.currentAgent) || d.agent || d.user;
+                var account = d.account || (d.data && d.data.account) || (agent && agent.account) || d;
 
-                var accId = findKey(d, 'account_id') || findKey(d, 'accountId') || findKey(d, 'accountId');
-                var agentId = findKey(d, 'agent_id') || findKey(d, 'id');
-                var agentName = findKey(d, 'name') || findKey(d, 'first_name');
+                // 🔍 Busca de ID da Conta
+                var accId = (account && (account.id || account.account_id)) || d.account_id;
+                
+                // 👤 Busca de Identidade do Agente (Evita chaves genéricas na raiz que podem ser do Lead)
+                var agentId = (agent && agent.id) || null;
+                var agentName = (agent && (agent.name || agent.first_name)) || null;
 
                 if (accId) {
                     kbAccountId = accId;
-                    kbLog('🏢 Account detectado via Mensagem: ' + accId);
+                    kbLog('🏢 Account detectado: ' + accId);
                 }
-                if (agentId) updateAgent(agentId, agentName);
 
-            } catch(err){}
+                // Só atualiza agente se tivermos um objeto de agente claro para evitar confundir com Lead/Conversa
+                if (agentId && agentId !== kbAuthId) {
+                    updateAgent(agentId, agentName);
+                }
+
+            } catch(err){
+                kbLog('⚠️ Erro no listener de handshake: ' + err.message);
+            }
         });
 
         // 🔍 Tenta capturar AccountID via URL (Chatwoot envia como param às vezes)
