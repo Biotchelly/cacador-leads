@@ -1029,8 +1029,34 @@
                             <input type="hidden" name="payload" id="ultimatePayload">
                         </form>
                         <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
+                    </div>
+
+
+                        <!-- Webhook & Action Row (V108) -->
+                        <div style="display: flex; align-items: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
+                                    <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
+                                        style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fa-solid fa-plug"></i> Testar URL
+                                    </button>
+                                </div>
+                                <input type="text" class="form-input" id="webhookUrl"
+                                    value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
+                            </div>
+                            <button class="action-btn" id="processBtn" style="width: auto; min-width: 180px; margin-top: 0; height: 38px;">
+                                <i class="fa-solid fa-play"></i> Executar Operação
+                            </button>
                         </div>
 
+                    <!-- Console -->
+                    <div class="console" id="console">
+                        <div class="console-line">
+                            <span class="console-timestamp">[00:00:00]</span>
+                            <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
+                        </div>
+                    </div>
 
                         <div class="config-card" style="margin-top: 1rem;">
                             <div class="config-header">
@@ -1120,31 +1146,6 @@
                             </div>
                         </div>
 
-                        <!-- Webhook & Action Row (V108) -->
-                        <div style="display: flex; align-items: flex-end; gap: 1rem; margin-top: 1.5rem;">
-                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
-                                    <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
-                                        style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
-                                        <i class="fa-solid fa-plug"></i> Testar URL
-                                    </button>
-                                </div>
-                                <input type="text" class="form-input" id="webhookUrl"
-                                    value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
-                            </div>
-                            <button class="action-btn" id="processBtn" style="width: auto; min-width: 180px; margin-top: 0; height: 38px;">
-                                <i class="fa-solid fa-play"></i> Executar Operação
-                            </button>
-                        </div>
-
-                    <!-- Console -->
-                    <div class="console" id="console">
-                        <div class="console-line">
-                            <span class="console-timestamp">[00:00:00]</span>
-                            <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
-                        </div>
-                    </div>
 
                 </div>
             </div>
