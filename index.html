@@ -1594,34 +1594,34 @@
 
         window.addEventListener('message', function(e) {
             try { 
-                const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user) {
-                    const agent = d.agent || d.user || (d.data && d.data.currentAgent);
-                    const aid = (agent && agent.id) || d.id;
-                    const anm = (agent && agent.name);
-                    const accId = (agent && agent.account_id) || (d.data && d.data.currentAgent && d.data.currentAgent.account_id);
+                var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                if(d.event === 'appContext' || d.event === 'dashboardApp:ready' || d.agent || d.user || d.account_id) {
+                    var agent = d.agent || d.user || (d.data && d.data.currentAgent) || d;
+                    var aid = (agent && agent.id) || d.id;
+                    var anm = (agent && agent.name);
+                    var accId = (agent && agent.account_id) || (d.data && d.data.currentAgent && d.data.currentAgent.account_id) || d.account_id;
                     
                     if(aid) updateAgent(aid, anm);
                     if(accId) {
                         kbAccountId = accId;
-                        kbLog(`🏢 Account detectado: ${accId}`);
+                        kbLog('🏢 Account detectado: ' + accId);
                     }
                 }
             } catch(err){}
         });
 
-        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.2 - Plano B Ativo)
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V78.3 - Diagnóstico)
         function kbOpenConversation(convId, phone) {
             try {
                 var cleanIdStr = String(convId).split('.')[0].replace(/\D/g, '');
                 var finalId = parseInt(cleanIdStr);
                 
-                kbLog('🔍 Tentando abrir conversa: ID=' + finalId);
+                kbLog('🔍 Tentando abrir conversa: ID=' + finalId + ' (Acc: ' + kbAccountId + ')');
                 
                 if (!isNaN(finalId) && finalId > 0) {
-                    kbToast('🚀 Abrindo conversa...');
+                    kbToast('⚡ V78.3: Saltando... (Acc: ' + (kbAccountId || 'Nulo') + ')');
                     
-                    // 1. Tenta o salto "suave" via postMessage (várias versões)
+                    // 1. Tenta o salto "suave" via postMessage
                     var payloads = [
                         { event: 'appContext:change', conversationId: finalId },
                         { event: 'conversation:change', conversationId: finalId },
@@ -1639,33 +1639,30 @@
                         });
                     }
 
-                    // 2. ⚡ PLANO B: Redirecionamento Total (Garante o resultado se o postMessage falhar)
-                    // Se tivermos o AccountID, forçamos a navegação do browser inteiro
-                    if (kbAccountId && finalId) {
+                    // 2. ⚡ PLANO B: Redirecionamento Total (Fallback)
+                    if (finalId) {
                         setTimeout(function() {
-                            // Constrói a URL base dinamicamente ou usa o padrão detectado
-                            var baseUrl = window.location.origin.includes('chatwoot') ? (window.location.origin + '/app') : 'https://chatwoot.empreendedorserial.com/app';
-                            var jumpUrl = baseUrl + '/accounts/' + kbAccountId + '/conversations/' + finalId;
-                            
-                            kbLog('🔗 Forçando redirecionamento para: ' + jumpUrl);
-                            if (window.top) {
-                                window.top.location.href = jumpUrl;
+                            if (kbAccountId) {
+                                var baseUrl = window.location.origin.includes('chatwoot') ? (window.location.origin + '/app') : 'https://chatwoot.empreendedorserial.com/app';
+                                var jumpUrl = baseUrl + '/accounts/' + kbAccountId + '/conversations/' + finalId;
+                                kbLog('🔗 Redirecionando: ' + jumpUrl);
+                                if (window.top) window.top.location.href = jumpUrl;
+                            } else {
+                                kbLog('🛑 Falha: AccountID não disponível para redirecionamento.');
+                                kbToast('🛑 Erro: AccountID não detectado');
                             }
-                        }, 500); // 500ms de delay para permitir que o postMessage tente primeiro
-                    } else {
-                        kbLog('⚠️ Aviso: AccountID não detectado. O salto automático pode falhar.');
+                        }, 600);
                     }
 
                 } else if (phone && String(phone).length > 5) {
-                    kbLog('⚠️ ID inválido. Abrindo WhatsApp...');
                     var cleanPhone = String(phone).replace(/\D/g, '');
                     window.open('https://wa.me/' + cleanPhone, '_blank');
                     kbToast('📲 Abrindo WhatsApp...');
                 } else {
-                    kbToast('⚠️ Sem ID ou Telefone válido');
+                    kbToast('⚠️ Sem ID ou Telefone');
                 }
             } catch (err) {
-                console.error('[KB] Erro em kbOpenConversation:', err);
+                console.error('[KB] Erro:', err);
                 kbToast('🛑 Erro: ' + err.message);
             }
         }
