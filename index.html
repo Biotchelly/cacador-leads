@@ -1032,10 +1032,9 @@
                         </div>
 
 
-                        <div class="config-card"
-                            style="margin-top: 1rem; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
-                            <div class="config-header" style="color: #f59e0b;">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Modo de Conexão
+                        <div class="config-card" style="margin-top: 1rem;">
+                            <div class="config-header">
+                                <i class="fa-solid fa-gears"></i> Modo de Conexão
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -1092,8 +1091,8 @@
                             </div>
 
                             <div id="proxyHelper"
-                                style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(245, 158, 11, 0.2); margin-top: 8px; padding-top: 8px;">
-                                <span style="color: #f59e0b; font-weight: bold;"><i class="fa-solid fa-link-slash"></i>
+                                style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border-color); margin-top: 8px; padding-top: 8px;">
+                                <span style="color: var(--text-secondary); font-weight: bold;"><i class="fa-solid fa-link-slash"></i>
                                     Links
                                     Atualizados (2026):</span>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -1136,9 +1135,11 @@
                     </div>
 
                     <!-- Actions -->
-                    <button class="action-btn" id="processBtn">
-                        <i class="fa-solid fa-play"></i> Executar Operação
-                    </button>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                        <button class="action-btn" id="processBtn" style="width: auto; min-width: 180px;">
+                            <i class="fa-solid fa-play"></i> Executar Operação
+                        </button>
+                    </div>
 
                     <!-- Console -->
                     <div class="console" id="console">
