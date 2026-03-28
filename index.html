@@ -1517,9 +1517,17 @@
                 });
             });
 
-            loadState();
-        }
-        window.addEventListener('load', initPersistence);
+                loadState();
+                
+                // --- SINCRONIA DE IDENTIDADE (V110) ---
+                // Garante que o núcleo do Kanban saiba o que foi carregado na persistência do Caçador
+                const savedId = localStorage.getItem('cacador_vendedorId');
+                const savedNome = localStorage.getItem('cacador_vendedorNome');
+                if (savedId && typeof updateAgent === 'function') {
+                    updateAgent(savedId, savedNome);
+                }
+            }
+            window.addEventListener('load', initPersistence);
     </script>
 
     <!-- ═══════════ MODAL CARD ═══════════ -->
@@ -1616,8 +1624,14 @@
             // Vincula com campos escondidos se existirem (para automações externas)
             const vid = document.getElementById('vendedorId');
             const vnm = document.getElementById('vendedorNome');
-            if (vid) vid.value = finalId;
-            if (vnm) vnm.value = finalName;
+            if (vid) {
+                vid.value = finalId;
+                localStorage.setItem('cacador_vendedorId', finalId);
+            }
+            if (vnm) {
+                vnm.value = finalName;
+                localStorage.setItem('cacador_vendedorNome', finalName);
+            }
 
             const label = document.getElementById('kb-agent-label');
             if (label) label.textContent = `👤 ${finalName}`;
