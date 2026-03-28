@@ -889,13 +889,13 @@
 
     <!-- ═══════════ NAV DE ABAS ═══════════ -->
     <nav class="tabs-nav">
-        <button class="tab-btn active" onclick="switchTab('cacador')" id="tab-cacador">🚀 Caçador de Leads</button>
-        <button class="tab-btn" onclick="switchTab('kanban')" id="tab-kanban">🎯 Kanban SDR</button>
+        <button class="tab-btn" onclick="switchTab('cacador')" id="tab-cacador">🚀 Caçador de Leads</button>
+        <button class="tab-btn active" onclick="switchTab('kanban')" id="tab-kanban">🎯 Kanban SDR</button>
     </nav>
 
 
     <!-- ═══════════ ABA 1: CAÇADOR ═══════════ -->
-    <div id="cacador-panel" class="tab-panel active">
+    <div id="cacador-panel" class="tab-panel">
         <div class="cacador-inner">
             <div class="container">
                 <header>
@@ -1442,6 +1442,8 @@
                 const cfg = document.getElementById('privateProxyConfig');
                 if (cfg) cfg.style.display = 'block';
             }
+            // Inicializar Kanban como padrão (V115)
+            kbInit();
         });
 
         function switchTab(tab) {
@@ -1545,7 +1547,7 @@
         </div>
     </div>
 
-    <div id="kanban-panel" class="tab-panel">
+    <div id="kanban-panel" class="tab-panel active">
         <div class="kb-config-bar">
             <span>🔗 Backend:</span>
             <input class="kb-input-url" id="kb-backend-url" style="width:100px;" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key">
