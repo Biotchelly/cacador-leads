@@ -2044,10 +2044,15 @@
                 } else {
                     const msg = kbAuthId === "1" ? "⚠️ Banco Vazio" : `⚠️ Sem leads p/ ${kbAuthNome}`;
                     if(label) label.textContent = msg;
+                    // --- LIMPEZA DE FANTASMAS (V112) ---
+                    kbLeads = [];
+                    localStorage.setItem('kbLeads', JSON.stringify({ list: [], agentId: kbAuthId }));
+                    kbFiltrar();
                 }
             } catch (err) { 
                 if(label) label.textContent = '💥 Erro de Rede';
                 console.error('[KB] Falha na requisição:', err);
+                kbFiltrar();
             }
         }
 
