@@ -1787,18 +1787,26 @@
             }
         }
 
-        // 🚀 Iniciar conversa proativamente via Kestra (V96 - Megazord All-in-One)
+        // 🚀 Iniciar conversa proativamente via Kestra (V98 - Magic Jump Edition)
         async function kbProactiveStart(id) {
             const l = kbLeads.find(x => x.Id === id);
             if (!l) return;
             
+            const btn = document.getElementById('kb-btn-proactive');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Criando Conversa...';
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'wait';
+            }
+
             kbLog('🚀 Iniciando disparo MANUAL no Caçador para: ' + l.Nome);
             kbToast('⏳ Preparando conversa no Chatwoot...');
             
             const webhookUrl = document.getElementById('webhookUrl').value.trim();
 
             const payload = {
-                manual_mode: true, // Aciona a ramificação cirúrgica no Kestra
+                manual_mode: true, 
                 manual_phone: l.Telefone || '',
                 manual_name: l.Nome || '',
                 manual_lead_id: parseInt(l.Id),
@@ -1811,32 +1819,54 @@
             };
 
             try {
-                // Usando kbSmartFetch para maior resiliência e suporte a Proxy/Cors
+                // 1. Aciona o Kestra
                 const response = await kbSmartFetch(webhookUrl, payload);
 
                 if (response && response.ok) {
-                    kbToast('✅ Conversa preparada! Saltando...');
-                    kbLog('✨ Modo Manual ativado no Caçador.');
+                    kbLog('✨ Kestra aceitou o pedido. Entrando em modo "Vigilante"...');
                     
-                    // Polling curto de 4s para pegar o ID e saltar
-                    setTimeout(async () => {
-                        kbToast('🔍 Sincronizando e abrindo...');
-                        await kbRefresh(); // Atualiza os leads para pegar o Conversation_ID
-                        setTimeout(() => {
-                            const updatedLead = kbLeads.find(x => x.Id === id);
-                            if (updatedLead && updatedLead.Conversation_ID) {
-                                kbOpenConversation(updatedLead.Conversation_ID, updatedLead.Telefone, updatedLead.Team_ID, updatedLead.Inbox_ID);
-                            } else {
-                                kbToast('⚠️ID gerado, mas ainda sincronizando. Tente em 2s.');
+                    // 2. Loop de Polling Inteligente (Busca o ID no NocoDB)
+                    let attempts = 0;
+                    const maxAttempts = 5; // ~10-12 segundos total
+                    
+                    const poll = setInterval(async () => {
+                        attempts++;
+                        kbLog(`🔍 Tentativa ${attempts}: Verificando ID de conversa...`);
+                        
+                        // Atualiza os dados do Kanban (Busca no NocoDB)
+                        await kbCarregar(); 
+                        
+                        const updatedLead = kbLeads.find(x => x.Id === id);
+                        if (updatedLead && updatedLead.Conversation_ID) {
+                            clearInterval(poll);
+                            kbLog('🎯 ID Localizado! Saltando para o Chat...');
+                            kbToast('✅ Conversa Pronta! Saltando...');
+                            
+                            if (btn) btn.innerHTML = '🚀 Saltando...';
+                            
+                            // 3. Salto Automático
+                            kbOpenConversation(updatedLead.Conversation_ID, updatedLead.Telefone, updatedLead.Team_ID, updatedLead.Inbox_ID);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(poll);
+                            kbLog('🛑 Polling atingiu limite. Usuário deve clicar manualmente.');
+                            kbToast('⚠️ ID quase pronto. Clique em atualizar em 2s.');
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = '🚀 Iniciar no Chatwoot';
+                                btn.style.opacity = '1';
+                                btn.style.cursor = 'pointer';
                             }
-                        }, 1500);
-                    }, 4000);
+                        }
+                    }, 2500);
+
                 } else {
                     kbToast('🛑 Falha ao acionar Modo Manual do Caçador.');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '🚀 Iniciar no Chatwoot'; btn.style.opacity = '1'; }
                 }
             } catch (err) {
                 console.error('[KB] Falha no Proactive:', err);
                 kbToast('🛑 Erro de conexão com Kestra');
+                if (btn) { btn.disabled = false; btn.innerHTML = '🚀 Iniciar no Chatwoot'; btn.style.opacity = '1'; }
             }
         }
 
@@ -2273,7 +2303,7 @@
                     <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="background:#0284c7;flex:1;">
                         💬 Ir para o Chat
                     </button>` : `
-                    <button class="kb-modal-action-btn" onclick="kbProactiveStart(${l.Id})" style="background:#10b981;flex:1;">
+                    <button id="kb-btn-proactive" class="kb-modal-action-btn" onclick="kbProactiveStart(${l.Id})" style="background:#10b981;flex:1;">
                         🚀 Iniciar no Chatwoot
                     </button>
                     `}
