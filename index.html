@@ -1606,16 +1606,24 @@
         }
 
         // --- DETECÇÃO SEGURA DE VENDEDOR (V73.1) ---
-        function updateAgent(id, name) {
+        function updateAgent(id, name, isAuto = false) {
             if (!id) return;
-            const map = { "16": "Joveson", "17": "Giovanna", "1": "Bot" };
             const finalId = String(id).replace(/[^0-9]/g, "");
-            const finalName = map[finalId] || name || "Agente";
+            
+            // Prioridade para o ID salvo no Caçador (V111)
+            // Se for uma detecção automática, mas já temos um ID salvo no cache, respeitamos o cache.
+            const savedCacadorId = localStorage.getItem('cacador_vendedorId');
+            if (isAuto && savedCacadorId && savedCacadorId !== "" && savedCacadorId !== finalId) {
+                console.log(`[JOBS] Preservando ID persistido (${savedCacadorId}) e ignorando detecção automática (${finalId}).`);
+                return;
+            }
+
+            const finalName = name || "Agente";
             if (!finalId) return;
 
             const agentChanged = finalId !== kbAuthId;
 
-            // Sempre persiste identidade
+            // Sempre persiste identidade Kanban
             kbAuthId = finalId;
             kbAuthNome = finalName;
             localStorage.setItem('kbAuthId', finalId);
@@ -1635,7 +1643,7 @@
 
             const label = document.getElementById('kb-agent-label');
             if (label) label.textContent = `👤 ${finalName}`;
-            kbLog(`👤 Autenticado V73.1: ${finalName} (ID: ${finalId})`);
+            kbLog(`👤 Identidade Ativa: ${finalName} (ID: ${finalId})`);
 
             if (kbInitialized) {
                 if (agentChanged) kbLeads = []; // Limpa leads do agente anterior
@@ -1674,8 +1682,8 @@
                     kbAccountId = accId;
                 }
 
-                if (agentId && agentId !== kbAuthId) {
-                    updateAgent(agentId, agentName);
+                if (agentId && String(agentId) !== String(kbAuthId)) {
+                    updateAgent(agentId, agentName, true);
                 }
             } catch(err){}
         });
