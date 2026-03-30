@@ -507,6 +507,33 @@
             opacity: 1;
         }
 
+        /* Badge de Mensagens Não Lidas (V118) */
+        .kb-unread-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ff4d4f;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(255, 77, 79, 0.4);
+            border: 2px solid var(--card-bg);
+            z-index: 10;
+            animation: kb-pulse-badge 2s infinite;
+        }
+
+        @keyframes kb-pulse-badge {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.6); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(255, 77, 79, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 79, 0); }
+        }
+
         /* Console Visual para Debug (Jobs Style) */
         .kb-debug-console {
             position: fixed;
@@ -2152,6 +2179,7 @@
 
                 // Normaliza ID da Conversa (V74)
                 l.Conversation_ID = l.Conversation_ID || l.conversation_id || l['# Conversation_ID'] || null;
+                l.Mensagens_Nao_Lidas = l.Mensagens_Nao_Lidas || l.mensagens_nao_lidas || 0;
                 
                 // Normaliza IDs de Contexto (V88)
                 l.Team_ID = l.Team_ID || l.team_id || l.ID_do_Time || l.ID_Time || l.Chatwoot_Team_ID || null;
@@ -2224,11 +2252,15 @@
         function kbBuildCard(l) {
             const statusBruto = String(l.Status || '').trim();
             const notas = (l.Notas_Vendedor || l.Resumo_IA || '').trim();
+            const unread = parseInt(l.Mensagens_Nao_Lidas || l.mensagens_nao_lidas || 0);
+            const badge = unread > 0 ? `<div class="kb-unread-badge">${unread}</div>` : '';
+
             return `<div class="kb-card-compact" draggable="true"
                 ondragstart="kbDragStart(event,${l.Id})"
                 ondragend="kbDragEnd(event)"
                 onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
                 id="kbcard-${l.Id}">
+                ${badge}
                 <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
                 <div class="kb-row" style="color:var(--text-secondary);">
                     <span>📞</span><span>${l.Telefone||'-'}</span>
