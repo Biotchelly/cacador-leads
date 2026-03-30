@@ -1537,6 +1537,14 @@
                         const hidden = document.getElementById('reloadCount');
                         if(hidden) hidden.value = el.value;
                     }
+                    if (id === 'chatwootTeamId') {
+                        const teamKb = document.getElementById('kb-team-id');
+                        if(teamKb) teamKb.value = el.value;
+                    }
+                    if (id === 'kb-team-id') {
+                        const teamCac = document.getElementById('chatwootTeamId');
+                        if(teamCac) teamCac.value = el.value;
+                    }
                 });
             });
 
@@ -1948,11 +1956,13 @@
                 const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
                 const vTeam = String(l.Team_ID || '').trim();
 
-                // 🔒 SEGURANÇA MÁXIMA: Tripla Confluência (V120)
-                // Exige: ID Agente + Nome Vendedor + ID Time
+                // 🔒 SEGURANÇA MÁXIMA: Tripla Confluência Obrigatória (V121)
+                // Se algum campo estiver vazio ou não bater, o acesso é negado.
+                if (!searchId || !searchName || !searchTeam) return false;
+
                 return (vId === searchId) && 
-                       (vName !== '' && vName.includes(searchName)) &&
-                       (!searchTeam || vTeam === searchTeam);
+                       (vName.includes(searchName)) &&
+                       (vTeam === searchTeam);
             });
 
             kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
