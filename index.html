@@ -1941,12 +1941,18 @@
             
             const searchId = String(kbAuthId).trim();
             const searchName = kbAuthNome.toLowerCase().trim();
+            const searchTeam = String(document.getElementById('kb-team-id')?.value || '').trim();
 
             const filtered = leads.filter(l => {
                 const vId = String(l.agent_id || l.vendedor_id || '').trim();
                 const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
-                // 🔒 SEGURANÇA MÁXIMA: Exige que ID e NOME coincidam (V119)
-                return (vId === searchId) && (vName !== '' && vName.includes(searchName));
+                const vTeam = String(l.Team_ID || '').trim();
+
+                // 🔒 SEGURANÇA MÁXIMA: Tripla Confluência (V120)
+                // Exige: ID Agente + Nome Vendedor + ID Time
+                return (vId === searchId) && 
+                       (vName !== '' && vName.includes(searchName)) &&
+                       (!searchTeam || vTeam === searchTeam);
             });
 
             kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
