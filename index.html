@@ -1945,7 +1945,8 @@
             const filtered = leads.filter(l => {
                 const vId = String(l.agent_id || l.vendedor_id || '').trim();
                 const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
-                return (vId === searchId) || (vName !== '' && vName.includes(searchName));
+                // 🔒 SEGURANÇA MÁXIMA: Exige que ID e NOME coincidam (V119)
+                return (vId === searchId) && (vName !== '' && vName.includes(searchName));
             });
 
             kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
