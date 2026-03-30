@@ -507,25 +507,26 @@
             opacity: 1;
         }
 
-        /* Badge de Mensagens Não Lidas (V118) */
+        /* Badge de Mensagens Não Lidas (V118) - Sugestão A */
         .kb-unread-badge {
             position: absolute;
-            top: -6px;
-            right: -6px;
+            top: -5px;
+            right: -5px;
             background: #ff4d4f;
             color: white;
-            font-size: 10px;
-            font-weight: 700;
-            min-width: 18px;
-            height: 18px;
+            font-size: 9px;
+            font-weight: 800;
+            min-width: 15px;
+            height: 15px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 6px rgba(255, 77, 79, 0.4);
-            border: 2px solid var(--card-bg);
+            box-shadow: 0 1px 4px rgba(255, 77, 79, 0.5);
+            border: 1px solid var(--card-bg);
             z-index: 10;
             animation: kb-pulse-badge 2s infinite;
+            line-height: 1;
         }
 
         @keyframes kb-pulse-badge {
@@ -2260,11 +2261,10 @@
                 ondragend="kbDragEnd(event)"
                 onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
                 id="kbcard-${l.Id}">
-                ${badge}
                 <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
                 <div class="kb-row" style="color:var(--text-secondary);">
                     <span>📞</span><span>${l.Telefone||'-'}</span>
-                    ${l.Conversation_ID ? `<span onclick="event.stopPropagation();kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="margin-left:auto;font-size:14px;color:var(--accent-color);cursor:pointer;padding:2px 5px;" title="Ir para o Chat">💬</span>` : ''}
+                    ${l.Conversation_ID ? `<span onclick="event.stopPropagation();kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="margin-left:auto;font-size:14px;color:var(--accent-color);position:relative;cursor:pointer;padding:2px 5px;" title="Ir para o Chat">💬${badge}</span>` : ''}
                 </div>
                 ${notas ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7">📝 ${notas.substring(0,60)}</div>` : ''}
                 <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
