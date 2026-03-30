@@ -1849,8 +1849,9 @@
                 manual_name: l.Nome || '',
                 manual_lead_id: parseInt(l.Id),
                 table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
-                chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
-                chatwoot_account_id: parseInt(document.getElementById('chatwootAccountId')?.value) || 1,
+                // 🎯 Prioriza Inbox e Account do lead; fallback para o painel
+                chatwoot_inbox_ids: (l.Inbox_ID ? String(l.Inbox_ID) : null) || document.getElementById('inboxIds').value || "1",
+                chatwoot_account_id: parseInt(l.Account_ID || document.getElementById('chatwootAccountId')?.value) || 1,
                 chatwoot_team_id: parseInt(l.Team_ID || document.getElementById('chatwootTeamId').value) || null,
                 agent_id: parseInt(document.getElementById('vendedorId')?.value) || null,
                 vendedor_nome: document.getElementById('vendedorNome').value || "Gestão"
