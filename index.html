@@ -302,6 +302,7 @@
     <script>
         // CONFIGURAÇÃO AUTOMÁTICA DA API (VIA WEBHOOK PÚBLICO)
         const KESTRA_DOMAIN = "194.163.181.23:8080"; 
+        // Se estiver em HTTPS, o navegador bloqueia chamadas HTTP puras.
         const API_URL = `http://${KESTRA_DOMAIN}/api/v1/webhooks/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key`;
 
         async function fetchLeads() {
