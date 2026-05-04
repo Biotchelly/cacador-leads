@@ -311,12 +311,17 @@
 
                 // Chamada via Webhook (GET ou POST)
                 const response = await fetch(`${API_URL}?action=list_leads`);
-                const data = await response.json();
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const rawData = await response.json();
+                console.log("📦 Dados brutos:", rawData);
+
+                // O Kestra com returnOutputs pode colocar o resultado em data.body ou data.leads
+                const data = rawData.body || rawData;
+                const leads = data.leads || [];
                 
                 // Limpar colunas
                 document.querySelectorAll('.cards-container').forEach(c => c.innerHTML = '');
-                
-                const leads = data.leads || [];
                 document.getElementById('total-leads').innerText = leads.length;
 
                 const counts = { novo: 0, briefing: 0, qualificador: 0, followup: 0, fechamento: 0 };
@@ -325,8 +330,10 @@
                     const card = createCard(lead);
                     const status = lead.status?.toLowerCase() || 'novo';
                     const container = document.getElementById(status) || document.getElementById('novo');
-                    container.appendChild(card);
-                    counts[status] = (counts[status] || 0) + 1;
+                    if (container) {
+                        container.appendChild(card);
+                        counts[status] = (counts[status] || 0) + 1;
+                    }
                 });
 
                 // Atualizar contadores
@@ -344,8 +351,8 @@
                 }, 800);
 
             } catch (error) {
-                console.error("Erro ao carregar leads:", error);
-                alert("Falha na conexão com o Kestra Backend.");
+                console.error("❌ Erro na API:", error);
+                alert(`Falha na conexão: ${error.message}\n\nLembre-se: Use HTTP (sem S) para acessar este dashboard enquando o Kestra não tiver SSL.`);
             }
         }
 
