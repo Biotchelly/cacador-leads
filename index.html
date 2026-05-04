@@ -300,18 +300,17 @@
     </main>
 
     <script>
-        // CONFIGURAÇÃO AUTOMÁTICA DA API
-        const KESTRA_BACKEND_ID = "08_biotchelly_crm_backend";
-        const KESTRA_DOMAIN = "194.163.181.23:8080"; // Seu domínio do Kestra
-        const API_URL = `http://${KESTRA_DOMAIN}/api/v1/executions/biotchellymcp/${KESTRA_BACKEND_ID}`;
+        // CONFIGURAÇÃO AUTOMÁTICA DA API (VIA WEBHOOK PÚBLICO)
+        const KESTRA_DOMAIN = "194.163.181.23:8080"; 
+        const API_URL = `http://${KESTRA_DOMAIN}/api/v1/webhooks/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key`;
 
         async function fetchLeads() {
             try {
-                // Notificar carregamento
                 document.getElementById('loader').style.display = 'flex';
                 document.getElementById('loader').style.opacity = '1';
 
-                const response = await fetch(`${API_URL}?action=list_leads`, { method: 'POST' });
+                // Chamada via Webhook (GET ou POST)
+                const response = await fetch(`${API_URL}?action=list_leads`);
                 const data = await response.json();
                 
                 // Limpar colunas
