@@ -300,10 +300,9 @@
     </main>
 
     <script>
-        // CONFIGURAÇÃO AUTOMÁTICA DA API (VIA WEBHOOK PÚBLICO)
-        const KESTRA_DOMAIN = "194.163.181.23:8080"; 
-        // Se estiver em HTTPS, o navegador bloqueia chamadas HTTP puras.
-        const API_URL = `http://${KESTRA_DOMAIN}/api/v1/webhooks/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key`;
+        // CONFIGURAÇÃO OFICIAL DA API (HTTPS)
+        const KESTRA_URL = "https://kestra.biotchellyprospecta.online"; 
+        const API_URL = `${KESTRA_URL}/api/v1/webhooks/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key`;
 
         async function fetchLeads() {
             try {
@@ -353,7 +352,7 @@
 
             } catch (error) {
                 console.error("❌ Erro na API:", error);
-                alert(`Falha na conexão: ${error.message}\n\nLembre-se: Use HTTP (sem S) para acessar este dashboard enquando o Kestra não tiver SSL.`);
+                alert(`Falha na conexão: ${error.message}\n\nVerifique se o seu Kestra está online e se o gatilho de Webhook está ativo.`);
             }
         }
 
