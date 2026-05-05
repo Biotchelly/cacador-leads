@@ -1,434 +1,2400 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biotchelly CRM | Elite Dashboard</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Drag and Drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    
+    <title>Caçador de Leads | Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-dark: #0a0b10;
-            --card-bg: #151921;
-            --accent: #d4af37; /* Dourado Biotchelly */
-            --accent-glow: rgba(212, 175, 55, 0.3);
-            --text-main: #ffffff;
-            --text-dim: #94a3b8;
-            --border: #1e293b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+        :root, [data-theme="dark"] {
+            --bg-color: #111111;
+            --card-bg: #1a1c1e;
+            --border-color: #1e2124;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #1f93ff;
+            --success-color: #10b981;
+            --font-main: 'Inter', sans-serif;
+            --col-novo: #22252b; --col-novo-b: #31363f;
+            --col-pente: #332b1a; --col-pente-b: #453b24;
+            --col-aberto: #1a2333; --col-aberto-b: #242e45;
+            --col-qualif: #132d1e; --col-qualif-b: #1a3d2c;
+            --col-negoc: #3d2b1a; --col-negoc-b: #553b24;
+            --col-conv: #0c332b; --col-conv-b: #0c4a3e;
+            --col-perd: #330f0f; --col-perd-b: #4a1515;
+            --col-count-bg: rgba(255, 255, 255, .12);
         }
+
+        [data-theme="light"] {
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --border-color: #eef1f5;
+            --text-primary: #2e334e;
+            --text-secondary: #737ea7;
+            --accent-color: #0366d6;
+            --success-color: #10b981;
+            --col-novo: #f0f2f5; --col-novo-b: #d0d7de;
+            --col-pente: #fff9db; --col-pente-b: #fcc419;
+            --col-aberto: #e7f5ff; --col-aberto-b: #339af0;
+            --col-qualif: #ebfbee; --col-qualif-b: #40c057;
+            --col-negoc: #fff4e6; --col-negoc-b: #fd7e14;
+            --col-conv: #e6fcf5; --col-conv-b: #38d9a9;
+            --col-perd: #fff5f5; --col-perd-b: #fa5252;
+            --col-count-bg: rgba(0, 0, 0, .05);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+        }
+        /* ═══════════ TABS ═══════════ */
+        .tabs-nav {
+            display: flex;
+            gap: 0;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 0.6rem 1rem;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: var(--font-main);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: -1px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ═══════════ KANBAN ═══════════ */
+        #kanban-panel {
+            background: var(--bg-color);
+            min-height: calc(100vh - 40px);
+            display: none;
+            flex-direction: column;
+        }
+
+        #kanban-panel.active {
+            display: flex;
+        }
+
+        .kb-toolbar {
+            padding: 6px 14px;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .kb-toolbar input,
+        .kb-toolbar select {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        .kb-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            font-size: 13px;
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: background .2s;
+            margin-left: auto;
+        }
+
+        .kb-btn:hover {
+            background: #1a7fdd;
+        }
+
+        .kb-agent-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            background: rgba(31, 147, 255, .1);
+            border-radius: 4px;
+            border: 1px solid rgba(31, 147, 255, .2);
+        }
+
+        html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar, body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .kb-board {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex: 1;
+            min-height: 0;
+            align-items: flex-start;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .kb-board::-webkit-scrollbar {
+            display: none;
+        }
+
+        .kb-col {
+            min-width: 290px;
+            max-width: 320px;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            max-height: calc(100vh - 125px);
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .kb-col::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .kb-col-header {
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #111111;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .kb-col-count {
+            margin-left: auto;
+            background: var(--col-count-bg);
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 1px 7px;
+        }
+
+        .kb-col.col-novo .kb-col-header { background: var(--col-novo); border-bottom: 2px solid var(--col-novo-b); }
+        .kb-col.col-pente .kb-col-header { background: var(--col-pente); border-bottom: 2px solid var(--col-pente-b); }
+        .kb-col.col-aberto .kb-col-header { background: var(--col-aberto); border-bottom: 2px solid var(--col-aberto-b); }
+        .kb-col.col-qualif .kb-col-header { background: var(--col-qualif); border-bottom: 2px solid var(--col-qualif-b); }
+        .kb-col.col-negoc .kb-col-header { background: var(--col-negoc); border-bottom: 2px solid var(--col-negoc-b); }
+        .kb-col.col-conv .kb-col-header { background: var(--col-conv); border-bottom: 2px solid var(--col-conv-b); }
+        .kb-col.col-perd .kb-col-header { background: var(--col-perd); border-bottom: 2px solid var(--col-perd-b); }
+
+        /* ══════ MODAL CARD ══════ */
+        #kb-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
+            z-index: 50000; align-items: center; justify-content: center;
+        }
+        #kb-modal-overlay.open { display: flex; }
+        #kb-modal {
+            background: var(--bg-color); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px;
+            width: 94%; max-width: 600px; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 15px 40px rgba(0,0,0,.35); 
+            animation: modalIn .15s ease-out;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        #kb-modal::-webkit-scrollbar { display: none; }
+        @keyframes modalIn {
+            from { opacity:0; transform: translateY(18px) scale(.97); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+        #kb-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px; border-bottom: 1px solid var(--border-color); gap: 10px;
+        }
+        #kb-modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        #kb-modal-close {
+            background: var(--border-color); border: none; border-radius: 50%;
+            width: 28px; height: 28px; color: var(--text-secondary); cursor: pointer; font-size: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #kb-modal-body { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+        .kb-modal-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .kb-modal-label { color: var(--accent-color); font-weight: 600; min-width: 125px; flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .kb-modal-val { color: var(--text-primary); word-break: break-word; }
+        .kb-modal-divider { border: none; border-top: 1px solid var(--border-color); margin: 8px 0; }
+        .kb-modal-notes {
+            width: 100%; background: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-primary); font-size: 12px; font-family: inherit;
+            padding: 10px 12px; resize: vertical; min-height: 90px;
+        }
+        .kb-modal-notes:focus { outline: none; border-color: #6366f1; }
+        .kb-modal-footer {
+            padding: 14px 20px; border-top: 1px solid var(--border-color);
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .kb-modal-btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .kb-modal-btn.primary { background: var(--accent-color); color: #fff; }
+        .kb-modal-btn.secondary { background: var(--border-color); color: var(--text-primary); }
+        .kb-status-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:rgba(255,255,255,.05); color:var(--text-secondary); border:1px solid var(--border-color); }
+        
+        .kb-modal-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(255,255,255,.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .kb-modal-resumo {
+            background: rgba(255,255,255,.03);
+            border: 1px dashed var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+        .kb-modal-action-btn {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .kb-modal-action-btn:hover { background: #059669; }
+        /* Card compacto */
+        .kb-card-compact {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            position: relative;
+            background-clip: padding-box;
+            user-select: none;
+        }
+        .kb-card-compact:hover {
+            border-color: var(--accent-color);
+            background: var(--card-bg);
+            z-index: 5;
+        }
+        .kb-card-compact.dragging { opacity:.45; transform:rotate(2deg); }
+
+        .kb-zone {
+            padding: 8px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 80px;
+        }
+
+        .kb-zone.drag-over {
+            background: rgba(99, 102, 241, .08);
+            border-radius: 6px;
+            outline: 2px dashed rgba(99, 102, 241, .4);
+        }
+
+        .kb-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: grab;
+            transition: transform .15s, box-shadow .15s;
+            font-size: 12px;
+        }
+
+        .kb-card:active {
+            cursor: grabbing;
+        }
+
+        .kb-card.dragging {
+            opacity: .45;
+            transform: rotate(2deg);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+        }
+
+        .kb-card-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary, #e2e8f0);
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .kb-row {
+            display: flex;
+            gap: 5px;
+            align-items: flex-start;
+            color: var(--text-secondary, #8892a4);
+            margin-bottom: 2px;
+            line-height: 1.4;
+            font-size: 11px;
+        }
+
+        .kb-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 5px;
+        }
+
+        .kb-chip {
+            background: rgba(99, 102, 241, .12);
+            color: #a5b4fc;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(99, 102, 241, .25);
+        }
+
+        .kb-chip.g {
+            background: rgba(16, 185, 129, .1);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, .2);
+        }
+
+        .kb-chip.y {
+            background: rgba(245, 158, 11, .1);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, .2);
+        }
+
+        .kb-chip.r {
+            background: rgba(239, 68, 68, .1);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, .2);
+        }
+
+        .kb-notas {
+            width: 100%;
+            margin-top: 7px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border-color, #2e3244);
+            color: var(--text-primary, #e2e8f0);
+            font-size: 11px;
+            border-radius: 5px;
+            padding: 5px 8px;
+            resize: vertical;
+            font-family: inherit;
+            min-height: 44px;
+        }
+
+        .kb-actions {
+            margin-top: 6px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .kb-save {
+            font-size: 11px;
+            background: var(--accent-color, #6366f1);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .kb-link {
+            font-size: 11px;
+            color: #818cf8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+            text-decoration: underline;
+        }
+
+        .kb-empty {
+            text-align: center;
+            color: var(--text-secondary, #8892a4);
+            padding: 20px;
+            font-size: 11px;
+            opacity: .5;
+        }
+
+        #kb-toast {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: #1e293b;
+            border: 1px solid #2e3244;
+            color: #e2e8f0;
+            font-size: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #kb-toast.show {
+            opacity: 1;
+        }
+
+        /* Badge de Mensagens Não Lidas (V118) - Sugestão A */
+        .kb-unread-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            min-width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 4px rgba(255, 77, 79, 0.5);
+            border: 1px solid var(--card-bg);
+            z-index: 10;
+            animation: kb-pulse-badge 2s infinite;
+            line-height: 1;
+        }
+
+        @keyframes kb-pulse-badge {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.6); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(255, 77, 79, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 79, 0); }
+        }
+
+        /* Console Visual para Debug (Jobs Style) */
+        .kb-debug-console {
+            position: fixed;
+            bottom: 60px;
+            right: 16px;
+            width: 300px;
+            max-height: 200px;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow-y: auto;
+            z-index: 10000;
+            display: none;
+            opacity: 0.8;
+        }
+        .kb-debug-line { border-bottom: 1px solid #222; margin-bottom: 2px; }
+        .kb-debug-time { color: #888; margin-right: 5px; }
+
+        .kb-input-url {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+
+        .kb-config-bar {
+            padding: 8px 20px;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            display: none;
+            gap: 10px;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 91;
+        }
+
+        /* Unified Theme System moved to top */
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
-
-        /* Glassmorphism Header */
-        header {
-            height: 70px;
-            background: rgba(21, 25, 33, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo span { color: var(--accent); }
-
-        .stats-bar {
-            display: flex;
-            gap: 20px;
-        }
-
-        .stat-item {
-            background: var(--card-bg);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Kanban Layout */
-        .kanban-container {
-            display: flex;
-            gap: 20px;
-            padding: 30px;
-            height: calc(100vh - 70px);
-            overflow-x: auto;
-            align-items: flex-start;
-        }
-
-        .column {
-            background: rgba(21, 25, 33, 0.5);
-            min-width: 320px;
-            max-width: 320px;
-            border-radius: 15px;
-            border: 1px solid var(--border);
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            max-height: 100%;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 0;
+            line-height: 1.5;
         }
 
-        .column-header {
-            padding: 20px;
+        /* Centraliza apenas o conteudo do Cacador */
+        .cacador-inner {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Body theme handling unified at top */
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--bg-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .column-title {
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            color: var(--text-dim);
-        }
-
-        .column-count {
-            background: var(--border);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-        }
-
-        .cards-container {
-            padding: 15px;
-            overflow-y: auto;
-            flex-grow: 1;
-            min-height: 150px;
-        }
-
-        /* Lead Card */
-        .card {
             background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            cursor: grab;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
         }
 
-        .card:hover {
-            border-color: var(--accent);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: var(--accent);
-            opacity: 0.5;
-        }
-
-        .card-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .card-info {
-            font-size: 0.8rem;
-            color: var(--text-dim);
+        header h1 {
+            font-size: 1rem;
+            font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 5px;
+            gap: 0.5rem;
+            color: var(--text-primary);
         }
 
-        .card-tag {
-            display: inline-block;
+        header h1 i {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .version-badge {
+            font-size: 0.7rem;
+            background: var(--border-color);
+            color: var(--text-secondary);
             padding: 2px 8px;
             border-radius: 4px;
-            font-size: 0.65rem;
-            background: rgba(255,255,255,0.05);
-            margin-top: 10px;
-            border: 1px solid var(--border);
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        /* Animations */
-        .ghost {
-            opacity: 0.4;
-            background: var(--accent-glow) !important;
-        }
-
-        /* Loading Overlay */
-        #loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-dark);
-            z-index: 1000;
+        .theme-toggle {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s;
+            gap: 0.5rem;
+            background: var(--bg-color);
+            padding: 0.35rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top: 3px solid var(--accent);
+        .theme-btn {
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
         }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .theme-btn.active {
+            background-color: var(--card-bg);
+            color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+        .content {
+            padding: 3rem;
+        }
 
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .config-card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            transition: border-color 0.2s ease;
+        }
+
+        .config-card:hover {
+            border-color: var(--accent-color);
+        }
+
+        .config-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .config-header i {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .dropzone-container {
+            margin-bottom: 2.5rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--border-color);
+            background-color: var(--card-bg);
+            border-radius: 1.25rem;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 64px;
+        }
+
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent-color);
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .dropzone-text {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            flex: 1;
+        }
+
+        .dropzone-text i {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .dropzone-btn {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .dropzone-btn:hover {
+            background: var(--border-color);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: opacity 0.2s;
+            margin-top: 1.5rem;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+
+        .console {
+            margin-top: 2rem;
+            background-color: #0d1117;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #d1d5db;
+            height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .console::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+
+        .console-line {
+            margin-bottom: 0.6rem;
+            display: flex;
+            gap: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .console-timestamp {
+            opacity: 0.4;
+            font-size: 0.8rem;
+        }
+
+        .jobs-badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-color);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
     </style>
 </head>
+
 <body>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <p style="margin-top: 20px; font-size: 0.8rem; color: var(--text-dim);">Sincronizando Ecossistema Biotchelly...</p>
-    </div>
+    <!-- ═══════════ NAV DE ABAS ═══════════ -->
+    <nav class="tabs-nav">
+        <button class="tab-btn" onclick="switchTab('cacador')" id="tab-cacador">🚀 Caçador de Leads</button>
+        <button class="tab-btn active" onclick="switchTab('kanban')" id="tab-kanban">🎯 Kanban SDR</button>
+    </nav>
 
-    <header>
-        <div class="logo">BIOTCHELLY <span>CRM</span></div>
-        <div class="stats-bar">
-            <div class="stat-item"><i data-lucide="users" size="14"></i> <span id="total-leads">0</span> Leads</div>
-            <div class="stat-item"><i data-lucide="zap" size="14"></i> <span id="agentes-ativos">4</span> Agentes</div>
-            <div class="stat-item" style="border-color: var(--success); color: var(--success);">
-                <i data-lucide="check-circle" size="14"></i> Sistema Operacional
-            </div>
-        </div>
-        <div style="display: flex; gap: 10px;">
-             <button onclick="fetchLeads()" style="background: none; border: 1px solid var(--border); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="refresh-cw" size="14"></i> Atualizar
-             </button>
-        </div>
-    </header>
 
-    <main class="kanban-container" id="kanban">
-        <!-- Coluna: Novo -->
-        <div class="column">
-            <div class="column-header">
-                <span class="column-title">Novo</span>
-                <span class="column-count" id="count-novo">0</span>
-            </div>
-            <div class="cards-container" id="novo"></div>
-        </div>
+    <!-- ═══════════ ABA 1: CAÇADOR ═══════════ -->
+    <div id="cacador-panel" class="tab-panel">
+        <div class="cacador-inner">
+            <div class="container">
+                <header>
+                    <h1><i class="fa-solid fa-rocket"></i> Caçador de Leads <span class="version-badge">v4.7.2 Team &
+                            Vendor
+                            Edition</span></h1>
+                    <div class="theme-toggle">
+                        <button class="theme-btn" onclick="setTheme('light')" title="Claro"><i
+                                class="fa-solid fa-sun"></i></button>
+                        <button class="theme-btn" onclick="setTheme('system')" title="Sistema"><i
+                                class="fa-solid fa-desktop"></i></button>
+                        <button class="theme-btn" onclick="setTheme('dark')" title="Escuro"><i
+                                class="fa-solid fa-moon"></i></button>
+                    </div>
+                </header>
 
-        <!-- Coluna: Briefing -->
-        <div class="column">
-            <div class="column-header">
-                <span class="column-title">Briefing</span>
-                <span class="column-count" id="count-briefing">0</span>
-            </div>
-            <div class="cards-container" id="briefing"></div>
-        </div>
+                <div class="content">
 
-        <!-- Coluna: Qualificador -->
-        <div class="column">
-            <div class="column-header">
-                <span class="column-title">Qualificador</span>
-                <span class="column-count" id="count-qualificador">0</span>
-            </div>
-            <div class="cards-container" id="qualificador"></div>
-        </div>
 
-        <!-- Coluna: Follow-up -->
-        <div class="column">
-            <div class="column-header">
-                <span class="column-title">Follow-up</span>
-                <span class="column-count" id="count-followup">0</span>
-            </div>
-            <div class="cards-container" id="followup"></div>
-        </div>
+                    <!-- Painel de Controle Superior -->
+                    <div class="config-grid">
+                        <!-- Grupo A: Conexão e CRM -->
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-link"></i> Configuração de Conexão (CRM & Chatwoot)
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IDs das Inboxes (Chatwoot)</label>
+                                <input type="text" class="form-input" id="inboxIds" placeholder="Ex: 1, 2, 5" value="1">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Múltiplos IDs para rodízio.</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ID da Conta (Chatwoot)</label>
+                                <input type="number" class="form-input" id="chatwootAccountId" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ID da Tabela (Destino NocoDB)</label>
+                                <input type="text" class="form-input" id="tableId" placeholder="ID da tabela" value="moqw8l0lnh76bvm">
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <div class="form-group" style="flex: 2;">
+                                    <label class="form-label">👤 Vendedor Responsável</label>
+                                    <input type="text" class="form-input" id="vendedorNome" placeholder="Nome" value="Gestão">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label">🆔 ID Agente</label>
+                                    <input type="number" class="form-input" id="vendedorId" placeholder="ID" value="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">👥 ID do Time (Chatwoot)</label>
+                                <input type="number" class="form-input" id="chatwootTeamId" placeholder="Ex: 2" value="">
+                            </div>
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="checkbox" id="updateExisting">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>🔄 Atualizar leads se já existirem?</span>
+                            </div>
+                        </div>
 
-        <!-- Coluna: Fechamento -->
-        <div class="column">
-            <div class="column-header">
-                <span class="column-title">Fechamento</span>
-                <span class="column-count" id="count-fechamento">0</span>
+                        <!-- Grupo B: Ciclo Sniper -->
+                        <div class="config-card">
+                            <div class="config-header">
+                                <i class="fa-solid fa-crosshairs"></i> Configurações do Ciclo Sniper
+                            </div>
+
+                            <!-- Toggles de Controle Unitário -->
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border-color);">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="toggle-switch" title="Move leads do 'Tanque' para o 'Pente'">
+                                        <input type="checkbox" class="toggle-checkbox" id="reloadEnabled" checked>
+                                        <div class="toggle-input"></div>
+                                        <span style="font-size: 0.85rem; font-weight: 700;">Executar Recarga</span>
+                                    </label>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="toggle-switch" title="Inicia os disparos reais via WhatsApp">
+                                        <input type="checkbox" class="toggle-checkbox" id="sniperEnabled" checked>
+                                        <div class="toggle-input"></div>
+                                        <span style="font-size: 0.85rem; font-weight: 700;">Ligar Sniper 🔫</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Qtd. de Recarga (Tanque → Pente)</label>
+                                <input type="number" class="form-input" id="reloadCountMain" value="5">
+                                <small style="color: var(--text-secondary); font-size: 0.7rem; display: block;">Quantos leads 'Novos' ativar por vez.</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cadência Sniper (Minutos)</label>
+                                <input type="number" class="form-input" id="sniperCadence" value="5" min="1">
+                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Média de minutos entre cada disparo.</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Max. Disparos por Ciclo</label>
+                                <input type="number" class="form-input" id="maxShots" value="10">
+                            </div>
+
+                            <!-- Hidden Sync Input -->
+                            <input type="hidden" id="reloadCount" value="5">
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="dropzone-container">
+                        <div class="dropzone" id="dropzone">
+                            <div class="dropzone-text">
+                                <i class="fa-solid fa-file-csv"></i>
+                                <span><strong>Arraste seu CSV</strong> aqui ou use o botão ao lado</span>
+                            </div>
+                            <button class="dropzone-btn" onclick="document.getElementById('fileInput').click()">
+                                <i class="fa-solid fa-plus"></i> Selecionar Arquivo
+                            </button>
+                            <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                        </div>
+                        <!-- Hidden UI for Ultimate Fallback -->
+                        <form id="ultimateForm" method="POST" target="ultimateFrame" style="display:none;"
+                            enctype="application/x-www-form-urlencoded">
+                            <input type="hidden" name="payload" id="ultimatePayload">
+                        </form>
+                        <iframe name="ultimateFrame" id="ultimateFrame" style="display:none;"></iframe>
+                    </div>
+
+
+                        <!-- Webhook & Action Row (V108) -->
+                        <div style="display: flex; align-items: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <label class="form-label" style="margin-bottom: 0;">Kestra Webhook URL</label>
+                                    <button onclick="window.open(document.getElementById('webhookUrl').value, '_blank')"
+                                        style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fa-solid fa-plug"></i> Testar URL
+                                    </button>
+                                </div>
+                                <input type="text" class="form-input" id="webhookUrl"
+                                    value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/09_cacador_leads_ciclo/biotchelly_cacador_leads_key">
+                            </div>
+                            <button class="action-btn" id="processBtn" style="width: auto; min-width: 180px; margin-top: 0; height: 38px;">
+                                <i class="fa-solid fa-play"></i> Executar Operação
+                            </button>
+                        </div>
+
+                    <!-- Console -->
+                    <div class="console" id="console">
+                        <div class="console-line">
+                            <span class="console-timestamp">[00:00:00]</span>
+                            <span class="console-msg">Painel pronto. Selecione o modo de conexão e execute.</span>
+                        </div>
+                    </div>
+
+                        <div class="config-card" style="margin-top: 1rem;">
+                            <div class="config-header">
+                                <i class="fa-solid fa-gears"></i> Modo de Conexão
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="connMode" value="extension"
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Modo Estável (Com
+                                        Extensão)</span>
+                                </label>
+                                <small
+                                    style="margin-left: 1.6rem; color: #10b981; font-size: 0.7rem; display: block; margin-top: -4px;">
+                                    <i class="fa-solid fa-check-double"></i> Recomendado. Requer extensão "Allow CORS"
+                                    ativada.
+                                </small>
+
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 4px;">
+                                    <input type="radio" name="connMode" value="proxy"
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem;">Modo Proxy (Lento/Instável)</span>
+                                </label>
+                                <small
+                                    style="margin-left: 1.6rem; color: var(--text-secondary); font-size: 0.7rem; display: block; margin-top: -4px;">
+                                    Tenta túneis públicos. Pode falhar com arquivos grandes (>50KB).
+                                </small>
+
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 8px;">
+                                    <input type="radio" name="connMode" value="private" checked
+                                        style="width: 1.1rem; height: 1.1rem;">
+                                    <span style="font-size: 0.85rem; font-weight: 700; color: #8b5cf6;">🚀 Modo Turbo
+                                        (Proxy
+                                        Privado)</span>
+                                </label>
+                                <div id="privateProxyConfig"
+                                    style="margin-left: 1.6rem; margin-top: 4px; display: block;">
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" class="form-input" id="privateProxyUrl"
+                                            value="https://falling-term-7c4e.maxyadm.workers.dev"
+                                            placeholder="https://seu-worker.workers.dev"
+                                            style="padding: 4px 8px; font-size: 0.8rem; flex: 1;">
+                                        <button onclick="testProxy()"
+                                            style="background: #8b5cf6; color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;">
+                                            Testar
+                                        </button>
+                                    </div>
+                                    <small style="color: #8b5cf6; font-size: 0.65rem; display: block; margin-top: 2px;">
+                                        <i class="fa-solid fa-bolt"></i> Recomendado para uso definitivo no navegador.
+                                        <a href="https://falling-term-7c4e.maxyadm.workers.dev" target="_blank"
+                                            style="color: #3b82f6; text-decoration: underline; margin-left: 5px;">Testar
+                                            no
+                                            Navegador 🔗</a>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div id="proxyHelper"
+                                style="font-size: 0.65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border-color); margin-top: 8px; padding-top: 8px;">
+                                <span style="color: var(--text-secondary); font-weight: bold;"><i class="fa-solid fa-link-slash"></i>
+                                    Links
+                                    Atualizados (2026):</span>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <a href="https://chromewebstore.google.com/detail/moesif-origin-cors-change/digfbfapnobgndndbneagpbhpccmhlba"
+                                        target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                        1. Moesif CORS (Recomendado)
+                                    </a>
+                                    <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcjeolhkomhkdgdeandcc"
+                                        target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                                        2. CORS Unblock (Alternativa)
+                                    </a>
+                                </div>
+                                <button onclick="copyCurl()" id="copyCurlBtn"
+                                    style="display:none; background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 5px; font-weight: bold; width: fit-content; align-self: center;">
+                                    <i class="fa-solid fa-terminal"></i> COPIAR COMANDO CURL (SOLUÇÃO 100%)
+                                </button>
+                                <div id="psFallback"
+                                    style="display:none; text-align: center; margin-top: 5px; padding: 8px; background: rgba(37, 99, 235, 0.1); border: 1px dashed var(--accent-color); border-radius: 6px;">
+                                    <span
+                                        style="font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 4px;">🚀
+                                        <b>Opção Ninja:</b> Use o script que criei na pasta:</span>
+                                    <code
+                                        style="font-size: 0.75rem; background: var(--console-bg); color: var(--console-text); padding: 2px 4px; border-radius: 4px;">Upload_Leads_Garantido.ps1</code>
+                                </div>
+                            </div>
+                        </div>
+
+
+                </div>
             </div>
-            <div class="cards-container" id="fechamento"></div>
-        </div>
-    </main>
+        </div><!-- /cacador-inner -->
+    </div><!-- /cacador-panel -->
 
     <script>
-        // CONFIGURAÇÃO DE CONEXÃO (V6.0 - SNIPER MODE)
-        const KESTRA_URL = "https://kestra.biotchellyprospecta.online"; 
-        const WEBHOOK_PATH = "/api/v1/executions/webhook/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key";
-        const PROXY_URL = "https://falling-term-7c4e.maxyadm.workers.dev"; // Seu Proxy Privado
 
-        async function kbSmartFetch(targetUrl, action) {
-            const fullUrl = `${targetUrl}${targetUrl.includes('?') ? '&' : '?'}action=${action}`;
+        async function kbSmartFetch(url, body, method = 'POST') {
+            const mode = document.querySelector('input[name="connMode"]:checked')?.value || 'private';
+            const privateBase = document.getElementById('privateProxyUrl')?.value.trim().replace(/\/$/, "") || "";
             
-            // Tentativa 1: Direta (Requer Extensão CORS no Chrome)
-            try {
-                console.log("🚀 Tentativa Direta...");
-                const res = await fetch(fullUrl);
-                if (res.ok) return await res.json();
-            } catch (e) {
-                console.warn("⚠️ Falha na conexão direta (CORS). Tentando Proxy Privado...");
-            }
-
-            // Tentativa 2: Seu Proxy Privado (Modo Turbo)
-            try {
-                const proxyCall = `${PROXY_URL}/?url=${encodeURIComponent(fullUrl)}`;
-                const res = await fetch(proxyCall);
-                if (res.ok) return await res.json();
-            } catch (e) {
-                console.warn("⚠️ Falha no Proxy Privado. Tentando Proxy Público...");
-            }
-
-            // Tentativa 3: Proxy Público (CORS Anywhere)
-            try {
-                const publicProxy = `https://corsproxy.io/?${encodeURIComponent(fullUrl)}`;
-                const res = await fetch(publicProxy);
-                if (res.ok) return await res.json();
-            } catch (e) {
-                throw new Error("Todas as tentativas de conexão (Direta, Privada e Pública) falharam.");
-            }
-        }
-
-        async function fetchLeads() {
-            try {
-                document.getElementById('loader').style.display = 'flex';
-                document.getElementById('loader').style.opacity = '1';
-
-                // Chamada via SmartFetch (Proxy-Aware)
-                const rawData = await kbSmartFetch(`${KESTRA_URL}${WEBHOOK_PATH}`, 'list_leads');
-                console.log("📦 Dados brutos:", rawData);
-
-                // O Kestra com returnOutputs pode colocar o resultado em data.body ou data.leads
-                const data = rawData.body || rawData;
-                const leads = data.leads || [];
-                
-                // Limpar colunas
-                document.querySelectorAll('.cards-container').forEach(c => c.innerHTML = '');
-                document.getElementById('total-leads').innerText = leads.length;
-
-                const counts = { novo: 0, briefing: 0, qualificador: 0, followup: 0, fechamento: 0 };
-
-                leads.forEach(lead => {
-                    const card = createCard(lead);
-                    const status = lead.status?.toLowerCase() || 'novo';
-                    const container = document.getElementById(status) || document.getElementById('novo');
-                    if (container) {
-                        container.appendChild(card);
-                        counts[status] = (counts[status] || 0) + 1;
-                    }
-                });
-
-                // Atualizar contadores
-                Object.keys(counts).forEach(key => {
-                    const el = document.getElementById(`count-${key}`);
-                    if(el) el.innerText = counts[key];
-                });
-
-                lucide.createIcons();
-                
-                // Esconder loader
-                setTimeout(() => {
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
-                }, 800);
-
-            } catch (error) {
-                console.error("❌ Erro na API:", error);
-                alert(`Falha na conexão: ${error.message}\n\nVerifique se o seu Kestra está online e se o gatilho de Webhook está ativo.`);
-            }
-        }
-
-        function createCard(lead) {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.setAttribute('data-id', lead.id);
-            div.innerHTML = `
-                <span class="card-name">${lead.nome || 'Sem Nome'}</span>
-                <div class="card-info"><i data-lucide="phone" size="12"></i> ${lead.telefone || '-'}</div>
-                <div class="card-info"><i data-lucide="map-pin" size="12"></i> ${lead.perfil || 'Lead Geral'}</div>
-                <div class="card-tag">${lead.etiquetas || 'biotchelly_lead'}</div>
-            `;
-            return div;
-        }
-
-        async function updateLeadStatus(leadId, newStatus) {
-            console.log(`Movendo lead ${leadId} para ${newStatus}`);
-            try {
-                await kbSmartFetch(`${KESTRA_URL}${WEBHOOK_PATH}`, `update_status&lead_id=${leadId}&status=${newStatus}`);
-            } catch (error) {
-                console.error("Erro ao atualizar status:", error);
-            }
-        }
-
-        // Inicializar Drag and Drop
-        document.querySelectorAll('.cards-container').forEach(container => {
-            new Sortable(container, {
-                group: 'kanban',
-                animation: 150,
-                ghostClass: 'ghost',
-                onEnd: async (evt) => {
-                    const leadId = evt.item.getAttribute('data-id');
-                    const newStatus = evt.to.id;
-                    await updateLeadStatus(leadId, newStatus);
+            const tryFetch = async (target, label) => {
+                console.log(`[SmartFetch] Tentando ${label} -> ${target}`);
+                try {
+                    const options = {
+                        method: method,
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    if (body) options.body = JSON.stringify(body);
                     
-                    // Atualizar contadores locais
-                    fetchLeads(); 
+                    let r = await fetch(target, options).catch(() => null);
+                    if (r && r.ok) return r;
+
+                    // Fallback Bypass
+                    if (method === 'POST') {
+                        options.headers['Content-Type'] = 'text/plain';
+                        r = await fetch(target, options).catch(() => null);
+                        if (r && r.ok) return r;
+                    }
+                    return r;
+                } catch(e) { return null; }
+            };
+
+            let res = null;
+            if (mode === 'private' && privateBase) {
+                res = await tryFetch(`${privateBase}/?url=${encodeURIComponent(url)}`, "Modo Turbo");
+            } else if (mode === 'extension') {
+                res = await tryFetch(url, "Modo Direto");
+            } else {
+                res = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, "Proxy Público");
+            }
+
+            // Fallback Geral
+            if (!res || !res.ok) {
+                if (privateBase && mode !== 'private') res = await tryFetch(`${privateBase}/?url=${encodeURIComponent(url)}`, "Fallback Turbo");
+                if (!res || !res.ok) res = await tryFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, "Fallback AllOrigins");
+            }
+            return res;
+        }
+
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            const activePanel = document.getElementById(`${tabId}-panel`);
+            
+            if (activeBtn) activeBtn.classList.add('active');
+            if (activePanel) activePanel.classList.add('active');
+            
+            if (tabId === 'kanban' && typeof kbCarregar === 'function') {
+                kbCarregar();
+            }
+        }
+
+        // --- Theme Logic ---
+        function setTheme(theme) {
+            const root = document.documentElement;
+            const buttons = document.querySelectorAll('.theme-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (theme === 'system') {
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
+            } else {
+                root.setAttribute('data-theme', theme);
+            }
+            const activeBtn = document.querySelector(`.theme-btn[onclick*="${theme}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            localStorage.setItem('theme', theme);
+        }
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        setTheme(savedTheme);
+
+        // State & Elements
+        let currentFile = null;
+        let lastPayload = null; // Stored for CURL generation
+        const dropZone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileNameDisp = document.getElementById('fileName');
+        const fileSizeDisp = document.getElementById('fileSize');
+        const processBtn = document.getElementById('processBtn');
+        const consoleEl = document.getElementById('console');
+        const copyCurlBtn = document.getElementById('copyCurlBtn');
+
+        // Captura de erros globais para diagnóstico Jobs
+        // 🔑 FIX RACE CONDITION: Flag para suprimir erros globais durante operação controlada
+        window._suppressGlobalErrors = false;
+
+        window.onerror = function (msg, url, line, col, error) {
+            if (window._suppressGlobalErrors) return true; // Suprimir durante operação
+            log(`ERRO DE SCRIP: ${msg} (Linha: ${line})`, 'error');
+            return false;
+        };
+        window.onunhandledrejection = function (event) {
+            if (window._suppressGlobalErrors) {
+                // Consumir silenciosamente — já tratado internamente pelo tryFetch
+                event.preventDefault();
+                return;
+            }
+            log(`FALHA ASSÍNCRONA: ${event.reason}`, 'error');
+        };
+
+        const log = (msg, type = 'info') => {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+
+            let icon = '🚀';
+            if (type === 'error') icon = '❌';
+            if (type === 'success') icon = '✅';
+            if (type === 'warning') icon = '⚠️';
+            if (type === 'jobs') icon = '👨‍🏫';
+
+            line.innerHTML = `
+                <span class="console-timestamp">[${time}]</span>
+                <span class="console-msg">${(type === 'jobs' ? '<span class="jobs-badge">JOBS</span>' : icon)} ${msg}</span>
+            `;
+
+            if (type === 'error') line.style.color = 'var(--danger-color)';
+            if (type === 'success') line.style.color = 'var(--success-color)';
+            if (type === 'warning') line.style.color = 'var(--warning-color)';
+            if (type === 'jobs') line.style.color = 'var(--accent-color)';
+
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+
+        const copyCurl = () => {
+            if (!lastPayload) return;
+            const curl = `curl -X POST "${document.getElementById('webhookUrl').value}" -H "Content-Type: application/json" -d '${JSON.stringify(lastPayload).replace(/'/g, "'\\''")}'`;
+            navigator.clipboard.writeText(curl).then(() => {
+                const oldText = copyCurlBtn.innerHTML;
+                copyCurlBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                setTimeout(() => copyCurlBtn.innerHTML = oldText, 2000);
+            });
+        };
+
+        const testProxy = async () => {
+            const url = document.getElementById('privateProxyUrl').value.trim();
+            if (!url) return log('❌ Digite a URL do Proxy.', 'error');
+            log(`🔍 Testando Proxy: ${url}...`);
+            try {
+                const pingUrl = url.replace(/\/$/, "") + "/ping";
+                const response = await fetch(pingUrl, { mode: 'cors' });
+                if (response.ok) {
+                    const text = await response.text();
+                    log(`✅ SUCESSO! Resposta: ${text}`, 'success');
+                } else {
+                    log(`⚠️ Falha no Proxy: Status ${response.status}`, 'warning');
+                }
+            } catch (e) {
+                log(`❌ ERRO DE CONEXÃO: ${e.message}`, 'error');
+                log(`💡 DICA: Verifique se deu "Deploy" no Cloudflare e se a URL está correta.`, 'info');
+            }
+        };
+
+        // UI Event Listeners
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFile(e.target.files[0]); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        const handleFile = (file) => {
+            if (file && file.name.endsWith('.csv')) {
+                currentFile = file;
+                const dropSpan = document.querySelector('.dropzone-text span');
+                if (dropSpan) {
+                    dropSpan.innerHTML = `📄 <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+                }
+                log(`Arquivo CSV carregado: ${file.name}`, 'success');
+            } else {
+                log('Erro: Selecione um arquivo .csv válido.', 'error');
+            }
+        };
+
+        processBtn.addEventListener('click', async (e) => {
+            window._lastEvent = e;
+            const reloadEnabled = document.getElementById('reloadEnabled').checked;
+            const sniperEnabled = document.getElementById('sniperEnabled').checked;
+            if (!currentFile && !reloadEnabled && !sniperEnabled) {
+                log('Erro: Carregue um arquivo ou habilite Recarga/Sniper.', 'error');
+                return;
+            }
+
+            processBtn.disabled = true;
+            const originalContent = processBtn.innerHTML;
+            processBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+            copyCurlBtn.style.display = 'none';
+
+            window._suppressGlobalErrors = true;
+
+            const sendData = async (csvContent = null) => {
+                const webhookUrl = document.getElementById('webhookUrl').value.trim();
+                const initialMode = document.querySelector('input[name="connMode"]:checked').value;
+                const payloadSize = csvContent ? (csvContent.length / 1024).toFixed(1) : 0;
+                log(`Estou preparando o pacote de dados (${payloadSize} KB). Mantenha a calma!`, 'jobs');
+
+                const payload = {
+                    kestra_url: webhookUrl,
+                    csv_content: csvContent || null,
+                    filename: currentFile ? currentFile.name : 'não enviado',
+                    reload_enabled: reloadEnabled,
+                    update_existing: document.getElementById('updateExisting').checked,
+                    sniper_enabled: sniperEnabled,
+                    reload_count: parseInt(document.getElementById('reloadCountMain').value) || 5,
+                    max_disparos_ciclo: parseInt(document.getElementById('maxShots').value) || 10,
+                    sniper_cadence: document.getElementById('sniperCadence').value || "5",
+                    chatwoot_inbox_ids: document.getElementById('inboxIds').value || "1",
+                    chatwoot_account_id: parseInt(document.getElementById('chatwootAccountId')?.value) || 1,
+                    table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
+                    vendedor_nome: document.getElementById('vendedorNome').value || "Gestão",
+                    chatwoot_team_id: document.getElementById('chatwootTeamId').value || "",
+                    agent_id: parseInt(document.getElementById('vendedorId')?.value) || null
+                };
+
+                console.log('[JOBS] Payload:', payload);
+                lastPayload = payload;
+
+                let response = null;
+                const privateBase = document.getElementById('privateProxyUrl').value.trim().replace(/\/$/, "");
+
+                response = await kbSmartFetch(webhookUrl, payload);
+
+                // Fallbacks
+                if (!response || !response.ok) {
+                    log("Caminho principal falhou. Iniciando Fallbacks...", 'jobs');
+                    if (initialMode !== 'private' && privateBase) {
+                        response = await kbSmartFetch(webhookUrl, payload);
+                    }
+                    if (!response || !response.ok) {
+                        response = await kbSmartFetch(webhookUrl, payload);
+                    }
+                }
+
+                if (response && response.ok) {
+                    if (response._isBerserker) {
+                        log('⚡ Sniper v4.6 Confirmado! Verifique as execuções no Kestra.', 'warning');
+                    } else {
+                        log('✅ Sucesso! Leads entregues com confirmação HTTP.', 'success');
+                    }
+                } else {
+                    log('Falha Total. Use o script PowerShell ou CURL.', 'error');
+                    copyCurlBtn.style.display = 'block';
+                }
+
+                setTimeout(() => { window._suppressGlobalErrors = false; }, 500);
+                processBtn.disabled = false;
+                processBtn.innerHTML = originalContent;
+            };
+
+            try {
+                if (currentFile) {
+                    const reader = new FileReader();
+                    reader.onload = async (re) => {
+                        try { await sendData(re.target.result); }
+                        catch (err) { log(`Erro no envio: ${err.message}`, 'error'); processBtn.disabled = false; processBtn.innerHTML = originalContent; }
+                    };
+                    reader.readAsText(currentFile);
+                } else {
+                    await sendData();
+                }
+            } catch (err) {
+                log(`Falha na Operação: ${err.message}`, 'error');
+                processBtn.disabled = false;
+                processBtn.innerHTML = originalContent;
+            }
+        });
+
+        // Toggle Private Proxy Input
+        document.querySelectorAll('input[name="connMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const configDiv = document.getElementById('privateProxyConfig');
+                if (configDiv) {
+                    configDiv.style.display = (e.target.value === 'private') ? 'block' : 'none';
                 }
             });
         });
 
-        // Start
-        window.onload = () => {
-            lucide.createIcons();
-            fetchLeads();
-        };
+        // Initialize display state
+        window.addEventListener('load', () => {
+            const privateRadio = document.querySelector('input[name="connMode"][value="private"]');
+            if (privateRadio && privateRadio.checked) {
+                const cfg = document.getElementById('privateProxyConfig');
+                if (cfg) cfg.style.display = 'block';
+            }
+            // Inicializar Kanban como padrão (V115)
+            kbInit();
+        });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-panel').classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'kanban') kbInit();
+        }
+
+        // --- PERSISTÊNCIA JOBS (V109) ---
+        function initPersistence() {
+            const inputs = [
+                'inboxIds', 'chatwootAccountId', 'tableId', 'vendedorNome', 'vendedorId', 
+                'chatwootTeamId', 'updateExisting', 'reloadEnabled', 'sniperEnabled', 
+                'reloadCountMain', 'sniperCadence', 'maxShots', 'webhookUrl', 'privateProxyUrl',
+                'kb-backend-url', 'kb-chatwoot-url', 'kb-team-id'
+            ];
+
+            const loadState = () => {
+                inputs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const val = localStorage.getItem('cacador_' + id);
+                    if (val !== null) {
+                        if (el.type === 'checkbox') el.checked = val === 'true';
+                        else el.value = val;
+                        
+                        // Sync Especial cases
+                        if (id === 'reloadCountMain') {
+                           const hidden = document.getElementById('reloadCount');
+                           if(hidden) hidden.value = val;
+                        }
+                    }
+                });
+                // Radios (connMode)
+                const savedMode = localStorage.getItem('cacador_connMode');
+                if (savedMode) {
+                    const r = document.querySelector(`input[name="connMode"][value="${savedMode}"]`);
+                    if (r) {
+                        r.checked = true;
+                        // Trigger UI updates
+                        const cfg = document.getElementById('privateProxyConfig');
+                        if (cfg) cfg.style.display = (savedMode === 'private') ? 'block' : 'none';
+                    }
+                }
+            };
+
+            const saveState = (id, val) => {
+                localStorage.setItem('cacador_' + id, val);
+            };
+
+            // Listeners
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', () => {
+                    const val = (el.type === 'checkbox') ? el.checked : el.value;
+                    saveState(id, val);
+                    
+                    // Sync Especial cases
+                    if (id === 'reloadCountMain') {
+                        const hidden = document.getElementById('reloadCount');
+                        if(hidden) hidden.value = el.value;
+                    }
+                    if (id === 'chatwootTeamId') {
+                        const teamKb = document.getElementById('kb-team-id');
+                        if(teamKb) teamKb.value = el.value;
+                    }
+                    if (id === 'kb-team-id') {
+                        const teamCac = document.getElementById('chatwootTeamId');
+                        if(teamCac) teamCac.value = el.value;
+                    }
+                });
+            });
+
+            // Radios
+            document.querySelectorAll('input[name="connMode"]').forEach(r => {
+                r.addEventListener('change', () => {
+                    if (r.checked) saveState('connMode', r.value);
+                });
+            });
+
+                loadState();
+                
+                // --- SINCRONIA DE IDENTIDADE (V110) ---
+                // Garante que o núcleo do Kanban saiba o que foi carregado na persistência do Caçador
+                const savedId = localStorage.getItem('cacador_vendedorId');
+                const savedNome = localStorage.getItem('cacador_vendedorNome');
+                if (savedId && typeof updateAgent === 'function') {
+                    updateAgent(savedId, savedNome);
+                }
+            }
+            window.addEventListener('load', initPersistence);
+    </script>
+
+    <!-- ═══════════ MODAL CARD ═══════════ -->
+    <div id="kb-modal-overlay" onclick="kbModalClose(event)">
+        <div id="kb-modal">
+            <div id="kb-modal-header">
+                <div id="kb-modal-title">Lead</div>
+                <button id="kb-modal-close" onclick="kbModalClose()">✕</button>
+            </div>
+            <div id="kb-modal-body"></div>
+            <div class="kb-modal-footer">
+                <button class="kb-modal-btn secondary" onclick="kbModalClose()">Fechar</button>
+                <button class="kb-modal-btn primary" onclick="kbSalvarModal()">💾 Salvar Notas</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="kanban-panel" class="tab-panel active">
+        <div class="kb-config-bar">
+            <span>🔗 Backend:</span>
+            <input class="kb-input-url" id="kb-backend-url" style="width:100px;" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key">
+            <span style="margin-left:5px;">🏠 URL:</span>
+            <input class="kb-input-url" id="kb-chatwoot-url" style="width:140px;" value="https://biotchellyprospecta-chatwoot.mbtqpp.easypanel.host">
+            <span style="margin-left:5px;">👥 Time:</span>
+            <input class="kb-input-url" id="kb-team-id" style="width:40px;" placeholder="Ex: 6" value="6">
+            <button class="kb-save" onclick="kbCarregar()">↻</button>
+        </div>
+        <div class="kb-toolbar">
+            <input type="text" id="kb-search" placeholder="🔍 Buscar..." oninput="kbFiltrar()" style="width:150px;">
+            <select id="kb-filter-status" onchange="kbFiltrar()">
+                <option value="">Status...</option>
+                <option value="Novo">📋 Novo</option>
+                <option value="Aguardando Disparo">🎯 Aguardando Disparo</option>
+                <option value="Contactado">📫 Contactado</option>
+                <option value="Qualificado">✅ Qualificado</option>
+                <option value="Em Negociacao">🤝 Em Negociacao</option>
+                <option value="Ganho">💰 Ganho</option>
+                <option value="Perdido">❌ Perdido</option>
+            </select>
+            <span class="kb-agent-label" id="kb-agent-label">👤 Identificando...</span>
+            <button class="kb-btn" onclick="kbCarregar()">↻ Atualizar</button>
+        </div>
+        <div class="kb-board" id="kb-board"></div>
+        <div id="kb-toast"></div>
+        <div class="kb-debug-console" id="kb-debug-console"></div>
+    </div>
+
+    <script>
+        const KB_COLUNAS = [
+            { id: 'Novo', label: '📋 Novo', cls: 'col-novo' },
+            { id: 'Aguardando Disparo', label: '🎯 Aguardando Disparo', cls: 'col-pente' },
+            { id: 'Contactado', label: '📫 Contactado', cls: 'col-aberto' },
+            { id: 'Qualificado', label: '✅ Qualificado', cls: 'col-qualif' },
+            { id: 'Em Negociacao', label: '🤝 Em Negociacao', cls: 'col-negoc' },
+            { id: 'Ganho', label: '💰 Ganho', cls: 'col-conv' },
+            { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
+        ];
+
+        let kbAuthId = localStorage.getItem('kbAuthId') || "";
+        let kbAuthNome = localStorage.getItem('kbAuthNome') || "";
+        let kbRawCache = JSON.parse(localStorage.getItem('kbLeads') || '{}');
+        let kbLeads = (kbRawCache.agentId === kbAuthId || kbAuthId === "1") ? (Array.isArray(kbRawCache.list) ? kbRawCache.list : (Array.isArray(kbRawCache) ? kbRawCache : [])) : [];
+        let kbDraggedId = null;
+        let kbInitialized = false;
+        let kbAuthTry = 0;
+        let kbGestorOverride = localStorage.getItem('kbGestorOverride') === 'true';
+
+
+        let kbAccountId = null; // 🆔 ID da Conta Chatwoot (V78.1)
+
+        function kbToggleGestor() {
+            kbGestorOverride = !kbGestorOverride;
+            localStorage.setItem('kbGestorOverride', kbGestorOverride);
+            kbToast(kbGestorOverride ? '🕶️ Modo Gestor ATIVO' : '👥 Modo SDR Ativo');
+            kbCarregar();
+        }
+
+        // --- DETECÇÃO SEGURA DE VENDEDOR (V73.1) ---
+        function updateAgent(id, name, isAuto = false) {
+            if (!id) return;
+            const finalId = String(id).replace(/[^0-9]/g, "");
+            
+            // Prioridade para o ID salvo no Caçador (V111)
+            // Se for uma detecção automática, mas já temos um ID salvo no cache, respeitamos o cache.
+            const savedCacadorId = localStorage.getItem('cacador_vendedorId');
+            if (isAuto && savedCacadorId && savedCacadorId !== "" && savedCacadorId !== finalId) {
+                console.log(`[JOBS] Preservando ID persistido (${savedCacadorId}) e ignorando detecção automática (${finalId}).`);
+                return;
+            }
+
+            const finalName = name || "Agente";
+            if (!finalId) return;
+
+            const agentChanged = finalId !== kbAuthId;
+
+            // Sempre persiste identidade Kanban
+            kbAuthId = finalId;
+            kbAuthNome = finalName;
+            localStorage.setItem('kbAuthId', finalId);
+            localStorage.setItem('kbAuthNome', finalName);
+
+            // Vincula com campos escondidos se existirem (para automações externas)
+            const vid = document.getElementById('vendedorId');
+            const vnm = document.getElementById('vendedorNome');
+            if (vid) {
+                vid.value = finalId;
+                localStorage.setItem('cacador_vendedorId', finalId);
+            }
+            if (vnm) {
+                vnm.value = finalName;
+                localStorage.setItem('cacador_vendedorNome', finalName);
+            }
+
+            const label = document.getElementById('kb-agent-label');
+            if (label) label.textContent = `👤 ${finalName}`;
+            kbLog(`👤 Identidade Ativa: ${finalName} (ID: ${finalId})`);
+
+            if (kbInitialized) {
+                if (agentChanged) kbLeads = []; // Limpa leads do agente anterior
+                kbCarregar();
+            }
+        }
+
+        function kbLog(msg) {
+            const con = document.getElementById('kb-debug-console');
+            if(!con) return;
+            const line = document.createElement('div');
+            line.className = 'kb-debug-line';
+            const time = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="kb-debug-time">[${time}]</span> ${msg}`;
+            con.prepend(line);
+        }
+
+        // Handshake Chatwoot
+        window.parent.postMessage({ event: 'dashboardApp:ready' }, '*');
+        kbLog('🚀 Sistema Kanban Pronto!');
+
+        // 🛡️ Identificação Blindada (V78.4)
+        window.addEventListener('message', function(e) {
+            try { 
+                var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                
+                // Prioriza contextos de usuário/agente para evitar colisão com dados do Lead
+                var agent = d.currentAgent || (d.data && d.data.currentAgent) || d.agent || d.user;
+                var account = d.account || (d.data && d.data.account) || (agent && agent.account) || d;
+
+                var accId = (account && (account.id || account.account_id)) || d.account_id;
+                var agentId = (agent && agent.id) || null;
+                var agentName = (agent && (agent.name || agent.first_name)) || null;
+
+                if (accId) {
+                    kbAccountId = accId;
+                }
+
+                if (agentId && String(agentId) !== String(kbAuthId)) {
+                    updateAgent(agentId, agentName, true);
+                }
+            } catch(err){}
+        });
+
+        // Fallback de detecção via URL
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var acc = params.get('account_id') || params.get('accountId');
+            if (acc) kbAccountId = acc;
+        })();
+
+        // 🚀 Função para saltar para a conversa ou abrir WhatsApp (V88 - Hybrid Context)
+        function kbOpenConversation(convId, phone, leadTeamId, leadInboxId) {
+            try {
+                var cleanIdStr = String(convId || '').split('.')[0].replace(/\D/g, '');
+                var finalId = parseInt(cleanIdStr);
+                
+                var urlEl = document.getElementById('kb-chatwoot-url');
+                var teamEl = document.getElementById('kb-team-id');
+                var inboxGlobalEl = document.getElementById('inboxIds'); // Do Caçador
+                
+                var chatwootUrl = urlEl ? urlEl.value.trim() : '';
+                
+                // Determinação do Contexto (Inbox vs Team)
+                var contextPart = '';
+                var targetType = '';
+                var targetId = '';
+
+                if (leadInboxId && leadInboxId !== 'null' && leadInboxId !== 'undefined') {
+                    contextPart = '/inbox/' + leadInboxId;
+                    targetType = 'inbox'; targetId = leadInboxId;
+                } else if (leadTeamId && leadTeamId !== 'null' && leadTeamId !== 'undefined') {
+                    contextPart = '/team/' + leadTeamId;
+                    targetType = 'team'; targetId = leadTeamId;
+                } else if (teamEl && teamEl.value.trim()) {
+                    contextPart = '/team/' + teamEl.value.trim();
+                    targetType = 'team'; targetId = teamEl.value.trim();
+                } else if (inboxGlobalEl && inboxGlobalEl.value.trim()) {
+                    var firstInbox = inboxGlobalEl.value.split(',')[0].trim();
+                    contextPart = '/inbox/' + firstInbox;
+                    targetType = 'inbox'; targetId = firstInbox;
+                }
+
+                // Sanitização da URL base
+                if (chatwootUrl && !chatwootUrl.startsWith('http')) chatwootUrl = 'https://' + chatwootUrl;
+                chatwootUrl = chatwootUrl.replace(/\/$/, '').replace(/\/app$/, '');
+
+                kbLog('🔍 Gatilho V88: Conv=' + finalId + ' | Contexto=' + contextPart);
+                
+                if (!isNaN(finalId) && finalId > 0) {
+                    var acc = kbAccountId || 1;
+                    var path = '/accounts/' + acc + contextPart + '/conversations/' + finalId;
+                    var fullJumpUrl = chatwootUrl + '/app' + path;
+
+                    kbToast('🚀 Indo para o Chat: ' + finalId);
+                    kbLog('🔗 Rota: ' + path);
+                    
+                    // 1. Sinais via postMessage
+                    var signals = [
+                        { event: 'appContext:change', data: { conversationId: finalId, accountId: acc, teamId: (targetType==='team'?targetId:null), inboxId: (targetType==='inbox'?targetId:null) } },
+                        { event: 'conversation:change', id: finalId, accountId: acc },
+                        { event: 'pushState', path: path }
+                    ];
+                    
+                    signals.forEach(function(msg) {
+                        var jsonStr = JSON.stringify(msg);
+                        [window.parent, window.top].forEach(function(target) {
+                            if (target && target !== window) {
+                                try {
+                                    target.postMessage(msg, '*');
+                                    target.postMessage(jsonStr, '*');
+                                } catch(e){}
+                            }
+                        });
+                    });
+
+                    // 2. Fallback via Redirecionamento Total (1.4s)
+                    setTimeout(function() {
+                        if (chatwootUrl && window.top) {
+                            try {
+                                if (!window.top.location.href.includes('/conversations/' + finalId)) {
+                                    kbLog('⚡ SPA parado. Forçando salto total para ' + targetType + '...');
+                                    window.top.location.href = fullJumpUrl;
+                                }
+                            } catch(e) {
+                                window.top.location.href = fullJumpUrl;
+                            }
+                        }
+                    }, 1400);
+
+                } else if (phone && String(phone).length > 5) {
+                    var cleanPhone = String(phone).replace(/\D/g, '');
+                    window.open('https://wa.me/' + cleanPhone, '_blank');
+                    kbToast('📲 Abrindo WhatsApp...');
+                } else {
+                    kbToast('⚠️ Lead sem ID de Conversa');
+                }
+            } catch (err) {
+                console.error('[KB] Falha:', err);
+                kbToast('🛑 Erro no roteamento');
+            }
+        }
+
+        // 🚀 Iniciar conversa proativamente via Kestra (V98 - Magic Jump Edition)
+        async function kbProactiveStart(id) {
+            const l = kbLeads.find(x => x.Id === id);
+            if (!l) return;
+            
+            const btn = document.getElementById('kb-btn-proactive');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Criando Conversa...';
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'wait';
+            }
+
+            kbLog('🚀 Iniciando disparo MANUAL no Caçador para: ' + l.Nome);
+            kbToast('⏳ Preparando conversa no Chatwoot...');
+            
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+
+            const payload = {
+                manual_mode: true, 
+                manual_phone: l.Telefone || '',
+                manual_name: l.Nome || '',
+                manual_lead_id: parseInt(l.Id),
+                table_id: document.getElementById('tableId').value || "moqw8l0lnh76bvm",
+                // 🎯 Prioriza Inbox e Account do lead; fallback para o painel
+                chatwoot_inbox_ids: (l.Inbox_ID ? String(l.Inbox_ID) : null) || document.getElementById('inboxIds').value || "1",
+                chatwoot_account_id: parseInt(l.Account_ID || document.getElementById('chatwootAccountId')?.value) || 1,
+                chatwoot_team_id: parseInt(l.Team_ID || document.getElementById('chatwootTeamId').value) || null,
+                agent_id: parseInt(document.getElementById('vendedorId')?.value) || null,
+                vendedor_nome: document.getElementById('vendedorNome').value || "Gestão"
+            };
+
+            try {
+                // 1. Aciona o Kestra
+                const response = await kbSmartFetch(webhookUrl, payload);
+
+                if (response && response.ok) {
+                    kbLog('✨ Kestra aceitou o pedido. Entrando em modo "Vigilante"...');
+                    
+                    // 2. Loop de Polling Inteligente (Busca o ID no NocoDB)
+                    let attempts = 0;
+                    const maxAttempts = 5; // ~10-12 segundos total
+                    
+                    const poll = setInterval(async () => {
+                        attempts++;
+                        kbLog(`🔍 Tentativa ${attempts}: Verificando ID de conversa...`);
+                        
+                        // Atualiza os dados do Kanban (Busca no NocoDB)
+                        await kbCarregar(); 
+                        
+                        const updatedLead = kbLeads.find(x => x.Id === id);
+                        if (updatedLead && updatedLead.Conversation_ID) {
+                            clearInterval(poll);
+                            kbLog('🎯 ID Localizado! Saltando para o Chat...');
+                            kbToast('✅ Conversa Pronta! Saltando...');
+                            
+                            if (btn) btn.innerHTML = '🚀 Saltando...';
+                            
+                            // 3. Salto Automático
+                            kbOpenConversation(updatedLead.Conversation_ID, updatedLead.Telefone, updatedLead.Team_ID, updatedLead.Inbox_ID);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(poll);
+                            kbLog('🛑 Polling atingiu limite. Usuário deve clicar manualmente.');
+                            kbToast('⚠️ ID quase pronto. Clique em atualizar em 2s.');
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = '🚀 Iniciar no Chatwoot';
+                                btn.style.opacity = '1';
+                                btn.style.cursor = 'pointer';
+                            }
+                        }
+                    }, 2500);
+
+                } else {
+                    kbToast('🛑 Falha ao acionar Modo Manual do Caçador.');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '🚀 Iniciar no Chatwoot'; btn.style.opacity = '1'; }
+                }
+            } catch (err) {
+                console.error('[KB] Falha no Proactive:', err);
+                kbToast('🛑 Erro de conexão com Kestra');
+                if (btn) { btn.disabled = false; btn.innerHTML = '🚀 Iniciar no Chatwoot'; btn.style.opacity = '1'; }
+            }
+        }
+
+        // Monitoramento contínuo (Polling Interno)
+        setInterval(() => {
+            const vid = document.getElementById('vendedorId');
+            const vnm = document.getElementById('vendedorNome');
+            
+            // Tenta recuperar do cache se o campo estiver vazio
+            if (vid && !vid.value && kbAuthId) vid.value = kbAuthId;
+            if (vnm && !vnm.value && kbAuthNome) vnm.value = kbAuthNome;
+
+            const cid = vid?.value;
+            const cnm = vnm?.value;
+            
+            if(cid && cid !== "1" && cid !== "" && cid !== kbAuthId) {
+                updateAgent(cid, cnm);
+            }
+            
+            // Timeout de Identidade (V63)
+            if (!kbAuthId && kbAuthTry > 30) {
+                kbLog('⚠️ Aguardando Handshake Chatwoot...');
+            }
+            if (!kbAuthId) kbAuthTry++;
+        }, 500);
+
+        function kbVal(v) {
+            if (v === null || v === undefined) return '';
+            if (Array.isArray(v)) return v.length > 0 ? kbVal(v[0]) : '';
+            if (typeof v === 'object') return v.title || v.value || v.id || v.name || JSON.stringify(v);
+            return String(v).trim();
+        }
+
+        function kbFilterByAgent(leads) {
+            if (!Array.isArray(leads)) return [];
+            if (!kbAuthId) return []; // Se não identificou, não mostra nada por segurança
+            
+            if (kbAuthId === "1" || kbAuthNome === "Gestão" || kbGestorOverride) {
+                kbLog(`🔓 Modo Admin/Gestor (V73)`);
+                return leads;
+            }
+            
+            const searchId = String(kbAuthId).trim();
+            const searchName = kbAuthNome.toLowerCase().trim();
+            const searchTeam = String(document.getElementById('kb-team-id')?.value || '').trim();
+
+            const filtered = leads.filter(l => {
+                const vId = String(l.agent_id || l.vendedor_id || '').trim();
+                const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
+                const vTeam = String(l.Team_ID || '').trim();
+
+                // 🔒 SEGURANÇA MÁXIMA: Tripla Confluência Obrigatória (V121)
+                // Se algum campo estiver vazio ou não bater, o acesso é negado.
+                if (!searchId || !searchName || !searchTeam) return false;
+
+                return (vId === searchId) && 
+                       (vName.includes(searchName)) &&
+                       (vTeam === searchTeam);
+            });
+
+            kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
+            return filtered;
+        }
+
+        function kbExtractLeads(obj, depth = 0) {
+            if (!obj || depth > 5) return null;
+            if (typeof obj === 'string') try { obj = JSON.parse(obj); } catch(e){}
+            
+            if (Array.isArray(obj)) return kbFilterByAgent(obj);
+
+            if (typeof obj !== 'object') return null;
+
+            // 1. Tenta propriedades conhecidas na raiz
+            const fast = obj.list || obj.records || obj.data || 
+                         (obj.response && (obj.response.list || obj.response.records)) ||
+                         (obj.body && (obj.body.list || obj.body.records || obj.body));
+            
+            if (Array.isArray(fast)) return kbFilterByAgent(fast);
+
+            // 2. BUSCA EXAUSTIVA
+            for (let k in obj) {
+                if (typeof obj[k] === 'object' && obj[k] !== null && k !== 'trigger') {
+                    const found = kbExtractLeads(obj[k], depth + 1);
+                    if (found && Array.isArray(found)) return found;
+                }
+            }
+            return null;
+        }
+
+        function kbBackendUrl() { 
+            const el = document.getElementById('kb-backend-url');
+            return el ? el.value.trim() : ""; 
+        }
+
+        function kbToast(msg) {
+            const t = document.getElementById('kb-toast');
+            if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        }
+
+        async function kbInit() {
+            if (kbInitialized) return;
+            const board = document.getElementById('kb-board');
+            if(!board) return;
+            board.innerHTML = KB_COLUNAS.map(col => `
+                <div class="kb-col ${col.cls}" ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'${col.id}')">
+                    <div class="kb-col-header">${col.label} <span class="kb-count" id="kbc-${col.id}">0</span></div>
+                    <div class="kb-dropzone" id="kbz-${col.id}"><div class="kb-empty">Vazio</div></div>
+                </div>
+            `).join('');
+            kbInitialized = true;
+            
+            // --- MEMÓRIA DO JOBS (V68) ---
+            if(kbLeads.length > 0) {
+                kbLog(`📦 Restaurando ${kbLeads.length} leads do cache...`);
+                kbMostrarLeads(kbLeads, kbAuthNome || 'Agente');
+            }
+
+            // Tenta carregar se já estiver autenticado
+            if(kbAuthId) kbCarregar();
+        }
+
+        function kbSyncFromCacador() {
+            return { id: kbAuthId, nome: kbAuthNome };
+        }
+
+        async function kbCarregar() {
+            const label = document.getElementById('kb-agent-label');
+            const board = document.getElementById('kb-board');
+            
+            if (!kbAuthId) {
+                if(label) label.textContent = '⏳ Identificando Agente...';
+                return;
+            }
+            
+            if (board && (board.innerHTML.includes('Acesso bloqueado') || board.innerHTML === "")) {
+                kbInitialized = false; 
+                kbInit(); 
+                return; 
+            }
+
+            if(label) label.textContent = `⏳ Conectando Kestra (${kbAuthNome})...`;
+            
+            try {
+                let allLeads = [];
+                let offset = 0;
+                let hasMore = true;
+                let totalRows = 0;
+                let firstPageData = null;
+
+                while (hasMore) {
+                    kbLog(`📡 Buscando página (Offset: ${offset})...`);
+                    const url = `${kbBackendUrl()}${kbBackendUrl().indexOf('?') > 0 ? '&' : '?'}wait=true&offset=${offset}`;
+                    const nocoId = document.getElementById('nocoTableId')?.value || "";
+                    const nocoToken = document.getElementById('nocoToken')?.value || "";
+                    
+                    const body = { 
+                        action: 'list', 
+                        agent_id: kbAuthId, 
+                        vendedor_nome: kbAuthNome, 
+                        table_id: nocoId,
+                        token: nocoToken,
+                        offset: offset 
+                    };
+
+                    const r = await kbSmartFetch(url, body, 'POST');
+                    if (!r || !r.ok) {
+                        kbLog(`❌ Erro no Fetch: ${r ? r.status : 'Sem resposta'}`);
+                        break;
+                    }
+
+                    const data = await r.json();
+                    // Kestra wrapping: data.response ou data.body
+                    const realData = data.response || data.body || data;
+                    kbLog(`📦 Resposta recebida. Itens: ${realData.list ? realData.list.length : (realData.records ? realData.records.length : '0')}`);
+                    
+                    if (!firstPageData) firstPageData = data;
+
+                    const res = kbExtractLeads(data);
+                    if (res && Array.isArray(res)) {
+                        allLeads = allLeads.concat(res);
+                        
+                        // Lógica de Paginação Robustecida
+                        const p = realData.pageInfo || (realData.body && realData.body.pageInfo) || (data.pageInfo);
+                        if (p) {
+                            totalRows = p.totalRows;
+                            const ps = p.pageSize || 100;
+                            offset += ps;
+                            hasMore = !p.isLastPage && (allLeads.length < totalRows);
+                            kbLog(`📄 Info: ${allLeads.length}/${totalRows} leads. Próxima: ${hasMore}`);
+                            if (hasMore) label.textContent = `⏳ Lendo... (${allLeads.length}/${totalRows})`;
+                        } else {
+                            kbLog('⚠️ pageInfo não encontrado. Verificando estrutura...');
+                            console.log('[KB] Data structure:', data);
+                            hasMore = false;
+                        }
+                    } else {
+                        // Trata Polling se necessário
+                        const execId = (data.execution && data.execution.id) ? data.execution.id : (data.id && data.id.length < 50 ? data.id : null);
+                        if (execId && allLeads.length === 0) {
+                            kbLog(`🔄 Entrando em modo Polling (Exec: ${execId})`);
+                            return kbPollExecution(execId, kbAuthNome);
+                        }
+                        hasMore = false;
+                    }
+
+                    if (offset > 5000) { kbLog('🚨 Limite de 5000 leads atingido.'); hasMore = false; }
+                }
+
+                if (allLeads.length > 0) {
+                    kbLog(`✅ Busca finalizada: ${allLeads.length} leads totais.`);
+                    const finalData = { ...firstPageData, list: allLeads };
+                    if (firstPageData.pageInfo) finalData.pageInfo = firstPageData.pageInfo;
+                    kbMostrarLeads(finalData, kbAuthNome);
+                } else {
+                    const msg = kbAuthId === "1" ? "⚠️ Banco Vazio" : `⚠️ Sem leads p/ ${kbAuthNome}`;
+                    if(label) label.textContent = msg;
+                    // --- LIMPEZA DE FANTASMAS (V112) ---
+                    kbLeads = [];
+                    localStorage.setItem('kbLeads', JSON.stringify({ list: [], agentId: kbAuthId }));
+                    kbFiltrar();
+                }
+            } catch (err) { 
+                if(label) label.textContent = '💥 Erro de Rede';
+                console.error('[KB] Falha na requisição:', err);
+                kbFiltrar();
+            }
+        }
+
+        async function kbPollExecution(execId, nome) {
+            const baseUrl = kbBackendUrl().split('/api/v1/')[0];
+            const label = document.getElementById('kb-agent-label');
+            let retries = 0;
+            while (retries < 30) {
+                await new Promise(r => setTimeout(r, 2000));
+                try {
+                    const r = await kbSmartFetch(`${baseUrl}/api/v1/executions/${execId}`, null, 'GET');
+                    const data = await r.json();
+                    const status = data.state.current;
+                    if(label) label.textContent = `⏳ ${status}...`;
+                    if (status === 'SUCCESS') {
+                        const res = kbExtractLeads(data);
+                        if (res) { kbMostrarLeads(res, nome); return; }
+                    }
+                    if (status === 'FAILED' || status === 'KILLED') break;
+                } catch (e) {}
+                retries++;
+            }
+            if(label) label.textContent = '❌ Timeout';
+        }
+
+        function kbMostrarLeads(data, nome) {
+            // Extração de dados com filtragem por agente integrada (V72)
+            kbLeads = kbExtractLeads(data) || [];
+            
+            // Salva no cache com ID do Agente para evitar vazamento entre sessões
+            localStorage.setItem('kbLeads', JSON.stringify({ 
+                list: kbLeads, 
+                pageInfo: data.pageInfo || null,
+                agentId: kbAuthId 
+            }));
+
+            // Log de Diagnóstico (DUMP) para o console interno do Jobs
+            if (kbLeads.length > 0) {
+                const totalRows = (data.pageInfo && data.pageInfo.totalRows) || kbLeads.length;
+                const isLast = (data.pageInfo) ? data.pageInfo.isLastPage : true;
+                
+                kbLog(`🧪 DUMP DE DIAGNÓSTICO: ${kbLeads.length}/${totalRows} leads carregados.`);
+                if (!isLast) kbLog(`⚠️ Tem + leads no NocoDB! (Página 1 de ${Math.ceil(totalRows/kbLeads.length)})`);
+
+                // Estatísticas de Status
+                const stats = {};
+                kbLeads.forEach(l => {
+                    const s = String(l.Status || l.status || 'N/A');
+                    stats[s] = (stats[s] || 0) + 1;
+                });
+                
+                Object.keys(stats).forEach(s => {
+                    kbLog(`   - Status [${s}]: ${stats[s]} leads`);
+                });
+            }
+
+            // Normaliza status de todos os leads recebidos
+            kbLeads.forEach(l => {
+                const sObj = l.Status || l.status;
+                if (sObj && typeof sObj === 'object') {
+                    l.Status = sObj.title || sObj.value || sObj.id || JSON.stringify(sObj);
+                } else {
+                    l.Status = String(sObj || '').trim();
+                }
+
+                // Normaliza ID da Conversa (V74)
+                l.Conversation_ID = l.Conversation_ID || l.conversation_id || l['# Conversation_ID'] || null;
+                l.Mensagens_Nao_Lidas = l.Mensagens_Nao_Lidas || l.mensagens_nao_lidas || 0;
+                
+                // Normaliza IDs de Contexto (V88)
+                l.Team_ID = l.Team_ID || l.team_id || l.ID_do_Time || l.ID_Time || l.Chatwoot_Team_ID || null;
+                l.Inbox_ID = l.Inbox_ID || l.inbox_id || l.ID_da_Inbox || l.InboxId || null;
+
+                const original = l.Status;
+                console.log(`[KB] Lead: ${l.Nome} | ConvID: ${l.Conversation_ID} | Team: ${l.Team_ID} | Inbox: ${l.Inbox_ID}`);
+            });
+            const label = document.getElementById('kb-agent-label');
+            const statusEncontrados = [...new Set(kbLeads.map(l => l.Status))];
+            kbLog(`📊 Status em cache: ${statusEncontrados.join(', ')}`);
+            console.log('[KB] Status normalizados recebidos:', statusEncontrados);
+            if(label) label.textContent = `👤 ${nome} (${kbLeads.length} leads)`;
+            kbFiltrar();
+        }
+
+        // Função auxiliar para debug (mesma lógica do norm dentro de kbFiltrar)
+        function kbFiltrar_norm_only(s) {
+            s = String(s || '').trim().toLowerCase();
+            const map = { 
+                'aberto': 'contactado', 
+                'disparo': 'aguardando disparo', 
+                'aguardando': 'aguardando disparo',
+                'aguardando disp...': 'aguardando disparo',
+                'pente': 'aguardando disparo',
+                'reserva': 'novo',
+                'negociando': 'em negociacao',
+                'em negociação': 'em negociacao',
+                'convertido': 'ganho'
+            };
+            return map[s] || s;
+        }
+
+        function kbFiltrar() {
+            const busca = (document.getElementById('kb-search').value || '').toLowerCase();
+            const statusF = (document.getElementById('kb-filter-status').value || '').toLowerCase();
+            
+            const norm = (s) => {
+                s = String(s || '').trim().toLowerCase();
+                // Mapeamento extra para garantir que variações caiam na coluna certa
+                const map = { 
+                    'aberto': 'contactado', 
+                    'disparo': 'aguardando disparo', 
+                    'aguardando': 'aguardando disparo',
+                    'aguardando disp...': 'aguardando disparo',
+                    'pente': 'aguardando disparo',
+                    'reserva': 'novo',
+                    'negociando': 'em negociacao',
+                    'em negociação': 'em negociacao',
+                    'convertido': 'ganho'
+                };
+                return map[s] || s;
+            };
+
+            const filtrados = kbLeads.filter(l => {
+                const s = norm(l.Status);
+                const okBusca = !busca || (l.Nome || '').toLowerCase().includes(busca) || (l.Telefone || '').includes(busca);
+                const okStatus = !statusF || s === statusF.toLowerCase();
+                return okBusca && okStatus;
+            });
+
+            KB_COLUNAS.forEach(col => {
+                const zone = document.getElementById(`kbz-${col.id}`);
+                const sub = filtrados.filter(l => norm(l.Status) === col.id.toLowerCase());
+                document.getElementById(`kbc-${col.id}`).textContent = sub.length;
+                zone.innerHTML = sub.length === 0 ? '<div class="kb-empty">Vazio</div>' : sub.map(l => kbBuildCard(l)).join('');
+            });
+        }
+
+        function kbBuildCard(l) {
+            const statusBruto = String(l.Status || '').trim();
+            const notas = (l.Notas_Vendedor || l.Resumo_IA || '').trim();
+            const unread = parseInt(l.Mensagens_Nao_Lidas || l.mensagens_nao_lidas || 0);
+            const badge = unread > 0 ? `<div class="kb-unread-badge">${unread}</div>` : '';
+
+            return `<div class="kb-card-compact" draggable="true"
+                ondragstart="kbDragStart(event,${l.Id})"
+                ondragend="kbDragEnd(event)"
+                onclick="if(!_kbDragging)kbOpenModal(${l.Id})"
+                id="kbcard-${l.Id}">
+                <div class="kb-card-name">🏢 ${(l.Nome||'Sem Nome').substring(0,38)}</div>
+                <div class="kb-row" style="color:var(--text-secondary);">
+                    <span>📞</span><span>${l.Telefone||'-'}</span>
+                    ${l.Conversation_ID ? `<span onclick="event.stopPropagation();kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="margin-left:auto;font-size:14px;color:var(--accent-color);position:relative;cursor:pointer;padding:2px 5px;" title="Ir para o Chat">💬${badge}</span>` : ''}
+                </div>
+                ${notas ? `<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7">📝 ${notas.substring(0,60)}</div>` : ''}
+                <div style="margin-top:6px"><span class="kb-status-badge">${statusBruto}</span></div>
+            </div>`;
+        }
+
+        let _kbDragging = false;
+        function kbDragStart(e, id) { kbDraggedId = id; _kbDragging = true; }
+        function kbDragEnd() { kbDraggedId = null; setTimeout(()=>{ _kbDragging = false; }, 50); }
+        function kbDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        function kbDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+        async function kbDrop(e, status) {
+            e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+            if (!kbDraggedId) return;
+            const lead = kbLeads.find(l => l.Id === kbDraggedId);
+            if (lead) { lead.Status = status; kbFiltrar(); }
+            await kbSmartFetch(kbBackendUrl(), { action: 'update', id: kbDraggedId, status });
+        }
+
+        function kbOpenModal(id) {
+            const l = kbLeads.find(x => x.Id === id);
+            if (!l) return;
+            _kbModalId = id;
+            document.getElementById('kb-modal-title').textContent = `🏢 ${l.Nome || 'Lead'}`;
+            
+            const rows = [
+                ['📞 Telefone',   l.Telefone],
+                ['📧 Email',      l.Email],
+                ['🏷️ Status',    l.Status],
+                ['🏛️ Porte',     l.Porte],
+                ['💼 Atividade', l.Atividade_Principal],
+                ['📊 Capital',   l.Capital_Social ? `R$ ${Number(l.Capital_Social).toLocaleString('pt-BR')}` : null],
+                ['🤝 Sócios',    l.Socios],
+                ['📍 Endereço',  l.Endereco],
+                ['🕐 Contato',   l.Ultimo_Contato],
+                ['📅 Follow-up', l.Proximo_FollowUp],
+            ];
+
+            // Renderiza Etiquetas (Melhorado para lidar com arrays de objetos do NocoDB)
+            let tagsHtml = '';
+            const rawLabels = l.Etiquetas || l.etiquetas || l.Tags || l.tags || l.Labels || l.labels;
+            if (rawLabels) {
+                let tagsArr = [];
+                if (typeof rawLabels === 'string') {
+                    tagsArr = rawLabels.split(',');
+                } else if (Array.isArray(rawLabels)) {
+                    tagsArr = rawLabels.map(t => (typeof t === 'object' && t !== null) ? (t.title || t.value || t.name) : t);
+                }
+                tagsHtml = tagsArr.filter(t => t && String(t).trim()).map(t => `<span class="kb-modal-badge">${String(t).trim()}</span>`).join('');
+            }
+
+            const body = document.getElementById('kb-modal-body');
+            body.innerHTML = `
+                ${rows.filter(([,v]) => v).map(([label, val]) =>
+                    `<div class="kb-modal-row"><span class="kb-modal-label">${label}</span><span class="kb-modal-val">${val}</span></div>`
+                ).join('')}
+                
+                ${tagsHtml ? `<div class="kb-modal-row" style="margin-top:8px;"><span class="kb-modal-label">🏷️ Etiquetas</span><div style="display:flex;flex-wrap:wrap;">${tagsHtml}</div></div>` : ''}
+                
+                <hr class="kb-modal-divider">
+                
+                <div style="font-size:11px;color:#10b981;font-weight:700;margin-bottom:6px;">🤖 Resumo IA</div>
+                <div class="kb-modal-resumo">${l.Resumo_IA || 'Nenhum resumo gerado pela IA ainda.'}</div>
+                
+                <div style="font-size:11px;color:var(--accent-color);font-weight:700;margin-bottom:6px;">📝 Notas do Vendedor</div>
+                <textarea class="kb-modal-notes" id="kb-modal-notas" placeholder="Sua nota será salva automaticamente..." onchange="kbSalvarModal()">${l.Notas_Vendedor || ''}</textarea>
+                
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    ${l.Conversation_ID ? `
+                    <button class="kb-modal-action-btn" onclick="kbOpenConversation('${l.Conversation_ID}', '${l.Telefone}', '${l.Team_ID || ''}', '${l.Inbox_ID || ''}')" style="background:#0284c7;flex:1;">
+                        💬 Ir para o Chat
+                    </button>` : `
+                    <button id="kb-btn-proactive" class="kb-modal-action-btn" onclick="kbProactiveStart(${l.Id})" style="background:#10b981;flex:1;">
+                        🚀 Iniciar no Chatwoot
+                    </button>
+                    `}
+                    <button class="kb-modal-action-btn" onclick="window.open('https://cal.com', '_blank')" style="flex:1;">
+                        📅 Agendar Tarefa
+                    </button>
+                </div>
+            `;
+            document.getElementById('kb-modal-overlay').classList.add('open');
+        }
+
+        function kbModalClose(e) {
+            if (e && e.currentTarget === e.target || !e) {
+                document.getElementById('kb-modal-overlay').classList.remove('open');
+                _kbModalId = null;
+            }
+        }
+
+        async function kbSalvarModal() {
+            if (!_kbModalId) return;
+            const notas = document.getElementById('kb-modal-notas').value;
+            kbToast('Salvando...');
+            const lead = kbLeads.find(l => l.Id === _kbModalId);
+            if (lead) { 
+                lead.Notas_Vendedor = notas; 
+                // MUITO IMPORTANTE: Enviar o Status e Resumo_IA atuais para evitar sobrescrita ou erro
+                await kbSmartFetch(kbBackendUrl(), { 
+                    action: 'update', 
+                    id: _kbModalId, 
+                    notas_vendedor: notas,
+                    resumo_ia: lead.Resumo_IA || '', // Envia o que já existe para manter separado
+                    status: lead.Status
+                });
+            }
+            kbToast('✅ Notas salvas!');
+            document.getElementById('kb-modal-overlay').classList.remove('open');
+            _kbModalId = null;
+            kbFiltrar();
+        }
     </script>
 </body>
 </html>
