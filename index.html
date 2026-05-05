@@ -1957,17 +1957,9 @@
                 const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
                 const vTeam = String(l.Team_ID || '').trim();
 
-                // 🔒 SEGURANÇA MÁXIMA: Tripla Confluência Obrigatória (V121)
-                // Se algum campo estiver vazio ou não bater, o acesso é negado.
-                if (!searchId || !searchName || !searchTeam) return false;
-
-                return (vId === searchId) && 
-                       (vName.includes(searchName)) &&
-                       (vTeam === searchTeam);
-            });
-
-            kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
-            return filtered;
+            // 🔓 TESTE: Retornando tudo para validar se o problema é o filtro
+            kbLog(`🧪 MODO DEBUG: Ignorando filtros de Agente para teste.`);
+            return leads;
         }
 
         function kbExtractLeads(obj, depth = 0) {
