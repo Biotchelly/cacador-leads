@@ -1940,22 +1940,6 @@
         }
 
         function kbFilterByAgent(leads) {
-            if (!Array.isArray(leads)) return [];
-            if (!kbAuthId) return []; // Se não identificou, não mostra nada por segurança
-            
-            if (kbAuthId === "1" || kbAuthNome === "Gestão" || kbGestorOverride) {
-                kbLog(`🔓 Modo Admin/Gestor (V73)`);
-                return leads;
-            }
-            
-            const searchId = String(kbAuthId).trim();
-            const searchName = kbAuthNome.toLowerCase().trim();
-            const searchTeam = String(document.getElementById('kb-team-id')?.value || '').trim();
-
-            const filtered = leads.filter(l => {
-                const vId = String(l.agent_id || l.vendedor_id || '').trim();
-                const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
-                const vTeam = String(l.Team_ID || '').trim();
 
             // 🔓 TESTE: Retornando tudo para validar se o problema é o filtro
             kbLog(`🧪 MODO DEBUG: Ignorando filtros de Agente para teste.`);
@@ -1971,9 +1955,9 @@
             if (typeof obj !== 'object') return null;
 
             // 1. Tenta propriedades conhecidas na raiz
-            const fast = obj.list || obj.records || obj.data || 
-                         (obj.response && (obj.response.list || obj.response.records)) ||
-                         (obj.body && (obj.body.list || obj.body.records || obj.body));
+            const fast = obj.leads || obj.list || obj.records || obj.data || 
+                         (obj.response && (obj.response.leads || obj.response.list || obj.response.records)) ||
+                         (obj.body && (obj.body.leads || obj.body.list || obj.body.records || obj.body));
             
             if (Array.isArray(fast)) return kbFilterByAgent(fast);
 
