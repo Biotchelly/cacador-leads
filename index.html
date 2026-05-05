@@ -300,20 +300,49 @@
     </main>
 
     <script>
-        // CONFIGURAÇÃO OFICIAL DA API (HTTPS)
+        // CONFIGURAÇÃO DE CONEXÃO (V6.0 - SNIPER MODE)
         const KESTRA_URL = "https://kestra.biotchellyprospecta.online"; 
-        const API_URL = `${KESTRA_URL}/api/v1/webhooks/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key`;
+        const WEBHOOK_PATH = "/api/v1/webhooks/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key";
+        const PROXY_URL = "https://falling-term-7c4e.maxyadm.workers.dev"; // Seu Proxy Privado
+
+        async function kbSmartFetch(targetUrl, action) {
+            const fullUrl = `${targetUrl}${targetUrl.includes('?') ? '&' : '?'}action=${action}`;
+            
+            // Tentativa 1: Direta (Requer Extensão CORS no Chrome)
+            try {
+                console.log("🚀 Tentativa Direta...");
+                const res = await fetch(fullUrl);
+                if (res.ok) return await res.json();
+            } catch (e) {
+                console.warn("⚠️ Falha na conexão direta (CORS). Tentando Proxy Privado...");
+            }
+
+            // Tentativa 2: Seu Proxy Privado (Modo Turbo)
+            try {
+                const proxyCall = `${PROXY_URL}/?url=${encodeURIComponent(fullUrl)}`;
+                const res = await fetch(proxyCall);
+                if (res.ok) return await res.json();
+            } catch (e) {
+                console.warn("⚠️ Falha no Proxy Privado. Tentando Proxy Público...");
+            }
+
+            // Tentativa 3: Proxy Público (CORS Anywhere)
+            try {
+                const publicProxy = `https://corsproxy.io/?${encodeURIComponent(fullUrl)}`;
+                const res = await fetch(publicProxy);
+                if (res.ok) return await res.json();
+            } catch (e) {
+                throw new Error("Todas as tentativas de conexão (Direta, Privada e Pública) falharam.");
+            }
+        }
 
         async function fetchLeads() {
             try {
                 document.getElementById('loader').style.display = 'flex';
                 document.getElementById('loader').style.opacity = '1';
 
-                // Chamada via Webhook (GET ou POST)
-                const response = await fetch(`${API_URL}?action=list_leads`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const rawData = await response.json();
+                // Chamada via SmartFetch (Proxy-Aware)
+                const rawData = await kbSmartFetch(`${KESTRA_URL}${WEBHOOK_PATH}`, 'list_leads');
                 console.log("📦 Dados brutos:", rawData);
 
                 // O Kestra com returnOutputs pode colocar o resultado em data.body ou data.leads
@@ -372,7 +401,7 @@
         async function updateLeadStatus(leadId, newStatus) {
             console.log(`Movendo lead ${leadId} para ${newStatus}`);
             try {
-                await fetch(`${API_URL}?action=update_status&lead_id=${leadId}&status=${newStatus}`, { method: 'POST' });
+                await kbSmartFetch(`${KESTRA_URL}${WEBHOOK_PATH}`, `update_status&lead_id=${leadId}&status=${newStatus}`);
             } catch (error) {
                 console.error("Erro ao atualizar status:", error);
             }
