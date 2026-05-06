@@ -1586,7 +1586,7 @@
     <div id="kanban-panel" class="tab-panel active">
         <div class="kb-config-bar">
             <span>🔗 Backend:</span>
-            <input class="kb-input-url" id="kb-backend-url" style="width:100px;" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_biotchelly_crm_backend/biotchelly_backend_key">
+            <input class="kb-input-url" id="kb-backend-url" style="width:100px;" value="https://kestra.biotchellyprospecta.online/api/v1/executions/webhook/biotchellymcp/08_kanban_backend_api/biotchelly_kanban_api_key">
             <span style="margin-left:5px;">🏠 URL:</span>
             <input class="kb-input-url" id="kb-chatwoot-url" style="width:140px;" value="https://biotchellyprospecta-chatwoot.mbtqpp.easypanel.host">
             <span style="margin-left:5px;">👥 Time:</span>
@@ -1940,10 +1940,34 @@
         }
 
         function kbFilterByAgent(leads) {
+            if (!Array.isArray(leads)) return [];
+            if (!kbAuthId) return []; // Se não identificou, não mostra nada por segurança
+            
+            if (kbAuthId === "1" || kbAuthNome === "Gestão" || kbGestorOverride) {
+                kbLog(`🔓 Modo Admin/Gestor (V73)`);
+                return leads;
+            }
+            
+            const searchId = String(kbAuthId).trim();
+            const searchName = kbAuthNome.toLowerCase().trim();
+            const searchTeam = String(document.getElementById('kb-team-id')?.value || '').trim();
 
-            // 🔓 TESTE: Retornando tudo para validar se o problema é o filtro
-            kbLog(`🧪 MODO DEBUG: Ignorando filtros de Agente para teste.`);
-            return leads;
+            const filtered = leads.filter(l => {
+                const vId = String(l.agent_id || l.vendedor_id || '').trim();
+                const vName = kbVal(l.Vendedor || l.Agente || '').toLowerCase();
+                const vTeam = String(l.Team_ID || '').trim();
+
+                // 🔒 SEGURANÇA MÁXIMA: Tripla Confluência Obrigatória (V121)
+                // Se algum campo estiver vazio ou não bater, o acesso é negado.
+                if (!searchId || !searchName || !searchTeam) return false;
+
+                return (vId === searchId) && 
+                       (vName.includes(searchName)) &&
+                       (vTeam === searchTeam);
+            });
+
+            kbLog(`🛡️ Filtro V73: ${filtered.length} leads de ${leads.length} (Agente: ${kbAuthNome})`);
+            return filtered;
         }
 
         function kbExtractLeads(obj, depth = 0) {
@@ -1955,9 +1979,9 @@
             if (typeof obj !== 'object') return null;
 
             // 1. Tenta propriedades conhecidas na raiz
-            const fast = obj.leads || obj.list || obj.records || obj.data || 
-                         (obj.response && (obj.response.leads || obj.response.list || obj.response.records)) ||
-                         (obj.body && (obj.body.leads || obj.body.list || obj.body.records || obj.body));
+            const fast = obj.list || obj.records || obj.data || 
+                         (obj.response && (obj.response.list || obj.response.records)) ||
+                         (obj.body && (obj.body.list || obj.body.records || obj.body));
             
             if (Array.isArray(fast)) return kbFilterByAgent(fast);
 
