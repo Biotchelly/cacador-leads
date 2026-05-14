@@ -1582,6 +1582,24 @@
             </div>
         </div>
     </div>
+    
+    <!-- MODAL CUSTOMIZER (V125) -->
+    <div id="kb-customizer-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:var(--card-bg); width:90%; max-width:500px; border-radius:12px; border:1px solid var(--border-color); overflow:hidden;">
+            <div style="padding:15px; background:rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color);">
+                <h3 style="font-size:14px;">⚙️ Personalizar Quadro</h3>
+                <button onclick="kbFecharCustomizer()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:18px;">✕</button>
+            </div>
+            <div id="kb-custom-list" style="padding:15px; max-height:400px; overflow-y:auto;">
+                <!-- Listagem dinâmica de colunas -->
+            </div>
+            <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px; justify-content:flex-end;">
+                <button class="kb-modal-btn secondary" onclick="kbAddColuna()">➕ Add Coluna</button>
+                <button class="kb-modal-btn secondary" onclick="kbResetColunas()">🧹 Reset</button>
+                <button class="kb-modal-btn primary" onclick="kbSalvarColunas()">💾 Salvar Tudo</button>
+            </div>
+        </div>
+    </div>
 
     <div id="kanban-panel" class="tab-panel active">
         <div class="kb-config-bar">
@@ -1591,6 +1609,7 @@
             <input class="kb-input-url" id="kb-chatwoot-url" style="width:140px;" value="https://biotchellyprospecta-chatwoot.mbtqpp.easypanel.host">
             <span style="margin-left:5px;">👥 Time:</span>
             <input class="kb-input-url" id="kb-team-id" style="width:40px;" placeholder="Ex: 6" value="6">
+            <button class="kb-modal-btn secondary" style="padding: 4px 8px; font-size: 10px;" onclick="kbAbrirCustomizer()">⚙️ Personalizar Colunas</button>
             <button class="kb-save" onclick="kbCarregar()">↻</button>
         </div>
         <div class="kb-toolbar">
@@ -1614,15 +1633,17 @@
     </div>
 
     <script>
-        const KB_COLUNAS = [
-            { id: 'Novo', label: '📋 Novo', cls: 'col-novo' },
-            { id: 'Aguardando Disparo', label: '🎯 Aguardando Disparo', cls: 'col-pente' },
-            { id: 'Contactado', label: '📫 Contactado', cls: 'col-aberto' },
-            { id: 'Qualificado', label: '✅ Qualificado', cls: 'col-qualif' },
-            { id: 'Em Negociacao', label: '🤝 Em Negociacao', cls: 'col-negoc' },
-            { id: 'Ganho', label: '💰 Ganho', cls: 'col-conv' },
-            { id: 'Perdido', label: '❌ Perdido', cls: 'col-perd' },
+        const KB_DEFAULT_COLS = [
+            { id: 'Novo', label: '📋 Novo', color: '#6366f1' },
+            { id: 'Aguardando Disparo', label: '🎯 Aguardando Disparo', color: '#f59e0b' },
+            { id: 'Contactado', label: '📫 Contactado', color: '#10b981' },
+            { id: 'Qualificado', label: '✅ Qualificado', color: '#06b6d4' },
+            { id: 'Em Negociacao', label: '🤝 Em Negociacao', color: '#8b5cf6' },
+            { id: 'Ganho', label: '💰 Ganho', color: '#10b981' },
+            { id: 'Perdido', label: '❌ Perdido', color: '#ef4444' },
         ];
+
+        let KB_COLUNAS = JSON.parse(localStorage.getItem('KB_CUSTOM_COLS')) || KB_DEFAULT_COLS;
 
         let kbAuthId = localStorage.getItem('kbAuthId') || "";
         let kbAuthNome = localStorage.getItem('kbAuthNome') || "";
@@ -2010,8 +2031,8 @@
             const board = document.getElementById('kb-board');
             if(!board) return;
             board.innerHTML = KB_COLUNAS.map(col => `
-                <div class="kb-col ${col.cls}" ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'${col.id}')">
-                    <div class="kb-col-header">${col.label} <span class="kb-count" id="kbc-${col.id}">0</span></div>
+                <div class="kb-col" ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'${col.id}')">
+                    <div class="kb-col-header" style="border-top: 3px solid ${col.color || '#6366f1'}">${col.label} <span class="kb-count" id="kbc-${col.id}">0</span></div>
                     <div class="kb-dropzone" id="kbz-${col.id}"><div class="kb-empty">Vazio</div></div>
                 </div>
             `).join('');
@@ -2381,12 +2402,11 @@
             const lead = kbLeads.find(l => l.Id === _kbModalId);
             if (lead) { 
                 lead.Notas_Vendedor = notas; 
-                // MUITO IMPORTANTE: Enviar o Status e Resumo_IA atuais para evitar sobrescrita ou erro
                 await kbSmartFetch(kbBackendUrl(), { 
                     action: 'update', 
                     id: _kbModalId, 
                     notas_vendedor: notas,
-                    resumo_ia: lead.Resumo_IA || '', // Envia o que já existe para manter separado
+                    resumo_ia: lead.Resumo_IA || '',
                     status: lead.Status
                 });
             }
@@ -2394,6 +2414,69 @@
             document.getElementById('kb-modal-overlay').classList.remove('open');
             _kbModalId = null;
             kbFiltrar();
+        }
+
+        function kbAbrirCustomizer() {
+            const overlay = document.getElementById('kb-customizer-overlay');
+            overlay.style.display = 'flex';
+            kbRenderCustomList();
+        }
+
+        function kbFecharCustomizer() {
+            document.getElementById('kb-customizer-overlay').style.display = 'none';
+        }
+
+        function kbRenderCustomList() {
+            const list = document.getElementById('kb-custom-list');
+            list.innerHTML = KB_COLUNAS.map((col, idx) => `
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="cursor:ns-resize; color:#666;">☰</div>
+                    <input type="text" value="${col.label}" onchange="kbUpdateColProp(${idx}, 'label', this.value)" placeholder="Nome Exibição" style="flex:2; background:#000; border:1px solid #333; color:#fff; font-size:12px; padding:4px 8px; border-radius:4px;">
+                    <input type="text" value="${col.id}" onchange="kbUpdateColProp(${idx}, 'id', this.value)" placeholder="ID/Status" style="flex:1; background:#000; border:1px solid #333; color:#fff; font-size:12px; padding:4px 8px; border-radius:4px;">
+                    <input type="color" value="${col.color || '#6366f1'}" onchange="kbUpdateColProp(${idx}, 'color', this.value)" style="width:30px; height:25px; border:none; background:none; cursor:pointer;">
+                    <button onclick="kbMoverColuna(${idx}, -1)" style="background:none; border:none; color:#888; cursor:pointer;">↑</button>
+                    <button onclick="kbMoverColuna(${idx}, 1)" style="background:none; border:none; color:#888; cursor:pointer;">↓</button>
+                    <button onclick="kbRemoverColuna(${idx})" style="background:none; border:none; color:#ff4d4f; cursor:pointer; font-weight:bold;">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function kbUpdateColProp(idx, prop, val) {
+            KB_COLUNAS[idx][prop] = val;
+        }
+
+        function kbMoverColuna(idx, dir) {
+            if (idx + dir < 0 || idx + dir >= KB_COLUNAS.length) return;
+            const item = KB_COLUNAS.splice(idx, 1)[0];
+            KB_COLUNAS.splice(idx + dir, 0, item);
+            kbRenderCustomList();
+        }
+
+        function kbAddColuna() {
+            KB_COLUNAS.push({ id: 'Novo Status', label: '🆕 Nova Coluna', color: '#6366f1' });
+            kbRenderCustomList();
+        }
+
+        function kbRemoverColuna(idx) {
+            if (confirm('Deseja remover esta coluna?')) {
+                KB_COLUNAS.splice(idx, 1);
+                kbRenderCustomList();
+            }
+        }
+
+        function kbResetColunas() {
+            if (confirm('Deseja resetar para as colunas padrão?')) {
+                KB_COLUNAS = JSON.parse(JSON.stringify(KB_DEFAULT_COLS));
+                kbRenderCustomList();
+            }
+        }
+
+        function kbSalvarColunas() {
+            localStorage.setItem('KB_CUSTOM_COLS', JSON.stringify(KB_COLUNAS));
+            kbToast('✅ Colunas Salvas!');
+            kbFecharCustomizer();
+            kbInitialized = false; 
+            kbInit();
         }
     </script>
 </body>
