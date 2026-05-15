@@ -2297,9 +2297,18 @@
                 return okBusca && okStatus;
             });
 
+            const isDailyLimit = document.getElementById('dailyLimitEnabled')?.checked || false;
+            const dailyLimitCount = parseInt(document.getElementById('dailyLimitCount')?.value || '20');
+
             KB_COLUNAS.forEach(col => {
                 const zone = document.getElementById(`kbz-${col.id}`);
-                const sub = filtrados.filter(l => norm(l.Status) === col.id.toLowerCase());
+                let sub = filtrados.filter(l => norm(l.Status) === col.id.toLowerCase());
+                
+                // Trava Visual (V127): Se for a coluna Novo e o limite estiver ativo
+                if (col.id === 'Novo' && isDailyLimit) {
+                    sub = sub.slice(0, dailyLimitCount);
+                }
+
                 document.getElementById(`kbc-${col.id}`).textContent = sub.length;
                 zone.innerHTML = sub.length === 0 ? '<div class="kb-empty">Vazio</div>' : sub.map(l => kbBuildCard(l)).join('');
             });
