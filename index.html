@@ -2052,6 +2052,15 @@
                     <div class="kb-dropzone" id="kbz-${col.id}"><div class="kb-empty">Vazio</div></div>
                 </div>
             `).join('');
+
+            // --- SINCRONIA DE FILTRO DINÂMICO (V126) ---
+            const filterStatus = document.getElementById('kb-filter-status');
+            if (filterStatus) {
+                const currentVal = filterStatus.value;
+                filterStatus.innerHTML = '<option value="">Status...</option>' + 
+                    KB_COLUNAS.map(col => `<option value="${col.id}">${col.label}</option>`).join('');
+                filterStatus.value = currentVal;
+            }
             kbInitialized = true;
             
             // --- MEMÓRIA DO JOBS (V68) ---
