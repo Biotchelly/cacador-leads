@@ -2104,7 +2104,9 @@
                         vendedor_nome: kbAuthNome, 
                         table_id: nocoId,
                         token: nocoToken,
-                        offset: offset 
+                        offset: offset,
+                        daily_limit_enabled: document.getElementById('dailyLimitEnabled')?.checked || false,
+                        daily_limit_count: document.getElementById('dailyLimitCount')?.value || '20'
                     };
 
                     const r = await kbSmartFetch(url, body, 'POST');
